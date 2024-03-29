@@ -1,6 +1,7 @@
 #include "cue.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 typedef enum Cue_CommandType
@@ -48,19 +49,13 @@ static Cue_TrackType Cue_TrackTypeFromString(const char* const string)
 
 void Cue_Parse(FILE* const file, const Cue_Callback callback, const void* const user_data)
 {
-	char file_name[255 + 1];
-	Cue_FileType file_type;
-	unsigned int track;
-	Cue_TrackType track_type;
-	fpos_t file_position;
+	char *file_name = NULL;
+	Cue_FileType file_type = CUE_FILE_TYPE_INVALID;
+	unsigned int track = 0xFFFF;
+	Cue_TrackType track_type = CUE_TRACK_TYPE_INVALID;
+	fpos_t starting_file_position;
 
-	file_name[0] = '\0';
-	file_type = CUE_FILE_TYPE_INVALID;
-
-	track = 0xFFFF;
-	track_type = CUE_TRACK_TYPE_INVALID;
-
-	fgetpos(file, &file_position);
+	fgetpos(file, &starting_file_position);
 	rewind(file);
 
 	for (;;)
@@ -74,12 +69,31 @@ void Cue_Parse(FILE* const file, const Cue_Callback callback, const void* const 
 		{
 			case CUE_COMMAND_TYPE_FILE:
 			{
-				char file_type_string[6 + 1];
+				fpos_t file_position;
+				int file_name_length;
 
-				if (fscanf(file, " \"%255[^\"]\" %6s", file_name, file_type_string) < 2)
-					fputs("Could not read FILE parameters.\n", stderr);
+				fscanf(file, " \"");
+				fgetpos(file, &file_position);
+				fscanf(file, "%*[^\"]%n", &file_name_length);
+
+				free(file_name);
+				file_name = (char*)malloc(file_name_length + 1);
+
+				if (file_name == NULL)
+				{
+					fputs("Could not allocate memory for filename.\n", stderr);
+				}
 				else
-					file_type = Cue_FileTypeFromString(file_type_string);
+				{
+					char file_type_string[6 + 1];
+
+					fsetpos(file, &file_position);
+
+					if (fscanf(file, "%[^\"]\" %6s", file_name, file_type_string) < 2)
+						fputs("Could not read FILE parameters.\n", stderr);
+					else
+						file_type = Cue_FileTypeFromString(file_type_string);
+				}
 
 				break;
 			}
@@ -102,7 +116,7 @@ void Cue_Parse(FILE* const file, const Cue_Callback callback, const void* const 
 
 				if (fscanf(file, "%u %u:%u:%u", &index, &minute, &second, &frame) < 4)
 					fputs("Could not read INDEX parameters.\n", stderr);
-				else if (file_name[0] == '\0')
+				else if (file_name == NULL)
 					fputs("INDEX encountered with no filename specified.\n", stderr);
 				else if (file_type == CUE_FILE_TYPE_INVALID)
 					fputs("INDEX encountered with no file type specified.\n", stderr);
@@ -129,7 +143,8 @@ void Cue_Parse(FILE* const file, const Cue_Callback callback, const void* const 
 		fscanf(file, "%*[^\n]");
 	}
 
-	fsetpos(file, &file_position);
+	free(file_name);
+	fsetpos(file, &starting_file_position);
 }
 
 typedef struct Cue_GetTrackIndexInfo_State

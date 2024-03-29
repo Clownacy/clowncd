@@ -8,7 +8,7 @@ typedef struct State
 {
 	FILE *cue_file, *header_file;
 	const char *cue_filename;
-	char track_filename[0x100];
+	char *track_filename;
 } State;
 
 #if 0
@@ -171,6 +171,17 @@ static unsigned long GetTrackEndingFrame(const State* const state, const char* c
 	return ending_frame;
 }
 
+static char* DuplicateString(const char* const string)
+{
+	const size_t length = strlen(string) + 1;
+	char* const buffer = (char*)malloc(length);
+
+	if (buffer != NULL)
+		memcpy(buffer, string, length);
+
+	return buffer;
+}
+
 static void Callback(void* const user_data, const char* const filename, const Cue_FileType file_type, const unsigned int track, const Cue_TrackType track_type, const unsigned int index, const unsigned long frame)
 {
 	State* const state = (State*)user_data;
@@ -180,14 +191,13 @@ static void Callback(void* const user_data, const char* const filename, const Cu
 
 	(void)index;
 
-	if (state->track_filename[0] == '\0')
+	if (state->track_filename == NULL)
 	{
 		/* TODO: Hash the filename instead of copy it. */
-		const size_t filename_length = strlen(filename);
-		const size_t filename_length_capped = CC_MIN(CC_COUNT_OF(state->track_filename) - 1, filename_length);
+		state->track_filename = DuplicateString(filename);
 
-		memcpy(state->track_filename, filename, filename_length_capped);
-		state->track_filename[filename_length_capped] = '\0';
+		if (state->track_filename == NULL)
+			fputs("Could not allocate memory to duplicate track filename.\n", stderr);
 	}
 	else
 	{
@@ -252,7 +262,7 @@ int main(const int argc, char** const argv)
 				state.cue_file = cue_file;
 				state.header_file = header_file;
 				state.cue_filename = cue_filename;
-				state.track_filename[0] = '\0';
+				state.track_filename = NULL;
 
 				fputs("clowncd", header_file); /* Identifier. */
 				fputc('\0', header_file);
