@@ -7,3 +7,5 @@ add_library(clowncd STATIC "clowncd.c" "clowncd.h")
 add_executable(clowncd-test "test.c")
 
 target_link_libraries(clowncd-test PRIVATE clowncd)
+
+add_executable(clowncd-converter "cuebinconverter.c")
