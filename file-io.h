@@ -36,7 +36,8 @@ typedef struct ClownCD_File
 	void *stream;
 } ClownCD_File;
 
-void ClownCD_FileOpen(ClownCD_File *file, const char *filename, ClownCD_FileMode mode);
+ClownCD_File ClownCD_FileOpen(const char* const filename, const ClownCD_FileMode mode);
+ClownCD_File ClownCD_FileOpenCustomIO(const ClownCD_FileCallbacks *callbacks, const char *filename, ClownCD_FileMode mode);
 int ClownCD_FileClose(ClownCD_File *file);
 size_t ClownCD_FileRead(void *buffer, size_t size, size_t count, ClownCD_File *file);
 size_t ClownCD_FileWrite(const void *buffer, size_t size, size_t count, ClownCD_File *file);

@@ -12,89 +12,6 @@ typedef struct State
 	char *track_filename;
 } State;
 
-static void* FileOpenCallback(const char* const filename, const ClownCD_FileMode mode)
-{
-	const char *standard_mode;
-
-	switch (mode)
-	{
-		case CLOWNCD_MODE_READ:
-			standard_mode = "rb";
-			break;
-
-		case CLOWNCD_MODE_WRITE:
-			standard_mode = "wb";
-			break;
-
-		default:
-			return NULL;
-	}
-
-	return fopen(filename, standard_mode);
-}
-
-static int FileCloseCallback(void* const stream)
-{
-	return fclose((FILE*)stream);
-}
-
-static size_t FileReadCallback(void* const buffer, const size_t size, const size_t count, void* const stream)
-{
-	return fread(buffer, size, count, (FILE*)stream);
-}
-
-static size_t FileWriteCallback(const void* const buffer, const size_t size, const size_t count, void* const stream)
-{
-	return fwrite(buffer, size, count, (FILE*)stream);
-}
-
-static long FileTellCallback(void* const stream)
-{
-	return ftell((FILE*)stream);
-}
-
-static int FileSeekCallback(void* const stream, const long position, const ClownCD_FileOrigin origin)
-{
-	int standard_origin;
-
-	switch (origin)
-	{
-		case CLOWNCD_SEEK_SET:
-			standard_origin = SEEK_SET;
-			break;
-
-		case CLOWNCD_SEEK_CUR:
-			standard_origin = SEEK_CUR;
-			break;
-
-		case CLOWNCD_SEEK_END:
-			standard_origin = SEEK_END;
-			break;
-
-		default:
-			return 1;
-	}
-
-	return fseek((FILE*)stream, position, standard_origin);
-}
-
-static ClownCD_File FileOpen(const char* const filename, const char* const mode)
-{
-	static const ClownCD_FileCallbacks file_callbacks = {FileOpenCallback, FileCloseCallback, FileReadCallback, FileWriteCallback, FileTellCallback, FileSeekCallback};
-
-	ClownCD_File file;
-
-	file.functions = &file_callbacks;
-	file.stream = fopen(filename, mode);
-
-	return file;
-}
-
-static int FileClose(ClownCD_File* const file)
-{
-	return fclose((FILE*)file->stream);
-}
-
 static void GetTrackIndexFrame_Callback(void* const user_data, const char* const filename, const Cue_FileType file_type, const unsigned int track, const Cue_TrackType track_type, const unsigned int index, const unsigned long frame)
 {
 	unsigned long* const frame_pointer = (unsigned long*)user_data;
@@ -285,7 +202,7 @@ int main(const int argc, char** const argv)
 	else
 	{
 		const char* const cue_filename = argv[1];
-		ClownCD_File cue_file = FileOpen(cue_filename, "r");
+		ClownCD_File cue_file = ClownCD_FileOpen(cue_filename, CLOWNCD_MODE_READ);
 
 		if (cue_file.stream == NULL)
 		{
@@ -293,7 +210,7 @@ int main(const int argc, char** const argv)
 		}
 		else
 		{
-			ClownCD_File header_file = FileOpen(argv[2], "wb");
+			ClownCD_File header_file = ClownCD_FileOpen(argv[2], CLOWNCD_MODE_WRITE);
 
 			if (header_file.stream == NULL)
 			{
@@ -321,10 +238,10 @@ int main(const int argc, char** const argv)
 				ClownCD_FileSeek(&header_file, 8 + 2, CLOWNCD_SEEK_SET);
 				Write16BE(&header_file, i); /* Total tracks. */
 
-				FileClose(&header_file);
+				ClownCD_FileClose(&header_file);
 			}
 
-			FileClose(&cue_file);
+			ClownCD_FileClose(&cue_file);
 		}
 	}
 

@@ -2,9 +2,94 @@
 
 #include <assert.h>
 
-void ClownCD_FileOpen(ClownCD_File* const file, const char* const filename, const ClownCD_FileMode mode)
+#include <stdio.h>
+
+static void* ClownCD_FileOpenStandard(const char* const filename, const ClownCD_FileMode mode)
 {
-	file->stream = file->functions->open(filename, mode);
+	const char *standard_mode;
+
+	switch (mode)
+	{
+		case CLOWNCD_MODE_READ:
+			standard_mode = "rb";
+			break;
+
+		case CLOWNCD_MODE_WRITE:
+			standard_mode = "wb";
+			break;
+
+		default:
+			return NULL;
+	}
+
+	return fopen(filename, standard_mode);
+}
+
+static int ClownCD_FileCloseStandard(void* const stream)
+{
+	return fclose((FILE*)stream);
+}
+
+static size_t ClownCD_FileReadStandard(void* const buffer, const size_t size, const size_t count, void* const stream)
+{
+	return fread(buffer, size, count, (FILE*)stream);
+}
+
+static size_t ClownCD_FileWriteStandard(const void* const buffer, const size_t size, const size_t count, void* const stream)
+{
+	return fwrite(buffer, size, count, (FILE*)stream);
+}
+
+static long ClownCD_FileTellStandard(void* const stream)
+{
+	return ftell((FILE*)stream);
+}
+
+static int ClownCD_FileSeekStandard(void* const stream, const long position, const ClownCD_FileOrigin origin)
+{
+	int standard_origin;
+
+	switch (origin)
+	{
+		case CLOWNCD_SEEK_SET:
+			standard_origin = SEEK_SET;
+			break;
+
+		case CLOWNCD_SEEK_CUR:
+			standard_origin = SEEK_CUR;
+			break;
+
+		case CLOWNCD_SEEK_END:
+			standard_origin = SEEK_END;
+			break;
+
+		default:
+			return 1;
+	}
+
+	return fseek((FILE*)stream, position, standard_origin);
+}
+
+ClownCD_File ClownCD_FileOpen(const char* const filename, const ClownCD_FileMode mode)
+{
+	static const ClownCD_FileCallbacks callbacks = {
+		ClownCD_FileOpenStandard,
+		ClownCD_FileCloseStandard,
+		ClownCD_FileReadStandard,
+		ClownCD_FileWriteStandard,
+		ClownCD_FileTellStandard,
+		ClownCD_FileSeekStandard
+	};
+
+	return ClownCD_FileOpenCustomIO(&callbacks, filename, mode);
+}
+
+ClownCD_File ClownCD_FileOpenCustomIO(const ClownCD_FileCallbacks* const callbacks, const char* const filename, const ClownCD_FileMode mode)
+{
+	ClownCD_File file;
+	file.functions = callbacks;
+	file.stream = file.functions->open(filename, mode);
+	return file;
 }
 
 int ClownCD_FileClose(ClownCD_File* const file)
