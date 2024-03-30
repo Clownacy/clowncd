@@ -1,21 +1,12 @@
 #include "clowncd.h"
 
+#include "file-io.h"
+
 #define SECTOR_RAW_SIZE 2352
 #define SECTOR_HEADER_SIZE 0x10
 #define SECTOR_DATA_SIZE 0x800
 
 #define CRC_POLYNOMIAL 0xD8018001
-
-static unsigned long ReadU32LE(const unsigned char* const buffer)
-{
-	unsigned int i;
-	unsigned long value = 0;
-
-	for (i = 0; i < 4; ++i)
-		value |= buffer[i] << (8 * i);
-
-	return value;
-}
 
 cc_bool ClownCD_OpenFromFile(ClownCD* const disc, const char* const file_path)
 {
@@ -77,7 +68,7 @@ unsigned long ClownCD_CalculateSectorCRC(const unsigned char* const buffer)
 
 cc_bool ClownCD_ValidateSectorCRC(const unsigned char* const buffer)
 {
-	const unsigned long old_crc = ReadU32LE(&buffer[SECTOR_HEADER_SIZE + SECTOR_DATA_SIZE]);
+	const unsigned long old_crc = Read32LEMemory(&buffer[SECTOR_HEADER_SIZE + SECTOR_DATA_SIZE]);
 	const unsigned long new_crc = ClownCD_CalculateSectorCRC(buffer);
 
 	return new_crc == old_crc;

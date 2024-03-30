@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "cue.h"
+#include "file-io.h"
 
 typedef struct State
 {
@@ -10,45 +11,6 @@ typedef struct State
 	const char *cue_filename;
 	char *track_filename;
 } State;
-
-#if 0
-static void WriteLE(FILE* const file, const unsigned long value, const unsigned int total_bytes)
-{
-	unsigned int i;
-
-	for (i = 0; i < total_bytes; ++i)
-		fputc((value >> (8 * i)) & 0xFF, file);
-}
-
-static void Write16LE(FILE* const file, const unsigned long value)
-{
-	WriteLE(file, value, 2);
-}
-
-static void Write32LE(FILE* const file, const unsigned long value)
-{
-	WriteLE(file, value, 4);
-}
-#endif
-
-static void WriteBE(FILE* const file, const unsigned long value, const unsigned int total_bytes)
-{
-	unsigned int i;
-
-	for (i = 0; i < total_bytes; ++i)
-		fputc((value >> (8 * (total_bytes - 1 - i))) & 0xFF, file);
-}
-
-static void Write16BE(FILE* const file, const unsigned long value)
-{
-	WriteBE(file, value, 2);
-}
-
-static void Write32BE(FILE* const file, const unsigned long value)
-{
-	WriteBE(file, value, 4);
-}
-
 
 static void GetTrackIndexFrame_Callback(void* const user_data, const char* const filename, const Cue_FileType file_type, const unsigned int track, const Cue_TrackType track_type, const unsigned int index, const unsigned long frame)
 {
