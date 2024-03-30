@@ -1,5 +1,5 @@
-#ifndef FILE_IO_H
-#define FILE_IO_H
+#ifndef CLOWNCD_FILE_IO_H
+#define CLOWNCD_FILE_IO_H
 
 #include <stddef.h>
 
@@ -77,4 +77,4 @@ unsigned long ClownCD_ReadFile(ClownCD_File *file, unsigned int total_bytes, cc_
 
 #define ClownCD_Read8(file) ClownCD_ReadFile(file, 1, cc_true)
 
-#endif /* FILE_IO_H */
+#endif /* CLOWNCD_FILE_IO_H */

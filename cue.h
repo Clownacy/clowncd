@@ -1,5 +1,5 @@
-#ifndef CUE_H
-#define CUE_H
+#ifndef CLOWNCD_CUE_H
+#define CLOWNCD_CUE_H
 
 #include "clowncommon/clowncommon.h"
 
@@ -24,4 +24,4 @@ typedef void (*ClownCD_CueCallback)(void *user_data, const char *filename, Clown
 void ClownCD_CueParse(ClownCD_File *file, ClownCD_CueCallback callback, const void *user_data);
 cc_bool ClownCD_CueGetTrackIndexInfo(ClownCD_File *file, unsigned int track, unsigned int index, ClownCD_CueCallback callback, const void *user_data);
 
-#endif /* CUE_H */
+#endif /* CLOWNCD_CUE_H */
