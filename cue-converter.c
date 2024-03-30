@@ -12,7 +12,7 @@ typedef struct State
 	char *track_filename;
 } State;
 
-static void* FileOpenCallback(const char* const filename, const int mode)
+static void* FileOpenCallback(const char* const filename, const ClownCD_FileMode mode)
 {
 	static const char* const to_standard[] = {"rb", "wb"};
 
@@ -39,7 +39,7 @@ static long FileTellCallback(void* const stream)
 	return ftell((FILE*)stream);
 }
 
-static int FileSeekCallback(void* const stream, const long position, const int origin)
+static int FileSeekCallback(void* const stream, const long position, const ClownCD_FileOrigin origin)
 {
 	static const int to_standard[] = {SEEK_SET, SEEK_CUR, SEEK_END};
 

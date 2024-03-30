@@ -2,7 +2,7 @@
 
 #include <assert.h>
 
-void ClownCD_FileOpen(ClownCD_File* const file, const char* const filename, const int mode)
+void ClownCD_FileOpen(ClownCD_File* const file, const char* const filename, const ClownCD_FileMode mode)
 {
 	file->stream = file->functions->open(filename, mode);
 }
@@ -27,7 +27,7 @@ long ClownCD_FileTell(ClownCD_File* const file)
 	return file->functions->tell(file->stream);
 }
 
-int ClownCD_FileSeek(ClownCD_File* const file, const long position, const int origin)
+int ClownCD_FileSeek(ClownCD_File* const file, const long position, const ClownCD_FileOrigin origin)
 {
 	return file->functions->seek(file->stream, position, origin);
 }
