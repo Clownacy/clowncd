@@ -45,7 +45,7 @@ long ClownCD_FileTell(ClownCD_File* const file);
 int ClownCD_FileSeek(ClownCD_File* const file, long position, ClownCD_FileOrigin origin);
 
 void ClownCD_WriteMemory(unsigned char *buffer, unsigned long value, unsigned int total_bytes, cc_bool big_endian);
-void ClownCD_WriteFile(ClownCD_File *file, unsigned long value, unsigned int total_bytes, cc_bool big_endian);
+unsigned long ClownCD_WriteFile(ClownCD_File *file, unsigned long value, unsigned int total_bytes, cc_bool big_endian);
 unsigned long ClownCD_ReadMemory(const unsigned char *buffer, unsigned int total_bytes, cc_bool big_endian);
 unsigned long ClownCD_ReadFile(ClownCD_File *file, unsigned int total_bytes, cc_bool big_endian);
 

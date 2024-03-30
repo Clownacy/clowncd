@@ -129,13 +129,21 @@ void ClownCD_WriteMemory(unsigned char* const buffer, const unsigned long value,
 	}
 }
 
-void ClownCD_WriteFile(ClownCD_File* const file, const unsigned long value, const unsigned int total_bytes, const cc_bool big_endian)
+unsigned long ClownCD_WriteFile(ClownCD_File* const file, const unsigned long value, const unsigned int total_bytes, const cc_bool big_endian)
 {
 	unsigned char buffer[4];
 
-	assert(total_bytes <= 4);
+	if (total_bytes > CC_COUNT_OF(buffer))
+		return CLOWNCD_EOF;
+
+	if (total_bytes > sizeof(unsigned long) || (total_bytes < sizeof(unsigned long) && value > (1UL << total_bytes * 8) - 1))
+		return CLOWNCD_EOF;
+
 	ClownCD_WriteMemory(buffer, value, total_bytes, big_endian);
-	ClownCD_FileWrite(buffer, total_bytes, 1, file);
+	if (ClownCD_FileWrite(buffer, total_bytes, 1, file) != 1)
+		return CLOWNCD_EOF;
+
+	return value;
 }
 
 unsigned long ClownCD_ReadMemory(const unsigned char* const buffer, const unsigned int total_bytes, const cc_bool big_endian)
@@ -158,8 +166,11 @@ unsigned long ClownCD_ReadFile(ClownCD_File* const file, const unsigned int tota
 {
 	unsigned char buffer[4];
 
-	assert(total_bytes <= 4);
+	if (total_bytes > CC_COUNT_OF(buffer))
+		return CLOWNCD_EOF;
+
 	if (ClownCD_FileRead(buffer, total_bytes, 1, file) != 1)
 		return CLOWNCD_EOF;
+
 	return ClownCD_ReadMemory(buffer, total_bytes, big_endian);
 }
