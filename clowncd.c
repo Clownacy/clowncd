@@ -11,6 +11,24 @@
 
 #define CLOWNCD_CRC_POLYNOMIAL 0xD8018001
 
+static cc_bool ClownCD_IsSectorValid(ClownCD* const disc)
+{
+	return !(disc->track.current_sector < disc->track.starting_sector || disc->track.current_sector >= disc->track.ending_sector);
+}
+
+static cc_bool ClownCD_SeekSectorInternal(ClownCD* const disc, const unsigned long sector)
+{
+	disc->track.current_sector = disc->track.starting_sector + sector;
+
+	if (!ClownCD_IsSectorValid(disc))
+		return cc_false;
+
+	if (ClownCD_FileSeek(&disc->track.file, disc->track.current_sector * CLOWNCD_SECTOR_RAW_SIZE, CLOWNCD_SEEK_SET) != 0)
+		return cc_false;
+
+	return cc_true;
+}
+
 cc_bool ClownCD_OpenFromFile(ClownCD* const disc, const char* const file_path)
 {
 	disc->filename = ClownCD_DuplicateString(file_path);
@@ -20,6 +38,12 @@ cc_bool ClownCD_OpenFromFile(ClownCD* const disc, const char* const file_path)
 
 	disc->file = ClownCD_FileOpen(file_path, CLOWNCD_RB);
 	disc->track.file = ClownCD_FileOpenBlank();
+	disc->track.file_type = CLOWNCD_CUE_FILE_INVALID;
+	disc->track.type = CLOWNCD_CUE_TRACK_INVALID;
+	disc->track.remaining_frames = 0;
+	disc->track.starting_sector = 0;
+	disc->track.ending_sector = 0;
+	disc->track.current_sector = 0;
 
 	return ClownCD_FileIsOpen(&disc->file);
 }
@@ -60,6 +84,7 @@ static void ClownCD_SeekTrackCallback(
 		disc->track.type = track_type;
 		disc->track.starting_sector = frame;
 		disc->track.ending_sector = ClownCD_CueGetTrackEndingFrame(&disc->file, filename, track, frame);
+		disc->track.remaining_frames = (size_t)(disc->track.ending_sector - disc->track.starting_sector) * (2352 / 4);
 	}
 }
 
@@ -68,7 +93,7 @@ ClownCD_CueTrackType ClownCD_SeekTrackIndex(ClownCD* const disc, const unsigned 
 	if (!ClownCD_CueGetTrackIndexInfo(&disc->file, track, index, ClownCD_SeekTrackCallback, disc))
 		return CLOWNCD_CUE_TRACK_INVALID;
 
-	if (!ClownCD_SeekSector(disc, disc->track.starting_sector))
+	if (!ClownCD_SeekSectorInternal(disc, 0))
 		return CLOWNCD_CUE_TRACK_INVALID;
 
 	return disc->track.type;
@@ -76,23 +101,17 @@ ClownCD_CueTrackType ClownCD_SeekTrackIndex(ClownCD* const disc, const unsigned 
 
 cc_bool ClownCD_SeekSector(ClownCD* const disc, const unsigned long sector)
 {
-	if (disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2048 && disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2352)
+	if (/*disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2048 && */disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2352)
 		return cc_false;
 
-	if (sector < disc->track.starting_sector || sector >= disc->track.ending_sector)
-		return cc_false;
-
-	if (ClownCD_FileSeek(&disc->track.file, (sector - disc->track.starting_sector) * CLOWNCD_SECTOR_RAW_SIZE, CLOWNCD_SEEK_SET) != 0)
-		return cc_false;
-
-	return cc_true;
+	return ClownCD_SeekSectorInternal(disc, sector);
 }
 
 static cc_bool ClownCD_ReadSectorAt(ClownCD* const disc, const unsigned long sector_index, unsigned char* const buffer, cc_bool (*callback)(ClownCD *disc, unsigned char *buffer))
 {
 	cc_bool success = cc_false;
 
-	if (disc->track.type == CLOWNCD_CUE_TRACK_MODE1_2048 || disc->track.type == CLOWNCD_CUE_TRACK_MODE1_2352)
+	if (/*disc->track.type == CLOWNCD_CUE_TRACK_MODE1_2048 || */disc->track.type == CLOWNCD_CUE_TRACK_MODE1_2352)
 	{
 		const long position = ClownCD_FileTell(&disc->track.file);
 
@@ -112,6 +131,11 @@ static cc_bool ClownCD_ReadSectorAt(ClownCD* const disc, const unsigned long sec
 
 cc_bool ClownCD_ReadSectorRaw(ClownCD* const disc, unsigned char* const buffer)
 {
+	if (!ClownCD_IsSectorValid(disc))
+		return cc_false;
+
+	++disc->track.current_sector;
+
 	return ClownCD_FileRead(buffer, CLOWNCD_SECTOR_RAW_SIZE, 1, &disc->track.file) == 1;
 }
 
@@ -122,10 +146,21 @@ cc_bool ClownCD_ReadSectorAtRaw(ClownCD* const disc, const unsigned long sector_
 
 cc_bool ClownCD_ReadSectorData(ClownCD* const disc, unsigned char* const buffer)
 {
+	if (!ClownCD_IsSectorValid(disc))
+		return cc_false;
+
+	++disc->track.current_sector;
+
 	if (ClownCD_FileSeek(&disc->track.file, CLOWNCD_SECTOR_HEADER_SIZE, CLOWNCD_SEEK_CUR) != 0)
 		return cc_false;
 
-	return ClownCD_FileRead(buffer, CLOWNCD_SECTOR_DATA_SIZE, 1, &disc->track.file) == 1;
+	if (ClownCD_FileRead(buffer, CLOWNCD_SECTOR_DATA_SIZE, 1, &disc->track.file) != 1)
+		return cc_false;
+
+	if (ClownCD_FileSeek(&disc->track.file, CLOWNCD_SECTOR_RAW_SIZE - (CLOWNCD_SECTOR_HEADER_SIZE + CLOWNCD_SECTOR_DATA_SIZE), CLOWNCD_SEEK_CUR) != 0)
+		return cc_false;
+
+	return cc_true;
 }
 
 cc_bool ClownCD_ReadSectorAtData(ClownCD* const disc, const unsigned long sector_index, unsigned char* const buffer)
@@ -135,20 +170,24 @@ cc_bool ClownCD_ReadSectorAtData(ClownCD* const disc, const unsigned long sector
 
 size_t ClownCD_ReadAudioFrames(ClownCD* const disc, short* const buffer, const size_t total_frames)
 {
+	const size_t frames_to_do = CC_MIN(disc->track.remaining_frames, total_frames);
+
+	short *buffer_pointer = buffer;
 	size_t i;
 
 	if (disc->track.type != CLOWNCD_CUE_TRACK_AUDIO)
 		return 0;
 
-	for (i = 0; i < total_frames; ++i)
+	for (i = 0; i < frames_to_do * 2; i += 2)
 	{
-		const signed long sample = ClownCD_ReadS16LE(&disc->track.file);
+		*buffer_pointer++ = ClownCD_ReadS16LE(&disc->track.file);
+		*buffer_pointer++ = ClownCD_ReadS16LE(&disc->track.file);
 
 		if (disc->track.file.eof)
 			break;
-
-		buffer[i] = sample;
 	}
+
+	disc->track.remaining_frames -= frames_to_do;
 
 	return i;
 }

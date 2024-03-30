@@ -150,7 +150,7 @@ size_t ClownCD_FileSize(ClownCD_File* const file)
 	return file_size;
 }
 
-void ClownCD_WriteMemory(unsigned char* const buffer, const unsigned long value, const unsigned int total_bytes, const cc_bool big_endian)
+void ClownCD_WriteUintMemory(unsigned char* const buffer, const unsigned long value, const unsigned int total_bytes, const cc_bool big_endian)
 {
 	unsigned long value_shifter = value;
 	unsigned int i;
@@ -162,7 +162,7 @@ void ClownCD_WriteMemory(unsigned char* const buffer, const unsigned long value,
 	}
 }
 
-unsigned long ClownCD_WriteFile(ClownCD_File* const file, const unsigned long value, const unsigned int total_bytes, const cc_bool big_endian)
+unsigned long ClownCD_WriteUintFile(ClownCD_File* const file, const unsigned long value, const unsigned int total_bytes, const cc_bool big_endian)
 {
 	unsigned char buffer[4];
 
@@ -172,11 +172,38 @@ unsigned long ClownCD_WriteFile(ClownCD_File* const file, const unsigned long va
 	if (total_bytes > sizeof(unsigned long) || (total_bytes < sizeof(unsigned long) && value > (1UL << total_bytes * 8) - 1))
 		return 0;
 
-	ClownCD_WriteMemory(buffer, value, total_bytes, big_endian);
+	ClownCD_WriteUintMemory(buffer, value, total_bytes, big_endian);
 	if (ClownCD_FileWrite(buffer, total_bytes, 1, file) != 1)
 		return 0;
 
 	return value;
+}
+
+static unsigned long ClownCD_SignedLongToUnsignedLong(const signed long value, const unsigned int total_bytes)
+{
+	if (value < 0)
+	{
+		const unsigned long sign_bit_mask = 1UL << (total_bytes * 8 - 1);
+		const unsigned long size_mask = sign_bit_mask | (sign_bit_mask - 1);
+
+		const unsigned long absolute_value = -value;
+
+		return (0UL - absolute_value) & size_mask;
+	}
+	else
+	{
+		return value;
+	}
+}
+
+void ClownCD_WriteSintMemory(unsigned char* const buffer, const unsigned long value, const unsigned int total_bytes, const cc_bool big_endian)
+{
+	ClownCD_WriteUintMemory(buffer, ClownCD_SignedLongToUnsignedLong(value, total_bytes), total_bytes, big_endian);
+}
+
+void ClownCD_WriteSintFile(ClownCD_File* const file, const unsigned long value, const unsigned int total_bytes, const cc_bool big_endian)
+{
+	ClownCD_WriteUintFile(file, ClownCD_SignedLongToUnsignedLong(value, total_bytes), total_bytes, big_endian);
 }
 
 unsigned long ClownCD_ReadUintMemory(const unsigned char* const buffer, const unsigned int total_bytes, const cc_bool big_endian)

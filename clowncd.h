@@ -17,7 +17,8 @@ typedef struct ClownCD
 		ClownCD_File file;
 		ClownCD_CueFileType file_type;
 		ClownCD_CueTrackType type;
-		unsigned long starting_sector, ending_sector;
+		size_t remaining_frames;
+		unsigned long starting_sector, ending_sector, current_sector;
 	} track;
 } ClownCD;
 
