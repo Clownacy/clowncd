@@ -1,13 +1,13 @@
 #ifndef CLOWNCD_H
 #define CLOWNCD_H
 
-#include <stdio.h>
-
 #include "clowncommon/clowncommon.h"
+
+#include "file-io.h"
 
 typedef struct ClownCD
 {
-	FILE *file;
+	ClownCD_File file;
 } ClownCD;
 
 cc_bool ClownCD_OpenFromFile(ClownCD *disc, const char *file_path);

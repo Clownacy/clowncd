@@ -1,7 +1,5 @@
 #include "clowncd.h"
 
-#include "file-io.h"
-
 #define SECTOR_RAW_SIZE 2352
 #define SECTOR_HEADER_SIZE 0x10
 #define SECTOR_DATA_SIZE 0x800
@@ -10,26 +8,26 @@
 
 cc_bool ClownCD_OpenFromFile(ClownCD* const disc, const char* const file_path)
 {
-	disc->file = fopen(file_path, "rb");
+	disc->file = ClownCD_FileOpen(file_path, CLOWNCD_MODE_READ);
 
-	return disc->file != NULL;
+	return disc->file.stream != NULL;
 }
 
 void ClownCD_Close(ClownCD* const disc)
 {
-	fclose(disc->file);
+	ClownCD_FileClose(&disc->file);
 }
 
 void ClownCD_ReadSectorRaw(ClownCD* const disc, const unsigned long sector_index, unsigned char* const buffer)
 {
-	fseek(disc->file, sector_index * SECTOR_RAW_SIZE, SEEK_SET);
-	fread(buffer, SECTOR_RAW_SIZE, 1, disc->file);
+	ClownCD_FileSeek(&disc->file, sector_index * SECTOR_RAW_SIZE, CLOWNCD_SEEK_SET);
+	ClownCD_FileRead(buffer, SECTOR_RAW_SIZE, 1, &disc->file);
 }
 
 void ClownCD_ReadSectorData(ClownCD* const disc, const unsigned long sector_index, unsigned char* const buffer)
 {
-	fseek(disc->file, sector_index * SECTOR_RAW_SIZE + SECTOR_HEADER_SIZE, SEEK_SET);
-	fread(buffer, SECTOR_DATA_SIZE, 1, disc->file);
+	ClownCD_FileSeek(&disc->file, sector_index * SECTOR_RAW_SIZE + SECTOR_HEADER_SIZE, CLOWNCD_SEEK_SET);
+	ClownCD_FileRead(buffer, SECTOR_DATA_SIZE, 1, &disc->file);
 }
 
 unsigned long ClownCD_CalculateSectorCRC(const unsigned char* const buffer)
