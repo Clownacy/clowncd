@@ -12,7 +12,7 @@ typedef struct State
 	char *track_filename;
 } State;
 
-static void GetTrackIndexFrame_Callback(void* const user_data, const char* const filename, const Cue_FileType file_type, const unsigned int track, const Cue_TrackType track_type, const unsigned int index, const unsigned long frame)
+static void GetTrackIndexFrame_Callback(void* const user_data, const char* const filename, const ClownCD_CueFileType file_type, const unsigned int track, const ClownCD_CueTrackType track_type, const unsigned int index, const unsigned long frame)
 {
 	unsigned long* const frame_pointer = (unsigned long*)user_data;
 
@@ -28,7 +28,7 @@ static void GetTrackIndexFrame_Callback(void* const user_data, const char* const
 static unsigned long GetTrackIndexFrame(ClownCD_File* const file, const unsigned int track, const unsigned int index)
 {
 	unsigned long frame = 0xFFFFFFFF;
-	Cue_GetTrackIndexInfo(file, track, index, GetTrackIndexFrame_Callback, &frame);
+	ClownCD_CueGetTrackIndexInfo(file, track, index, GetTrackIndexFrame_Callback, &frame);
 	return frame;
 }
 
@@ -144,7 +144,7 @@ static char* DuplicateString(const char* const string)
 	return buffer;
 }
 
-static void Callback(void* const user_data, const char* const filename, const Cue_FileType file_type, const unsigned int track, const Cue_TrackType track_type, const unsigned int index, const unsigned long frame)
+static void Callback(void* const user_data, const char* const filename, const ClownCD_CueFileType file_type, const unsigned int track, const ClownCD_CueTrackType track_type, const unsigned int index, const unsigned long frame)
 {
 	State* const state = (State*)user_data;
 	const unsigned long ending_frame = GetTrackEndingFrame(state, filename, track);
@@ -167,19 +167,19 @@ static void Callback(void* const user_data, const char* const filename, const Cu
 			fputs("All tracks must use the same file.\n", stderr);
 	}
 
-	if (file_type != CUE_FILE_TYPE_BINARY)
+	if (file_type != CLOWNCD_CUE_FILE_BINARY)
 		fputs("Only FILE type BINARY is supported.", stderr);
 
 	switch (track_type)
 	{
-		case CUE_TRACK_TYPE_MODE1_2048:
+		case CLOWNCD_CUE_TRACK_MODE1_2048:
 			fputs("MODE1/2048 tracks are not supported: use MODE1/2352 instead.", stderr);
 			/* Fallthrough */
-		case CUE_TRACK_TYPE_MODE1_2352:
+		case CLOWNCD_CUE_TRACK_MODE1_2352:
 			type = 0;
 			break;
 
-		case CUE_TRACK_TYPE_AUDIO:
+		case CLOWNCD_CUE_TRACK_AUDIO:
 			type = 1;
 			break;
 
@@ -232,7 +232,7 @@ int main(const int argc, char** const argv)
 				ClownCD_Write16BE(&header_file, 0); /* Total tracks (will be filled-in later). */
 
 				for (i = 0; ; ++i)
-					if (!Cue_GetTrackIndexInfo(&cue_file, i + 1, 1, Callback, &state))
+					if (!ClownCD_CueGetTrackIndexInfo(&cue_file, i + 1, 1, Callback, &state))
 						break;
 
 				ClownCD_FileSeek(&header_file, 8 + 2, CLOWNCD_SEEK_SET);

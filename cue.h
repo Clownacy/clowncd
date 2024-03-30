@@ -5,23 +5,23 @@
 
 #include "file-io.h"
 
-typedef enum Cue_FileType
+typedef enum ClownCD_CueFileType
 {
-	CUE_FILE_TYPE_INVALID,
-	CUE_FILE_TYPE_BINARY
-} Cue_FileType;
+	CLOWNCD_CUE_FILE_INVALID,
+	CLOWNCD_CUE_FILE_BINARY
+} ClownCD_CueFileType;
 
-typedef enum Cue_TrackType
+typedef enum ClownCD_CueTrackType
 {
-	CUE_TRACK_TYPE_INVALID,
-	CUE_TRACK_TYPE_MODE1_2048,
-	CUE_TRACK_TYPE_MODE1_2352,
-	CUE_TRACK_TYPE_AUDIO
-} Cue_TrackType;
+	CLOWNCD_CUE_TRACK_INVALID,
+	CLOWNCD_CUE_TRACK_MODE1_2048,
+	CLOWNCD_CUE_TRACK_MODE1_2352,
+	CLOWNCD_CUE_TRACK_AUDIO
+} ClownCD_CueTrackType;
 
-typedef void (*Cue_Callback)(void *user_data, const char *filename, Cue_FileType file_type, unsigned int track, Cue_TrackType track_type, unsigned int index, unsigned long frame);
+typedef void (*ClownCD_CueCallback)(void *user_data, const char *filename, ClownCD_CueFileType file_type, unsigned int track, ClownCD_CueTrackType track_type, unsigned int index, unsigned long frame);
 
-void Cue_Parse(ClownCD_File *file, Cue_Callback callback, const void *user_data);
-cc_bool Cue_GetTrackIndexInfo(ClownCD_File *file, unsigned int track, unsigned int index, Cue_Callback callback, const void *user_data);
+void ClownCD_CueParse(ClownCD_File *file, ClownCD_CueCallback callback, const void *user_data);
+cc_bool ClownCD_CueGetTrackIndexInfo(ClownCD_File *file, unsigned int track, unsigned int index, ClownCD_CueCallback callback, const void *user_data);
 
 #endif /* CUE_H */

@@ -4,50 +4,50 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef enum Cue_CommandType
+typedef enum ClownCD_CueCommandType
 {
-	CUE_COMMAND_TYPE_INVALID,
-	CUE_COMMAND_TYPE_FILE,
-	CUE_COMMAND_TYPE_TRACK,
-	CUE_COMMAND_TYPE_INDEX,
-	CUE_COMMAND_TYPE_PREGAP
-} Cue_CommandType;
+	CLOWNCD_CUE_COMMAND_INVALID,
+	CLOWNCD_CUE_COMMAND_FILE,
+	CLOWNCD_CUE_COMMAND_TRACK,
+	CLOWNCD_CUE_COMMAND_INDEX,
+	CLOWNCD_CUE_COMMAND_PREGAP
+} ClownCD_CueCommandType;
 
-static Cue_CommandType Cue_CommandTypeFromString(const char* const string)
+static ClownCD_CueCommandType ClownCD_CueCommandTypeFromString(const char* const string)
 {
 	if (strcmp(string, "FILE") == 0)
-		return CUE_COMMAND_TYPE_FILE;
+		return CLOWNCD_CUE_COMMAND_FILE;
 	else if (strcmp(string, "TRACK") == 0)
-		return CUE_COMMAND_TYPE_TRACK;
+		return CLOWNCD_CUE_COMMAND_TRACK;
 	else if (strcmp(string, "INDEX") == 0)
-		return CUE_COMMAND_TYPE_INDEX;
+		return CLOWNCD_CUE_COMMAND_INDEX;
 	else if (strcmp(string, "PREGAP") == 0)
-		return CUE_COMMAND_TYPE_PREGAP;
+		return CLOWNCD_CUE_COMMAND_PREGAP;
 	else
-		return CUE_COMMAND_TYPE_INVALID;	
+		return CLOWNCD_CUE_COMMAND_INVALID;
 }
 
-static Cue_FileType Cue_FileTypeFromString(const char* const string)
+static ClownCD_CueFileType ClownCD_CueFileTypeFromString(const char* const string)
 {
 	if (strcmp(string, "BINARY") == 0)
-		return CUE_FILE_TYPE_BINARY;
+		return CLOWNCD_CUE_FILE_BINARY;
 	else
-		return CUE_FILE_TYPE_INVALID;
+		return CLOWNCD_CUE_FILE_INVALID;
 }
 
-static Cue_TrackType Cue_TrackTypeFromString(const char* const string)
+static ClownCD_CueTrackType ClownCD_CueTrackTypeFromString(const char* const string)
 {
 	if (strcmp(string, "MODE1/2048") == 0)
-		return CUE_TRACK_TYPE_MODE1_2048;
+		return CLOWNCD_CUE_TRACK_MODE1_2048;
 	else if (strcmp(string, "MODE1/2352") == 0)
-		return CUE_TRACK_TYPE_MODE1_2352;
+		return CLOWNCD_CUE_TRACK_MODE1_2352;
 	else if (strcmp(string, "AUDIO") == 0)
-		return CUE_TRACK_TYPE_AUDIO;
+		return CLOWNCD_CUE_TRACK_AUDIO;
 	else
-		return CUE_TRACK_TYPE_INVALID;
+		return CLOWNCD_CUE_TRACK_INVALID;
 }
 
-static size_t Cue_GetLineLength(ClownCD_File* const file)
+static size_t ClownCD_CueGetLineLength(ClownCD_File* const file)
 {
 	const long line_file_position = ClownCD_FileTell(file);
 	size_t line_length = 0;
@@ -70,9 +70,9 @@ static size_t Cue_GetLineLength(ClownCD_File* const file)
 	return line_length;
 }
 
-static char* Cue_ReadLine(ClownCD_File* const file)
+static char* ClownCD_CueReadLine(ClownCD_File* const file)
 {
-	const size_t line_length = Cue_GetLineLength(file);
+	const size_t line_length = ClownCD_CueGetLineLength(file);
 	char *line = (char*)malloc(line_length + 1);
 
 	if (line != NULL)
@@ -91,20 +91,20 @@ static char* Cue_ReadLine(ClownCD_File* const file)
 	return line;
 }
 
-void Cue_Parse(ClownCD_File* const file, const Cue_Callback callback, const void* const user_data)
+void ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback callback, const void* const user_data)
 {
 	const long starting_file_position = ClownCD_FileTell(file);
 
 	char *file_name = NULL;
-	Cue_FileType file_type = CUE_FILE_TYPE_INVALID;
+	ClownCD_CueFileType file_type = CLOWNCD_CUE_FILE_INVALID;
 	unsigned int track = 0xFFFF;
-	Cue_TrackType track_type = CUE_TRACK_TYPE_INVALID;
+	ClownCD_CueTrackType track_type = CLOWNCD_CUE_TRACK_INVALID;
 
 	ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_SET);
 
 	for (;;)
 	{
-		char* const line = Cue_ReadLine(file);
+		char* const line = ClownCD_CueReadLine(file);
 		char *line_pointer = line;
 
 		int advance;
@@ -117,9 +117,9 @@ void Cue_Parse(ClownCD_File* const file, const Cue_Callback callback, const void
 		{
 			line_pointer += advance;
 
-			switch (Cue_CommandTypeFromString(command_string))
+			switch (ClownCD_CueCommandTypeFromString(command_string))
 			{
-				case CUE_COMMAND_TYPE_FILE:
+				case CLOWNCD_CUE_COMMAND_FILE:
 				{
 					int file_name_length;
 
@@ -141,27 +141,27 @@ void Cue_Parse(ClownCD_File* const file, const Cue_Callback callback, const void
 						if (sscanf(line_pointer, "%[^\"]\" %6s%n", file_name, file_type_string, &advance) < 2)
 							fputs("Could not read FILE parameters.\n", stderr);
 						else
-							file_type = Cue_FileTypeFromString(file_type_string);
+							file_type = ClownCD_CueFileTypeFromString(file_type_string);
 						line_pointer += advance;
 					}
 
 					break;
 				}
 
-				case CUE_COMMAND_TYPE_TRACK:
+				case CLOWNCD_CUE_COMMAND_TRACK:
 				{
 					char track_type_string[10 + 1];
 
 					if (sscanf(line_pointer, "%u %10s%n", &track, track_type_string, &advance) < 2)
 						fputs("Could not read TRACK parameters.\n", stderr);
 					else
-						track_type = Cue_TrackTypeFromString(track_type_string);
+						track_type = ClownCD_CueTrackTypeFromString(track_type_string);
 					line_pointer += advance;
 
 					break;
 				}
 
-				case CUE_COMMAND_TYPE_INDEX:
+				case CLOWNCD_CUE_COMMAND_INDEX:
 				{
 					unsigned int index, minute, second, frame;
 
@@ -169,11 +169,11 @@ void Cue_Parse(ClownCD_File* const file, const Cue_Callback callback, const void
 						fputs("Could not read INDEX parameters.\n", stderr);
 					else if (file_name == NULL)
 						fputs("INDEX encountered with no filename specified.\n", stderr);
-					else if (file_type == CUE_FILE_TYPE_INVALID)
+					else if (file_type == CLOWNCD_CUE_FILE_INVALID)
 						fputs("INDEX encountered with no file type specified.\n", stderr);
 					else if (track == 0xFFFF)
 						fputs("INDEX encountered with no track specified.\n", stderr);
-					else if (track_type == CUE_TRACK_TYPE_INVALID)
+					else if (track_type == CLOWNCD_CUE_TRACK_INVALID)
 						fputs("INDEX encountered with no track type specified.\n", stderr);
 					else
 						callback((void*)user_data, file_name, file_type, track, track_type, index, ((unsigned long)minute * 60 + second) * 75 + frame);
@@ -182,7 +182,7 @@ void Cue_Parse(ClownCD_File* const file, const Cue_Callback callback, const void
 					break;
 				}
 
-				case CUE_COMMAND_TYPE_PREGAP:
+				case CLOWNCD_CUE_COMMAND_PREGAP:
 					/* We do not care about this. */
 					break;
 
@@ -199,17 +199,17 @@ void Cue_Parse(ClownCD_File* const file, const Cue_Callback callback, const void
 	ClownCD_FileSeek(file, starting_file_position, CLOWNCD_SEEK_SET);
 }
 
-typedef struct Cue_GetTrackIndexInfo_State
+typedef struct ClownCD_CueGetTrackIndexInfo_State
 {
 	unsigned int track, index;
-	Cue_Callback callback;
+	ClownCD_CueCallback callback;
 	void *user_data;
 	cc_bool found;
-} Cue_GetTrackIndexInfo_State;
+} ClownCD_CueGetTrackIndexInfo_State;
 
-static void Cue_GetTrackIndexInfo_Callback(void* const user_data, const char* const filename, const Cue_FileType file_type, const unsigned int track, const Cue_TrackType track_type, const unsigned int index, const unsigned long frame)
+static void ClownCD_CueGetTrackIndexInfo_Callback(void* const user_data, const char* const filename, const ClownCD_CueFileType file_type, const unsigned int track, const ClownCD_CueTrackType track_type, const unsigned int index, const unsigned long frame)
 {
-	Cue_GetTrackIndexInfo_State* const state = (Cue_GetTrackIndexInfo_State*)user_data;
+	ClownCD_CueGetTrackIndexInfo_State* const state = (ClownCD_CueGetTrackIndexInfo_State*)user_data;
 
 	if (state->track == track && state->index == index)
 	{
@@ -218,9 +218,9 @@ static void Cue_GetTrackIndexInfo_Callback(void* const user_data, const char* co
 	}
 }
 
-cc_bool Cue_GetTrackIndexInfo(ClownCD_File* const file, const unsigned int track, const unsigned int index, const Cue_Callback callback, const void* const user_data)
+cc_bool ClownCD_CueGetTrackIndexInfo(ClownCD_File* const file, const unsigned int track, const unsigned int index, const ClownCD_CueCallback callback, const void* const user_data)
 {
-	Cue_GetTrackIndexInfo_State state;
+	ClownCD_CueGetTrackIndexInfo_State state;
 
 	state.track = track;
 	state.index = index;
@@ -228,7 +228,7 @@ cc_bool Cue_GetTrackIndexInfo(ClownCD_File* const file, const unsigned int track
 	state.user_data = (void*)user_data;
 	state.found = cc_false;
 
-	Cue_Parse(file, Cue_GetTrackIndexInfo_Callback, &state);
+	ClownCD_CueParse(file, ClownCD_CueGetTrackIndexInfo_Callback, &state);
 
 	return state.found;
 }
