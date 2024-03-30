@@ -14,9 +14,23 @@ typedef struct State
 
 static void* FileOpenCallback(const char* const filename, const ClownCD_FileMode mode)
 {
-	static const char* const to_standard[] = {"rb", "wb"};
+	const char *standard_mode;
 
-	return fopen(filename, to_standard[mode]);
+	switch (mode)
+	{
+		case CLOWNCD_MODE_READ:
+			standard_mode = "rb";
+			break;
+
+		case CLOWNCD_MODE_WRITE:
+			standard_mode = "wb";
+			break;
+
+		default:
+			return NULL;
+	}
+
+	return fopen(filename, standard_mode);
 }
 
 static int FileCloseCallback(void* const stream)
@@ -41,9 +55,27 @@ static long FileTellCallback(void* const stream)
 
 static int FileSeekCallback(void* const stream, const long position, const ClownCD_FileOrigin origin)
 {
-	static const int to_standard[] = {SEEK_SET, SEEK_CUR, SEEK_END};
+	int standard_origin;
 
-	return fseek((FILE*)stream, position, to_standard[origin]);
+	switch (origin)
+	{
+		case CLOWNCD_SEEK_SET:
+			standard_origin = SEEK_SET;
+			break;
+
+		case CLOWNCD_SEEK_CUR:
+			standard_origin = SEEK_CUR;
+			break;
+
+		case CLOWNCD_SEEK_END:
+			standard_origin = SEEK_END;
+			break;
+
+		default:
+			return 1;
+	}
+
+	return fseek((FILE*)stream, position, standard_origin);
 }
 
 static ClownCD_File FileOpen(const char* const filename, const char* const mode)
