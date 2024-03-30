@@ -20,7 +20,7 @@ int main(const int argc, const char** const argv)
 	{
 		FILE *file;
 
-		if (!ClownCD_SeekTrackIndex(&cd, 1, 1))
+		if (ClownCD_SeekTrackIndex(&cd, 1, 1) == CLOWNCD_CUE_TRACK_INVALID)
 			fputs("Couldn't seek to track 1 index 1.\n", stderr);
 
 		if (!ClownCD_ReadSectorAtRaw(&cd, 0, sector_buffer))

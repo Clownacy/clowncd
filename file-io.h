@@ -48,36 +48,52 @@ size_t ClownCD_FileSize(ClownCD_File *file);
 
 void ClownCD_WriteMemory(unsigned char *buffer, unsigned long value, unsigned int total_bytes, cc_bool big_endian);
 unsigned long ClownCD_WriteFile(ClownCD_File *file, unsigned long value, unsigned int total_bytes, cc_bool big_endian);
-unsigned long ClownCD_ReadMemory(const unsigned char *buffer, unsigned int total_bytes, cc_bool big_endian);
-unsigned long ClownCD_ReadFile(ClownCD_File *file, unsigned int total_bytes, cc_bool big_endian);
+unsigned long ClownCD_ReadUintMemory(const unsigned char *buffer, unsigned int total_bytes, cc_bool big_endian);
+unsigned long ClownCD_ReadUintFile(ClownCD_File *file, unsigned int total_bytes, cc_bool big_endian);
+signed long ClownCD_ReadSintMemory(const unsigned char *buffer, unsigned int total_bytes, cc_bool big_endian);
+signed long ClownCD_ReadSintFile(ClownCD_File *file, unsigned int total_bytes, cc_bool big_endian);
 
-#define ClownCD_Write16LEMemory(buffer, value) ClownCD_WriteMemory(buffer, value, 2, cc_false)
-#define ClownCD_Write32LEMemory(buffer, value) ClownCD_WriteMemory(buffer, value, 4, cc_false)
+#define ClownCD_WriteU16LEMemory(buffer, value) ClownCD_WriteMemory(buffer, value, 2, cc_false)
+#define ClownCD_WriteU32LEMemory(buffer, value) ClownCD_WriteMemory(buffer, value, 4, cc_false)
 
-#define ClownCD_Write16LE(file, value) ClownCD_WriteFile(file, value, 2, cc_false)
-#define ClownCD_Write32LE(file, value) ClownCD_WriteFile(file, value, 4, cc_false)
+#define ClownCD_WriteU16LE(file, value) ClownCD_WriteFile(file, value, 2, cc_false)
+#define ClownCD_WriteU32LE(file, value) ClownCD_WriteFile(file, value, 4, cc_false)
 
-#define ClownCD_Write16BEMemory(buffer, value) ClownCD_WriteMemory(buffer, value, 2, cc_true)
-#define ClownCD_Write32BEMemory(buffer, value) ClownCD_WriteMemory(buffer, value, 4, cc_true)
+#define ClownCD_WriteU16BEMemory(buffer, value) ClownCD_WriteMemory(buffer, value, 2, cc_true)
+#define ClownCD_WriteU32BEMemory(buffer, value) ClownCD_WriteMemory(buffer, value, 4, cc_true)
 
-#define ClownCD_Write16BE(file, value) ClownCD_WriteFile(file, value, 2, cc_true)
-#define ClownCD_Write32BE(file, value) ClownCD_WriteFile(file, value, 4, cc_true)
+#define ClownCD_WriteU16BE(file, value) ClownCD_WriteFile(file, value, 2, cc_true)
+#define ClownCD_WriteU32BE(file, value) ClownCD_WriteFile(file, value, 4, cc_true)
 
-#define ClownCD_Write8(file, value) ClownCD_WriteFile(file, value, 1, cc_true)
+#define ClownCD_WriteU8(file, value) ClownCD_WriteFile(file, value, 1, cc_true)
 
-#define ClownCD_Read16LEMemory(buffer) ClownCD_ReadMemory(buffer, 2, cc_false)
-#define ClownCD_Read32LEMemory(buffer) ClownCD_ReadMemory(buffer, 4, cc_false)
+#define ClownCD_ReadU16LEMemory(buffer) ClownCD_ReadUintMemory(buffer, 2, cc_false)
+#define ClownCD_ReadU32LEMemory(buffer) ClownCD_ReadUintMemory(buffer, 4, cc_false)
 
-#define ClownCD_Read16LE(file) ClownCD_ReadFile(file, 2, cc_false)
-#define ClownCD_Read32LE(file) ClownCD_ReadFile(file, 4, cc_false)
+#define ClownCD_ReadU16LE(file) ClownCD_ReadUintFile(file, 2, cc_false)
+#define ClownCD_ReadU32LE(file) ClownCD_ReadUintFile(file, 4, cc_false)
 
-#define ClownCD_Read16BEMemory(buffer) ClownCD_ReadMemory(buffer, 2, cc_true)
-#define ClownCD_Read32BEMemory(buffer) ClownCD_ReadMemory(buffer, 4, cc_true)
+#define ClownCD_ReadU16BEMemory(buffer) ClownCD_ReadUintMemory(buffer, 2, cc_true)
+#define ClownCD_ReadU32BEMemory(buffer) ClownCD_ReadUintMemory(buffer, 4, cc_true)
 
-#define ClownCD_Read16BE(file) ClownCD_ReadFile(file, 2, cc_true)
-#define ClownCD_Read32BE(file) ClownCD_ReadFile(file, 4, cc_true)
+#define ClownCD_ReadU16BE(file) ClownCD_ReadUintFile(file, 2, cc_true)
+#define ClownCD_ReadU32BE(file) ClownCD_ReadUintFile(file, 4, cc_true)
 
-#define ClownCD_Read8(file) ClownCD_ReadFile(file, 1, cc_true)
+#define ClownCD_ReadU8(file) ClownCD_ReadUintFile(file, 1, cc_true)
+
+#define ClownCD_ReadS16LEMemory(buffer) ClownCD_ReadSintMemory(buffer, 2, cc_false)
+#define ClownCD_ReadS32LEMemory(buffer) ClownCD_ReadSintMemory(buffer, 4, cc_false)
+
+#define ClownCD_ReadS16LE(file) ClownCD_ReadSintFile(file, 2, cc_false)
+#define ClownCD_ReadS32LE(file) ClownCD_ReadSintFile(file, 4, cc_false)
+
+#define ClownCD_ReadS16BEMemory(buffer) ClownCD_ReadSintMemory(buffer, 2, cc_true)
+#define ClownCD_ReadS32BEMemory(buffer) ClownCD_ReadSintMemory(buffer, 4, cc_true)
+
+#define ClownCD_ReadS16BE(file) ClownCD_ReadSintFile(file, 2, cc_true)
+#define ClownCD_ReadS32BE(file) ClownCD_ReadSintFile(file, 4, cc_true)
+
+#define ClownCD_ReadS8(file) ClownCD_ReadSintFile(file, 1, cc_true)
 
 char* ClownCD_GetFullFilePath(const char *directory, const char *filename);
 

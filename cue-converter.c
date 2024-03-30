@@ -59,9 +59,9 @@ static void Callback(void* const user_data, const char* const filename, const Cl
 			break;
 	}
 
-	ClownCD_Write16BE(state->header_file, type);
-	ClownCD_Write32BE(state->header_file, frame);
-	ClownCD_Write32BE(state->header_file, ending_frame == 0xFFFFFFFF ? 0xFFFFFFFF : ending_frame - frame);
+	ClownCD_WriteU16BE(state->header_file, type);
+	ClownCD_WriteU32BE(state->header_file, frame);
+	ClownCD_WriteU32BE(state->header_file, ending_frame == 0xFFFFFFFF ? 0xFFFFFFFF : ending_frame - frame);
 }
 
 int main(const int argc, char** const argv)
@@ -99,15 +99,15 @@ int main(const int argc, char** const argv)
 				state.track_filename = NULL;
 
 				ClownCD_FileWrite(identifier, sizeof(identifier), 1, &header_file); /* Identifier. */
-				ClownCD_Write16BE(&header_file, 0); /* Version. */
-				ClownCD_Write16BE(&header_file, 0); /* Total tracks (will be filled-in later). */
+				ClownCD_WriteU16BE(&header_file, 0); /* Version. */
+				ClownCD_WriteU16BE(&header_file, 0); /* Total tracks (will be filled-in later). */
 
 				for (i = 0; ; ++i)
 					if (!ClownCD_CueGetTrackIndexInfo(&cue_file, i + 1, 1, Callback, &state))
 						break;
 
 				ClownCD_FileSeek(&header_file, 8 + 2, CLOWNCD_SEEK_SET);
-				ClownCD_Write16BE(&header_file, i); /* Total tracks. */
+				ClownCD_WriteU16BE(&header_file, i); /* Total tracks. */
 
 				ClownCD_FileClose(&header_file);
 			}

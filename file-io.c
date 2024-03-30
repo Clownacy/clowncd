@@ -165,7 +165,7 @@ unsigned long ClownCD_WriteFile(ClownCD_File* const file, const unsigned long va
 	return value;
 }
 
-unsigned long ClownCD_ReadMemory(const unsigned char* const buffer, const unsigned int total_bytes, const cc_bool big_endian)
+unsigned long ClownCD_ReadUintMemory(const unsigned char* const buffer, const unsigned int total_bytes, const cc_bool big_endian)
 {
 	unsigned long value = 0;
 	unsigned int i;
@@ -179,7 +179,7 @@ unsigned long ClownCD_ReadMemory(const unsigned char* const buffer, const unsign
 	return value;
 }
 
-unsigned long ClownCD_ReadFile(ClownCD_File* const file, const unsigned int total_bytes, const cc_bool big_endian)
+unsigned long ClownCD_ReadUintFile(ClownCD_File* const file, const unsigned int total_bytes, const cc_bool big_endian)
 {
 	unsigned char buffer[4];
 
@@ -189,5 +189,29 @@ unsigned long ClownCD_ReadFile(ClownCD_File* const file, const unsigned int tota
 	if (ClownCD_FileRead(buffer, total_bytes, 1, file) != 1)
 		return CLOWNCD_EOF;
 
-	return ClownCD_ReadMemory(buffer, total_bytes, big_endian);
+	return ClownCD_ReadUintMemory(buffer, total_bytes, big_endian);
+}
+
+static signed long ClownCD_UnsignedLongToSignedLong(const unsigned long value, const unsigned int total_bytes)
+{
+	const unsigned long sign_bit_mask = 1UL << (total_bytes * 8 - 1);
+
+	if ((value & sign_bit_mask) != 0)
+	{
+		return -(signed long)(sign_bit_mask - (value & (sign_bit_mask - 1)));
+	}
+	else
+	{
+		return value;
+	}
+}
+
+signed long ClownCD_ReadSintMemory(const unsigned char* const buffer, const unsigned int total_bytes, const cc_bool big_endian)
+{
+	return ClownCD_UnsignedLongToSignedLong(ClownCD_ReadUintMemory(buffer, total_bytes, big_endian), total_bytes);
+}
+
+signed long ClownCD_ReadSintFile(ClownCD_File* const file, const unsigned int total_bytes, const cc_bool big_endian)
+{
+	return ClownCD_UnsignedLongToSignedLong(ClownCD_ReadUintFile(file, total_bytes, big_endian), total_bytes);
 }

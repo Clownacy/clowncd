@@ -63,19 +63,22 @@ static void ClownCD_SeekTrackCallback(
 	}
 }
 
-cc_bool ClownCD_SeekTrackIndex(ClownCD* const disc, const unsigned int track, const unsigned int index)
+ClownCD_CueTrackType ClownCD_SeekTrackIndex(ClownCD* const disc, const unsigned int track, const unsigned int index)
 {
 	if (!ClownCD_CueGetTrackIndexInfo(&disc->file, track, index, ClownCD_SeekTrackCallback, disc))
-		return cc_false;
+		return CLOWNCD_CUE_TRACK_INVALID;
 
 	if (!ClownCD_SeekSector(disc, disc->track.starting_sector))
-		return cc_false;
+		return CLOWNCD_CUE_TRACK_INVALID;
 
-	return cc_true;
+	return disc->track.type;
 }
 
 cc_bool ClownCD_SeekSector(ClownCD* const disc, const unsigned long sector)
 {
+	if (disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2048 && disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2352)
+		return cc_false;
+
 	if (sector < disc->track.starting_sector || sector >= disc->track.ending_sector)
 		return cc_false;
 
@@ -87,18 +90,21 @@ cc_bool ClownCD_SeekSector(ClownCD* const disc, const unsigned long sector)
 
 static cc_bool ClownCD_ReadSectorAt(ClownCD* const disc, const unsigned long sector_index, unsigned char* const buffer, cc_bool (*callback)(ClownCD *disc, unsigned char *buffer))
 {
-	const long position = ClownCD_FileTell(&disc->track.file);
-
 	cc_bool success = cc_false;
 
-	if (position != -1L)
+	if (disc->track.type == CLOWNCD_CUE_TRACK_MODE1_2048 || disc->track.type == CLOWNCD_CUE_TRACK_MODE1_2352)
 	{
-		if (ClownCD_SeekSector(disc, sector_index))
-			if (callback(disc, buffer))
-				success = cc_true;
+		const long position = ClownCD_FileTell(&disc->track.file);
 
-		if (ClownCD_FileSeek(&disc->track.file, position, CLOWNCD_SEEK_SET) != 0)
-			success = cc_false;
+		if (position != -1L)
+		{
+			if (ClownCD_SeekSector(disc, sector_index))
+				if (callback(disc, buffer))
+					success = cc_true;
+
+			if (ClownCD_FileSeek(&disc->track.file, position, CLOWNCD_SEEK_SET) != 0)
+				success = cc_false;
+		}
 	}
 
 	return success;
@@ -125,6 +131,26 @@ cc_bool ClownCD_ReadSectorData(ClownCD* const disc, unsigned char* const buffer)
 cc_bool ClownCD_ReadSectorAtData(ClownCD* const disc, const unsigned long sector_index, unsigned char* const buffer)
 {
 	return ClownCD_ReadSectorAt(disc, sector_index, buffer, ClownCD_ReadSectorData);
+}
+
+size_t ClownCD_ReadAudioFrames(ClownCD* const disc, short* const buffer, const size_t total_frames)
+{
+	size_t i;
+
+	if (disc->track.type != CLOWNCD_CUE_TRACK_AUDIO)
+		return 0;
+
+	for (i = 0; i < total_frames; ++i)
+	{
+		const signed long sample = ClownCD_ReadS16LE(&disc->track.file);
+
+		if (sample == CLOWNCD_EOF)
+			break;
+
+		buffer[i] = sample;
+	}
+
+	return i;
 }
 
 unsigned long ClownCD_CalculateSectorCRC(const unsigned char* const buffer)
@@ -163,7 +189,7 @@ unsigned long ClownCD_CalculateSectorCRC(const unsigned char* const buffer)
 
 cc_bool ClownCD_ValidateSectorCRC(const unsigned char* const buffer)
 {
-	const unsigned long old_crc = ClownCD_Read32LEMemory(&buffer[CLOWNCD_SECTOR_HEADER_SIZE + CLOWNCD_SECTOR_DATA_SIZE]);
+	const unsigned long old_crc = ClownCD_ReadU32LEMemory(&buffer[CLOWNCD_SECTOR_HEADER_SIZE + CLOWNCD_SECTOR_DATA_SIZE]);
 	const unsigned long new_crc = ClownCD_CalculateSectorCRC(buffer);
 
 	return new_crc == old_crc;
