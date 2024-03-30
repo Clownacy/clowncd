@@ -68,7 +68,7 @@ unsigned long ClownCD_CalculateSectorCRC(const unsigned char* const buffer)
 
 cc_bool ClownCD_ValidateSectorCRC(const unsigned char* const buffer)
 {
-	const unsigned long old_crc = Read32LEMemory(&buffer[SECTOR_HEADER_SIZE + SECTOR_DATA_SIZE]);
+	const unsigned long old_crc = ClownCD_Read32LEMemory(&buffer[SECTOR_HEADER_SIZE + SECTOR_DATA_SIZE]);
 	const unsigned long new_crc = ClownCD_CalculateSectorCRC(buffer);
 
 	return new_crc == old_crc;
