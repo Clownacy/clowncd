@@ -70,6 +70,14 @@ static int ClownCD_FileSeekStandard(void* const stream, const long position, con
 	return fseek((FILE*)stream, position, standard_origin);
 }
 
+ClownCD_File ClownCD_FileOpenBlank(void)
+{
+	ClownCD_File file;
+	file.functions = NULL;
+	file.stream = NULL;
+	return file;
+}
+
 ClownCD_File ClownCD_FileOpen(const char* const filename, const ClownCD_FileMode mode)
 {
 	static const ClownCD_FileCallbacks callbacks = {
@@ -86,7 +94,7 @@ ClownCD_File ClownCD_FileOpen(const char* const filename, const ClownCD_FileMode
 
 ClownCD_File ClownCD_FileOpenCustomIO(const ClownCD_FileCallbacks* const callbacks, const char* const filename, const ClownCD_FileMode mode)
 {
-	ClownCD_File file;
+	ClownCD_File file = ClownCD_FileOpenBlank();
 	file.functions = callbacks;
 	file.stream = file.functions->open(filename, mode);
 	return file;
@@ -101,7 +109,12 @@ int ClownCD_FileClose(ClownCD_File* const file)
 
 size_t ClownCD_FileRead(void* const buffer, const size_t size, const size_t count, ClownCD_File* const file)
 {
-	return file->functions->read(buffer, size, count, file->stream);
+	const size_t total_done = file->functions->read(buffer, size, count, file->stream);
+
+	if (total_done != count)
+		file->eof = cc_true;
+
+	return total_done;
 }
 
 size_t ClownCD_FileWrite(const void* const buffer, const size_t size, const size_t count, ClownCD_File* const file)
@@ -116,6 +129,7 @@ long ClownCD_FileTell(ClownCD_File* const file)
 
 int ClownCD_FileSeek(ClownCD_File* const file, const long position, const ClownCD_FileOrigin origin)
 {
+	file->eof = cc_false;
 	return file->functions->seek(file->stream, position, origin);
 }
 
@@ -153,14 +167,14 @@ unsigned long ClownCD_WriteFile(ClownCD_File* const file, const unsigned long va
 	unsigned char buffer[4];
 
 	if (total_bytes > CC_COUNT_OF(buffer))
-		return CLOWNCD_EOF;
+		return 0;
 
 	if (total_bytes > sizeof(unsigned long) || (total_bytes < sizeof(unsigned long) && value > (1UL << total_bytes * 8) - 1))
-		return CLOWNCD_EOF;
+		return 0;
 
 	ClownCD_WriteMemory(buffer, value, total_bytes, big_endian);
 	if (ClownCD_FileWrite(buffer, total_bytes, 1, file) != 1)
-		return CLOWNCD_EOF;
+		return 0;
 
 	return value;
 }
@@ -184,10 +198,10 @@ unsigned long ClownCD_ReadUintFile(ClownCD_File* const file, const unsigned int 
 	unsigned char buffer[4];
 
 	if (total_bytes > CC_COUNT_OF(buffer))
-		return CLOWNCD_EOF;
+		return 0;
 
 	if (ClownCD_FileRead(buffer, total_bytes, 1, file) != 1)
-		return CLOWNCD_EOF;
+		return 0;
 
 	return ClownCD_ReadUintMemory(buffer, total_bytes, big_endian);
 }

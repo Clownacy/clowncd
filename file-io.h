@@ -5,8 +5,6 @@
 
 #include "clowncommon/clowncommon.h"
 
-#define CLOWNCD_EOF -1
-
 typedef enum ClownCD_FileMode
 {
 	CLOWNCD_RB,
@@ -34,8 +32,10 @@ typedef struct ClownCD_File
 {
 	const ClownCD_FileCallbacks *functions;
 	void *stream;
+	cc_bool eof;
 } ClownCD_File;
 
+ClownCD_File ClownCD_FileOpenBlank(void);
 ClownCD_File ClownCD_FileOpen(const char* const filename, const ClownCD_FileMode mode);
 ClownCD_File ClownCD_FileOpenCustomIO(const ClownCD_FileCallbacks *callbacks, const char *filename, ClownCD_FileMode mode);
 int ClownCD_FileClose(ClownCD_File *file);

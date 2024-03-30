@@ -56,7 +56,7 @@ static size_t ClownCD_CueGetLineLength(ClownCD_File* const file)
 	{
 		const unsigned long character = ClownCD_ReadU8(file);
 
-		if (character == (unsigned long)CLOWNCD_EOF)
+		if (file->eof)
 			break;
 
 		++line_length;

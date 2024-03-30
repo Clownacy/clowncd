@@ -19,7 +19,7 @@ cc_bool ClownCD_OpenFromFile(ClownCD* const disc, const char* const file_path)
 		return cc_false;
 
 	disc->file = ClownCD_FileOpen(file_path, CLOWNCD_RB);
-	disc->track.file.stream = NULL;
+	disc->track.file = ClownCD_FileOpenBlank();
 
 	return ClownCD_FileIsOpen(&disc->file);
 }
@@ -144,7 +144,7 @@ size_t ClownCD_ReadAudioFrames(ClownCD* const disc, short* const buffer, const s
 	{
 		const signed long sample = ClownCD_ReadS16LE(&disc->track.file);
 
-		if (sample == CLOWNCD_EOF)
+		if (disc->track.file.eof)
 			break;
 
 		buffer[i] = sample;
