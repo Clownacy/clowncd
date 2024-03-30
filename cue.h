@@ -23,5 +23,6 @@ typedef void (*ClownCD_CueCallback)(void *user_data, const char *filename, Clown
 
 void ClownCD_CueParse(ClownCD_File *file, ClownCD_CueCallback callback, const void *user_data);
 cc_bool ClownCD_CueGetTrackIndexInfo(ClownCD_File *file, unsigned int track, unsigned int index, ClownCD_CueCallback callback, const void *user_data);
+unsigned long ClownCD_CueGetTrackEndingFrame(ClownCD_File *file, const char *track_filename, unsigned int track, unsigned long starting_frame);
 
 #endif /* CLOWNCD_CUE_H */

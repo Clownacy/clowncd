@@ -232,3 +232,36 @@ cc_bool ClownCD_CueGetTrackIndexInfo(ClownCD_File* const file, const unsigned in
 
 	return state.found;
 }
+
+typedef struct ClownCD_CueGetTrackEndingFrame_State
+{
+	const char *track_filename;
+	unsigned int track;
+	unsigned long starting_frame, ending_frame;
+} ClownCD_CueGetTrackEndingFrame_State;
+
+static void ClownCD_CueGetTrackEndingFrame_Callback(void* const user_data, const char* const filename, const ClownCD_CueFileType file_type, const unsigned int track, const ClownCD_CueTrackType track_type, const unsigned int index, const unsigned long frame)
+{
+	ClownCD_CueGetTrackEndingFrame_State* const state = (ClownCD_CueGetTrackEndingFrame_State*)user_data;
+
+	(void)file_type;
+	(void)track_type;
+	(void)index;
+
+	if (strcmp(filename, state->track_filename) == 0 && track != state->track && frame > state->starting_frame && frame < state->ending_frame)
+		state->ending_frame = frame;
+}
+
+unsigned long ClownCD_CueGetTrackEndingFrame(ClownCD_File* const file, const char* const track_filename, const unsigned int track, const unsigned long starting_frame)
+{
+	ClownCD_CueGetTrackEndingFrame_State state;
+
+	state.track_filename = track_filename;
+	state.track = track;
+	state.starting_frame = starting_frame;
+	state.ending_frame = 0xFFFFFFFF;
+
+	ClownCD_CueParse(file, ClownCD_CueGetTrackEndingFrame_Callback, &state);
+
+	return state.ending_frame;
+}

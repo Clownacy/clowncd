@@ -20,7 +20,11 @@ int main(const int argc, const char** const argv)
 	{
 		FILE *file;
 
-		ClownCD_ReadSectorRaw(&cd, 0, sector_buffer);
+		if (!ClownCD_SeekTrackIndex(&cd, 1, 1))
+			fputs("Couldn't seek to track 1 index 1.\n", stderr);
+
+		if (!ClownCD_ReadSectorAtRaw(&cd, 0, sector_buffer))
+			fputs("Couldn't read sector 0.\n", stderr);
 
 		file = fopen("out.bin", "wb");
 
@@ -30,7 +34,7 @@ int main(const int argc, const char** const argv)
 		}
 		else
 		{
-			fwrite(sector_buffer, 0x800 + 0x10, 1, file);
+			fwrite(sector_buffer, 2352, 1, file);
 			fclose(file);
 
 			fprintf(stderr, "CRC is %scorrect\n", ClownCD_ValidateSectorCRC(sector_buffer) ? "" : "in");

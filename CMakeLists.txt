@@ -9,6 +9,8 @@ add_library(clowncd STATIC
 	"cue.h"
 	"file-io.c"
 	"file-io.h"
+	"utilities.c"
+	"utilities.h"
 )
 
 add_executable(clowncd-test "test.c")

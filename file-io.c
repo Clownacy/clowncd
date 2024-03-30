@@ -3,8 +3,6 @@
 #include <assert.h>
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 static void* ClownCD_FileOpenStandard(const char* const filename, const ClownCD_FileMode mode)
 {
@@ -96,7 +94,9 @@ ClownCD_File ClownCD_FileOpenCustomIO(const ClownCD_FileCallbacks* const callbac
 
 int ClownCD_FileClose(ClownCD_File* const file)
 {
-	return file->functions->close(file->stream);
+	void* const stream = file->stream;
+	file->stream = NULL;
+	return file->functions->close(stream);
 }
 
 size_t ClownCD_FileRead(void* const buffer, const size_t size, const size_t count, ClownCD_File* const file)
@@ -138,13 +138,13 @@ size_t ClownCD_FileSize(ClownCD_File* const file)
 
 void ClownCD_WriteMemory(unsigned char* const buffer, const unsigned long value, const unsigned int total_bytes, const cc_bool big_endian)
 {
+	unsigned long value_shifter = value;
 	unsigned int i;
 
 	for (i = 0; i < total_bytes; ++i)
 	{
-		const cc_bool i_adjusted = big_endian ? total_bytes - i - 1 : i;
-
-		buffer[i] = (value >> (8 * i_adjusted)) & 0xFF;
+		buffer[big_endian ? total_bytes - i - 1 : i] = value_shifter & 0xFF;
+		value_shifter >>= 8;
 	}
 }
 
@@ -172,10 +172,8 @@ unsigned long ClownCD_ReadMemory(const unsigned char* const buffer, const unsign
 
 	for (i = 0; i < total_bytes; ++i)
 	{
-		const cc_bool i_adjusted = big_endian ? total_bytes - i - 1 : i;
-
 		value <<= 8;
-		value |= buffer[i_adjusted];
+		value |= buffer[big_endian ? i : total_bytes - i - 1];
 	}
 
 	return value;
@@ -192,47 +190,4 @@ unsigned long ClownCD_ReadFile(ClownCD_File* const file, const unsigned int tota
 		return CLOWNCD_EOF;
 
 	return ClownCD_ReadMemory(buffer, total_bytes, big_endian);
-}
-
-static char* ClownCD_GetLastPathSeparator(const char* const file_path)
-{
-	char* const forward_slash = strrchr(file_path, '/');
-#ifdef _WIN32
-	char* const back_slash = strrchr(file_path, '\\');
-
-	if (forward_slash == NULL)
-		return back_slash;
-	else if (back_slash == NULL)
-		return forward_slash;
-	else
-		return CC_MIN(forward_slash, back_slash);
-#else
-	return forward_slash;
-#endif
-}
-
-static size_t ClownCD_GetIndexOfFilenameInPath(const char* const filename)
-{
-	const char* const separator = ClownCD_GetLastPathSeparator(filename);
-
-	if (separator == NULL)
-		return 0;
-
-	return separator - filename + 1;
-}
-
-char* ClownCD_GetFullFilePath(const char* const directory, const char* const filename)
-{
-	const size_t directory_length = ClownCD_GetIndexOfFilenameInPath(directory);
-	const size_t filename_length = strlen(filename);
-	char* const full_path = (char*)malloc(directory_length + filename_length + 1);
-
-	if (full_path == NULL)
-		return NULL;
-
-	memcpy(full_path, directory, directory_length);
-	memcpy(full_path + directory_length, filename, filename_length);
-	full_path[directory_length + filename_length] = '\0';
-
-	return full_path;
 }

@@ -4,6 +4,9 @@
 
 #include "cue.h"
 #include "file-io.h"
+#include "utilities.h"
+
+/* TODO: Disable the error messages. */
 
 typedef struct State
 {
@@ -12,89 +15,10 @@ typedef struct State
 	char *track_filename;
 } State;
 
-static void GetTrackIndexFrame_Callback(void* const user_data, const char* const filename, const ClownCD_CueFileType file_type, const unsigned int track, const ClownCD_CueTrackType track_type, const unsigned int index, const unsigned long frame)
-{
-	unsigned long* const frame_pointer = (unsigned long*)user_data;
-
-	(void)filename;
-	(void)file_type;
-	(void)track;
-	(void)track_type;
-	(void)index;
-
-	*frame_pointer = frame;
-}
-
-static unsigned long GetTrackIndexFrame(ClownCD_File* const file, const unsigned int track, const unsigned int index)
-{
-	unsigned long frame = 0xFFFFFFFF;
-	ClownCD_CueGetTrackIndexInfo(file, track, index, GetTrackIndexFrame_Callback, &frame);
-	return frame;
-}
-
-static unsigned long GetTrackEndingFrame(const State* const state, const char* const track_filename, const unsigned int track)
-{
-	unsigned long ending_frame = GetTrackIndexFrame(state->cue_file, track + 1, 0);
-
-	if (ending_frame == 0xFFFFFFFF)
-	{
-		/* If the pregap index is missing, then try the main index instead. */
-		ending_frame = GetTrackIndexFrame(state->cue_file, track + 1, 1);
-
-		if (ending_frame == 0xFFFFFFFF)
-		{
-			char* const full_path = ClownCD_GetFullFilePath(state->cue_filename, track_filename);
-
-			if (full_path == NULL)
-			{
-				fputs("Could not allocate memory for full file path.\n", stderr);
-			}
-			else
-			{
-				ClownCD_File file = ClownCD_FileOpen(full_path, CLOWNCD_RB);
-
-				if (!ClownCD_FileIsOpen(&file))
-				{
-					fprintf(stderr, "Could not open file '%s'.\n", full_path);
-				}
-				else
-				{
-					const size_t track_file_size = ClownCD_FileSize(&file);
-
-					if (track_file_size != (size_t)-1)
-					{
-						if (track_file_size % 2352 != 0)
-							fputs("Track file size is not a multiple of 2352.\n", stderr);
-
-						ending_frame = track_file_size / 2352;
-					}
-
-					ClownCD_FileClose(&file);
-				}
-
-				free(full_path);
-			}
-		}
-	}
-
-	return ending_frame;
-}
-
-static char* DuplicateString(const char* const string)
-{
-	const size_t length = strlen(string) + 1;
-	char* const buffer = (char*)malloc(length);
-
-	if (buffer != NULL)
-		memcpy(buffer, string, length);
-
-	return buffer;
-}
-
 static void Callback(void* const user_data, const char* const filename, const ClownCD_CueFileType file_type, const unsigned int track, const ClownCD_CueTrackType track_type, const unsigned int index, const unsigned long frame)
 {
 	State* const state = (State*)user_data;
-	const unsigned long ending_frame = GetTrackEndingFrame(state, filename, track);
+	const unsigned long ending_frame = ClownCD_CueGetTrackEndingFrame(state->cue_file, filename, track, frame);
 
 	unsigned int type;
 
@@ -103,7 +27,7 @@ static void Callback(void* const user_data, const char* const filename, const Cl
 	if (state->track_filename == NULL)
 	{
 		/* TODO: Hash the filename instead of copy it. */
-		state->track_filename = DuplicateString(filename);
+		state->track_filename = ClownCD_DuplicateString(filename);
 
 		if (state->track_filename == NULL)
 			fputs("Could not allocate memory to duplicate track filename.\n", stderr);
@@ -137,7 +61,7 @@ static void Callback(void* const user_data, const char* const filename, const Cl
 
 	ClownCD_Write16BE(state->header_file, type);
 	ClownCD_Write32BE(state->header_file, frame);
-	ClownCD_Write32BE(state->header_file, ending_frame - frame);
+	ClownCD_Write32BE(state->header_file, ending_frame == 0xFFFFFFFF ? 0xFFFFFFFF : ending_frame - frame);
 }
 
 int main(const int argc, char** const argv)

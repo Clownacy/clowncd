@@ -46,7 +46,6 @@ int ClownCD_FileSeek(ClownCD_File* const file, long position, ClownCD_FileOrigin
 size_t ClownCD_FileSize(ClownCD_File *file);
 #define ClownCD_FileIsOpen(file) ((file)->stream != NULL)
 
-
 void ClownCD_WriteMemory(unsigned char *buffer, unsigned long value, unsigned int total_bytes, cc_bool big_endian);
 unsigned long ClownCD_WriteFile(ClownCD_File *file, unsigned long value, unsigned int total_bytes, cc_bool big_endian);
 unsigned long ClownCD_ReadMemory(const unsigned char *buffer, unsigned int total_bytes, cc_bool big_endian);
