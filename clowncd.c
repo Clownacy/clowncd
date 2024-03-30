@@ -8,7 +8,7 @@
 
 cc_bool ClownCD_OpenFromFile(ClownCD* const disc, const char* const file_path)
 {
-	disc->file = ClownCD_FileOpen(file_path, CLOWNCD_MODE_READ);
+	disc->file = ClownCD_FileOpen(file_path, CLOWNCD_RB);
 
 	return disc->file.stream != NULL;
 }

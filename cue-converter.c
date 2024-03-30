@@ -202,7 +202,7 @@ int main(const int argc, char** const argv)
 	else
 	{
 		const char* const cue_filename = argv[1];
-		ClownCD_File cue_file = ClownCD_FileOpen(cue_filename, CLOWNCD_MODE_READ);
+		ClownCD_File cue_file = ClownCD_FileOpen(cue_filename, CLOWNCD_RB);
 
 		if (cue_file.stream == NULL)
 		{
@@ -210,7 +210,7 @@ int main(const int argc, char** const argv)
 		}
 		else
 		{
-			ClownCD_File header_file = ClownCD_FileOpen(argv[2], CLOWNCD_MODE_WRITE);
+			ClownCD_File header_file = ClownCD_FileOpen(argv[2], CLOWNCD_WB);
 
 			if (header_file.stream == NULL)
 			{

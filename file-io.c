@@ -10,11 +10,11 @@ static void* ClownCD_FileOpenStandard(const char* const filename, const ClownCD_
 
 	switch (mode)
 	{
-		case CLOWNCD_MODE_READ:
+		case CLOWNCD_RB:
 			standard_mode = "rb";
 			break;
 
-		case CLOWNCD_MODE_WRITE:
+		case CLOWNCD_WB:
 			standard_mode = "wb";
 			break;
 

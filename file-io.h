@@ -9,8 +9,8 @@
 
 typedef enum ClownCD_FileMode
 {
-	CLOWNCD_MODE_READ,
-	CLOWNCD_MODE_WRITE
+	CLOWNCD_RB,
+	CLOWNCD_WB
 } ClownCD_FileMode;
 
 typedef enum ClownCD_FileOrigin
