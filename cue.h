@@ -1,9 +1,9 @@
 #ifndef CUE_H
 #define CUE_H
 
-#include <stdio.h>
-
 #include "clowncommon/clowncommon.h"
+
+#include "file-io.h"
 
 typedef enum Cue_FileType
 {
@@ -21,7 +21,7 @@ typedef enum Cue_TrackType
 
 typedef void (*Cue_Callback)(void *user_data, const char *filename, Cue_FileType file_type, unsigned int track, Cue_TrackType track_type, unsigned int index, unsigned long frame);
 
-void Cue_Parse(FILE *file, Cue_Callback callback, const void *user_data);
-cc_bool Cue_GetTrackIndexInfo(FILE *file, unsigned int track, unsigned int index, Cue_Callback callback, const void *user_data);
+void Cue_Parse(ClownCD_File *file, Cue_Callback callback, const void *user_data);
+cc_bool Cue_GetTrackIndexInfo(ClownCD_File *file, unsigned int track, unsigned int index, Cue_Callback callback, const void *user_data);
 
 #endif /* CUE_H */

@@ -47,104 +47,156 @@ static Cue_TrackType Cue_TrackTypeFromString(const char* const string)
 		return CUE_TRACK_TYPE_INVALID;
 }
 
-void Cue_Parse(FILE* const file, const Cue_Callback callback, const void* const user_data)
+static size_t Cue_GetLineLength(ClownCD_File* const file)
 {
+	const long line_file_position = ClownCD_FileTell(file);
+	size_t line_length = 0;
+
+	for (;;)
+	{
+		const unsigned long character = Read8(file);
+
+		if (character == (unsigned long)CLOWNCD_EOF)
+			break;
+
+		++line_length;
+
+		if (character == '\r' || character == '\n')
+			break;
+	}
+
+	ClownCD_FileSeek(file, line_file_position, CLOWNCD_SEEK_SET);
+
+	return line_length;
+}
+
+static char* Cue_ReadLine(ClownCD_File* const file)
+{
+	const size_t line_length = Cue_GetLineLength(file);
+	char *line = (char*)malloc(line_length + 1);
+
+	if (line != NULL)
+	{
+		if (ClownCD_FileRead(line, line_length, 1, file) != 1)
+		{
+			free(line);
+			line = NULL;
+		}
+		else
+		{
+			line[line_length] = '\0';
+		}
+	}
+
+	return line;
+}
+
+void Cue_Parse(ClownCD_File* const file, const Cue_Callback callback, const void* const user_data)
+{
+	const long starting_file_position = ClownCD_FileTell(file);
+
 	char *file_name = NULL;
 	Cue_FileType file_type = CUE_FILE_TYPE_INVALID;
 	unsigned int track = 0xFFFF;
 	Cue_TrackType track_type = CUE_TRACK_TYPE_INVALID;
-	fpos_t starting_file_position;
 
-	fgetpos(file, &starting_file_position);
-	rewind(file);
+	ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_SET);
 
 	for (;;)
 	{
+		char* const line = Cue_ReadLine(file);
+		char *line_pointer = line;
+
+		int advance;
 		char command_string[6 + 1];
 
-		if (fscanf(file, "%6s", command_string) < 1)
+		if (line == NULL)
 			break;
 
-		switch (Cue_CommandTypeFromString(command_string))
+		if (sscanf(line_pointer, "%6s%n", command_string, &advance) == 1)
 		{
-			case CUE_COMMAND_TYPE_FILE:
+			line_pointer += advance;
+
+			switch (Cue_CommandTypeFromString(command_string))
 			{
-				fpos_t file_position;
-				int file_name_length;
-
-				fscanf(file, " \"");
-				fgetpos(file, &file_position);
-				fscanf(file, "%*[^\"]%n", &file_name_length);
-
-				free(file_name);
-				file_name = (char*)malloc(file_name_length + 1);
-
-				if (file_name == NULL)
+				case CUE_COMMAND_TYPE_FILE:
 				{
-					fputs("Could not allocate memory for filename.\n", stderr);
-				}
-				else
-				{
-					char file_type_string[6 + 1];
+					int file_name_length;
 
-					fsetpos(file, &file_position);
+					sscanf(line_pointer, " \"%n", &advance);
+					line_pointer += advance;
+					sscanf(line_pointer, "%*[^\"]%n", &file_name_length);
 
-					if (fscanf(file, "%[^\"]\" %6s", file_name, file_type_string) < 2)
-						fputs("Could not read FILE parameters.\n", stderr);
+					free(file_name);
+					file_name = (char*)malloc(file_name_length + 1);
+
+					if (file_name == NULL)
+					{
+						fputs("Could not allocate memory for filename.\n", stderr);
+					}
 					else
-						file_type = Cue_FileTypeFromString(file_type_string);
+					{
+						char file_type_string[6 + 1];
+
+						if (sscanf(line_pointer, "%[^\"]\" %6s%n", file_name, file_type_string, &advance) < 2)
+							fputs("Could not read FILE parameters.\n", stderr);
+						else
+							file_type = Cue_FileTypeFromString(file_type_string);
+						line_pointer += advance;
+					}
+
+					break;
 				}
 
-				break;
+				case CUE_COMMAND_TYPE_TRACK:
+				{
+					char track_type_string[10 + 1];
+
+					if (sscanf(line_pointer, "%u %10s%n", &track, track_type_string, &advance) < 2)
+						fputs("Could not read TRACK parameters.\n", stderr);
+					else
+						track_type = Cue_TrackTypeFromString(track_type_string);
+					line_pointer += advance;
+
+					break;
+				}
+
+				case CUE_COMMAND_TYPE_INDEX:
+				{
+					unsigned int index, minute, second, frame;
+
+					if (sscanf(line_pointer, "%u %u:%u:%u%n", &index, &minute, &second, &frame, &advance) < 4)
+						fputs("Could not read INDEX parameters.\n", stderr);
+					else if (file_name == NULL)
+						fputs("INDEX encountered with no filename specified.\n", stderr);
+					else if (file_type == CUE_FILE_TYPE_INVALID)
+						fputs("INDEX encountered with no file type specified.\n", stderr);
+					else if (track == 0xFFFF)
+						fputs("INDEX encountered with no track specified.\n", stderr);
+					else if (track_type == CUE_TRACK_TYPE_INVALID)
+						fputs("INDEX encountered with no track type specified.\n", stderr);
+					else
+						callback((void*)user_data, file_name, file_type, track, track_type, index, ((unsigned long)minute * 60 + second) * 75 + frame);
+					line_pointer += advance;
+
+					break;
+				}
+
+				case CUE_COMMAND_TYPE_PREGAP:
+					/* We do not care about this. */
+					break;
+
+				default:
+					fprintf(stderr, "Unrecognised command '%s'.\n", command_string);
+					break;
 			}
-
-			case CUE_COMMAND_TYPE_TRACK:
-			{
-				char track_type_string[10 + 1];
-
-				if (fscanf(file, "%u %10s", &track, track_type_string) < 2)
-					fputs("Could not read TRACK parameters.\n", stderr);
-				else
-					track_type = Cue_TrackTypeFromString(track_type_string);
-
-				break;
-			}
-
-			case CUE_COMMAND_TYPE_INDEX:
-			{
-				unsigned int index, minute, second, frame;
-
-				if (fscanf(file, "%u %u:%u:%u", &index, &minute, &second, &frame) < 4)
-					fputs("Could not read INDEX parameters.\n", stderr);
-				else if (file_name == NULL)
-					fputs("INDEX encountered with no filename specified.\n", stderr);
-				else if (file_type == CUE_FILE_TYPE_INVALID)
-					fputs("INDEX encountered with no file type specified.\n", stderr);
-				else if (track == 0xFFFF)
-					fputs("INDEX encountered with no track specified.\n", stderr);
-				else if (track_type == CUE_TRACK_TYPE_INVALID)
-					fputs("INDEX encountered with no track type specified.\n", stderr);
-				else
-					callback((void*)user_data, file_name, file_type, track, track_type, index, ((unsigned long)minute * 60 + second) * 75 + frame);
-
-				break;
-			}
-
-			case CUE_COMMAND_TYPE_PREGAP:
-				/* We do not care about this. */
-				break;
-
-			default:
-				fprintf(stderr, "Unrecognised command '%s'.\n", command_string);
-				break;
 		}
 
-		/* Go to next line. */
-		fscanf(file, "%*[^\n]");
+		free(line);
 	}
 
 	free(file_name);
-	fsetpos(file, &starting_file_position);
+	ClownCD_FileSeek(file, starting_file_position, CLOWNCD_SEEK_SET);
 }
 
 typedef struct Cue_GetTrackIndexInfo_State
@@ -166,7 +218,7 @@ static void Cue_GetTrackIndexInfo_Callback(void* const user_data, const char* co
 	}
 }
 
-cc_bool Cue_GetTrackIndexInfo(FILE* const file, const unsigned int track, const unsigned int index, const Cue_Callback callback, const void* const user_data)
+cc_bool Cue_GetTrackIndexInfo(ClownCD_File* const file, const unsigned int track, const unsigned int index, const Cue_Callback callback, const void* const user_data)
 {
 	Cue_GetTrackIndexInfo_State state;
 

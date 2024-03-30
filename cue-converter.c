@@ -7,10 +7,61 @@
 
 typedef struct State
 {
-	FILE *cue_file, *header_file;
+	ClownCD_File *cue_file, *header_file;
 	const char *cue_filename;
 	char *track_filename;
 } State;
+
+static void* FileOpenCallback(const char* const filename, const int mode)
+{
+	static const char* const to_standard[] = {"rb", "wb"};
+
+	return fopen(filename, to_standard[mode]);
+}
+
+static int FileCloseCallback(void* const stream)
+{
+	return fclose((FILE*)stream);
+}
+
+static size_t FileReadCallback(void* const buffer, const size_t size, const size_t count, void* const stream)
+{
+	return fread(buffer, size, count, (FILE*)stream);
+}
+
+static size_t FileWriteCallback(const void* const buffer, const size_t size, const size_t count, void* const stream)
+{
+	return fwrite(buffer, size, count, (FILE*)stream);
+}
+
+static long FileTellCallback(void* const stream)
+{
+	return ftell((FILE*)stream);
+}
+
+static int FileSeekCallback(void* const stream, const long position, const int origin)
+{
+	static const int to_standard[] = {SEEK_SET, SEEK_CUR, SEEK_END};
+
+	return fseek((FILE*)stream, position, to_standard[origin]);
+}
+
+static ClownCD_File FileOpen(const char* const filename, const char* const mode)
+{
+	static const ClownCD_FileCallbacks file_callbacks = {FileOpenCallback, FileCloseCallback, FileReadCallback, FileWriteCallback, FileTellCallback, FileSeekCallback};
+
+	ClownCD_File file;
+
+	file.functions = &file_callbacks;
+	file.stream = fopen(filename, mode);
+
+	return file;
+}
+
+static int FileClose(ClownCD_File* const file)
+{
+	return fclose((FILE*)file->stream);
+}
 
 static void GetTrackIndexFrame_Callback(void* const user_data, const char* const filename, const Cue_FileType file_type, const unsigned int track, const Cue_TrackType track_type, const unsigned int index, const unsigned long frame)
 {
@@ -25,7 +76,7 @@ static void GetTrackIndexFrame_Callback(void* const user_data, const char* const
 	*frame_pointer = frame;
 }
 
-static unsigned long GetTrackIndexFrame(FILE* const file, const unsigned int track, const unsigned int index)
+static unsigned long GetTrackIndexFrame(ClownCD_File* const file, const unsigned int track, const unsigned int index)
 {
 	unsigned long frame = 0xFFFFFFFF;
 	Cue_GetTrackIndexInfo(file, track, index, GetTrackIndexFrame_Callback, &frame);
@@ -202,46 +253,46 @@ int main(const int argc, char** const argv)
 	else
 	{
 		const char* const cue_filename = argv[1];
-		FILE* const cue_file = fopen(cue_filename, "r");
+		ClownCD_File cue_file = FileOpen(cue_filename, "r");
 
-		if (cue_file == NULL)
+		if (cue_file.stream == NULL)
 		{
 			fputs("Could not open input file.\n", stderr);
 		}
 		else
 		{
-			FILE* const header_file = fopen(argv[2], "wb");
+			ClownCD_File header_file = FileOpen(argv[2], "wb");
 
-			if (header_file == NULL)
+			if (header_file.stream == NULL)
 			{
 				fputs("Could not open output file.\n", stderr);
 			}
 			else
 			{
+				static const char identifier[8] = {'c', 'l', 'o', 'w', 'n', 'c', 'd', '\0'};
 				State state;
 				unsigned int i;
 
-				state.cue_file = cue_file;
-				state.header_file = header_file;
+				state.cue_file = &cue_file;
+				state.header_file = &header_file;
 				state.cue_filename = cue_filename;
 				state.track_filename = NULL;
 
-				fputs("clowncd", header_file); /* Identifier. */
-				fputc('\0', header_file);
-				Write16BE(header_file, 0); /* Version. */
-				Write16BE(header_file, 0); /* Total tracks (will be filled-in later). */
+				ClownCD_FileWrite(identifier, sizeof(identifier), 1, &header_file); /* Identifier. */
+				Write16BE(&header_file, 0); /* Version. */
+				Write16BE(&header_file, 0); /* Total tracks (will be filled-in later). */
 
 				for (i = 0; ; ++i)
-					if (!Cue_GetTrackIndexInfo(cue_file, i + 1, 1, Callback, &state))
+					if (!Cue_GetTrackIndexInfo(&cue_file, i + 1, 1, Callback, &state))
 						break;
 
-				fseek(header_file, 8 + 2, SEEK_SET);
-				Write16BE(header_file, i); /* Total tracks. */
+				ClownCD_FileSeek(&header_file, 8 + 2, CLOWNCD_SEEK_SET);
+				Write16BE(&header_file, i); /* Total tracks. */
 
-				fclose(header_file);
+				FileClose(&header_file);
 			}
 
-			fclose(cue_file);
+			FileClose(&cue_file);
 		}
 	}
 
