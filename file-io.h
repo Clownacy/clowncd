@@ -43,6 +43,9 @@ size_t ClownCD_FileRead(void *buffer, size_t size, size_t count, ClownCD_File *f
 size_t ClownCD_FileWrite(const void *buffer, size_t size, size_t count, ClownCD_File *file);
 long ClownCD_FileTell(ClownCD_File* const file);
 int ClownCD_FileSeek(ClownCD_File* const file, long position, ClownCD_FileOrigin origin);
+size_t ClownCD_FileSize(ClownCD_File *file);
+#define ClownCD_FileIsOpen(file) ((file)->stream != NULL)
+
 
 void ClownCD_WriteMemory(unsigned char *buffer, unsigned long value, unsigned int total_bytes, cc_bool big_endian);
 unsigned long ClownCD_WriteFile(ClownCD_File *file, unsigned long value, unsigned int total_bytes, cc_bool big_endian);
@@ -76,5 +79,7 @@ unsigned long ClownCD_ReadFile(ClownCD_File *file, unsigned int total_bytes, cc_
 #define ClownCD_Read32BE(file) ClownCD_ReadFile(file, 4, cc_true)
 
 #define ClownCD_Read8(file) ClownCD_ReadFile(file, 1, cc_true)
+
+char* ClownCD_GetFullFilePath(const char *directory, const char *filename);
 
 #endif /* CLOWNCD_FILE_IO_H */

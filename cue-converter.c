@@ -32,70 +32,6 @@ static unsigned long GetTrackIndexFrame(ClownCD_File* const file, const unsigned
 	return frame;
 }
 
-static char* GetLastPathSeparator(const char* const file_path)
-{
-	char* const forward_slash = strrchr(file_path, '/');
-#ifdef _WIN32
-	char* const back_slash = strrchr(file_path, '\\');
-
-	if (forward_slash == NULL)
-		return back_slash;
-	else if (back_slash == NULL)
-		return forward_slash;
-	else
-		return CC_MIN(forward_slash, back_slash);
-#else
-	return forward_slash;
-#endif
-}
-
-static size_t GetIndexOfFilenameInPath(const char* const filename)
-{
-	const char* const separator = GetLastPathSeparator(filename);
-
-	if (separator == NULL)
-		return 0;
-
-	return separator - filename + 1;
-}
-
-static char* GetFullFilePath(const char* const directory, const char* const filename)
-{
-	const size_t directory_length = GetIndexOfFilenameInPath(directory);
-	const size_t filename_length = strlen(filename);
-	char* const full_path = (char*)malloc(directory_length + filename_length + 1);
-
-	if (full_path == NULL)
-		return NULL;
-
-	memcpy(full_path, directory, directory_length);
-	memcpy(full_path + directory_length, filename, filename_length);
-	full_path[directory_length + filename_length] = '\0';
-
-	return full_path;
-}
-
-static size_t GetFileSize(const char* const filename)
-{
-	FILE* const file = fopen(filename, "rb");
-
-	size_t file_size = -1;
-
-	if (file == NULL)
-	{
-		fprintf(stderr, "Could not open file '%s'.\n", filename);
-	}
-	else
-	{
-		if (fseek(file, 0, SEEK_END) == 0)
-			file_size = ftell(file);
-
-		fclose(file);
-	}
-
-	return file_size;
-}
-
 static unsigned long GetTrackEndingFrame(const State* const state, const char* const track_filename, const unsigned int track)
 {
 	unsigned long ending_frame = GetTrackIndexFrame(state->cue_file, track + 1, 0);
@@ -107,7 +43,7 @@ static unsigned long GetTrackEndingFrame(const State* const state, const char* c
 
 		if (ending_frame == 0xFFFFFFFF)
 		{
-			char* const full_path = GetFullFilePath(state->cue_filename, track_filename);
+			char* const full_path = ClownCD_GetFullFilePath(state->cue_filename, track_filename);
 
 			if (full_path == NULL)
 			{
@@ -115,14 +51,25 @@ static unsigned long GetTrackEndingFrame(const State* const state, const char* c
 			}
 			else
 			{
-				const size_t track_file_size = GetFileSize(full_path);
+				ClownCD_File file = ClownCD_FileOpen(full_path, CLOWNCD_RB);
 
-				if (track_file_size != (size_t)-1)
+				if (!ClownCD_FileIsOpen(&file))
 				{
-					if (track_file_size % 2352 != 0)
-						fputs("Track file size is not a multiple of 2352.\n", stderr);
+					fprintf(stderr, "Could not open file '%s'.\n", full_path);
+				}
+				else
+				{
+					const size_t track_file_size = ClownCD_FileSize(&file);
 
-					ending_frame = track_file_size / 2352;
+					if (track_file_size != (size_t)-1)
+					{
+						if (track_file_size % 2352 != 0)
+							fputs("Track file size is not a multiple of 2352.\n", stderr);
+
+						ending_frame = track_file_size / 2352;
+					}
+
+					ClownCD_FileClose(&file);
 				}
 
 				free(full_path);
@@ -204,7 +151,7 @@ int main(const int argc, char** const argv)
 		const char* const cue_filename = argv[1];
 		ClownCD_File cue_file = ClownCD_FileOpen(cue_filename, CLOWNCD_RB);
 
-		if (cue_file.stream == NULL)
+		if (!ClownCD_FileIsOpen(&cue_file))
 		{
 			fputs("Could not open input file.\n", stderr);
 		}
@@ -212,7 +159,7 @@ int main(const int argc, char** const argv)
 		{
 			ClownCD_File header_file = ClownCD_FileOpen(argv[2], CLOWNCD_WB);
 
-			if (header_file.stream == NULL)
+			if (!ClownCD_FileIsOpen(&header_file))
 			{
 				fputs("Could not open output file.\n", stderr);
 			}

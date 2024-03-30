@@ -10,7 +10,7 @@ cc_bool ClownCD_OpenFromFile(ClownCD* const disc, const char* const file_path)
 {
 	disc->file = ClownCD_FileOpen(file_path, CLOWNCD_RB);
 
-	return disc->file.stream != NULL;
+	return ClownCD_FileIsOpen(&disc->file);
 }
 
 void ClownCD_Close(ClownCD* const disc)
