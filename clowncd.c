@@ -19,13 +19,16 @@ static cc_bool ClownCD_IsSectorValid(ClownCD* const disc)
 
 static cc_bool ClownCD_SeekSectorInternal(ClownCD* const disc, const unsigned long sector)
 {
-	disc->track.current_sector = disc->track.starting_sector + sector;
+	if (sector != disc->track.current_sector)
+	{
+		disc->track.current_sector = disc->track.starting_sector + sector;
 
-	if (!ClownCD_IsSectorValid(disc))
-		return cc_false;
+		if (!ClownCD_IsSectorValid(disc))
+			return cc_false;
 
-	if (ClownCD_FileSeek(&disc->track.file, disc->track.current_sector * CLOWNCD_SECTOR_RAW_SIZE, CLOWNCD_SEEK_SET) != 0)
-		return cc_false;
+		if (ClownCD_FileSeek(&disc->track.file, disc->track.current_sector * CLOWNCD_SECTOR_RAW_SIZE, CLOWNCD_SEEK_SET) != 0)
+			return cc_false;
+	}
 
 	return cc_true;
 }
@@ -91,20 +94,13 @@ static void ClownCD_SeekTrackCallback(
 		disc->track.type = track_type;
 		disc->track.starting_sector = frame;
 		disc->track.ending_sector = ClownCD_CueGetTrackEndingFrame(&disc->file, filename, track, frame);
-		disc->track.current_frame = 0;
 		disc->track.total_frames = (size_t)(disc->track.ending_sector - disc->track.starting_sector) * (CLOWNCD_SECTOR_RAW_SIZE / CLOWNCD_AUDIO_FRAME_SIZE);
 	}
 }
 
 ClownCD_CueTrackType ClownCD_SeekTrackIndex(ClownCD* const disc, const unsigned int track, const unsigned int index)
 {
-	if (!ClownCD_CueGetTrackIndexInfo(&disc->file, track, index, ClownCD_SeekTrackCallback, disc))
-		return CLOWNCD_CUE_TRACK_INVALID;
-
-	if (!ClownCD_SeekSectorInternal(disc, 0))
-		return CLOWNCD_CUE_TRACK_INVALID;
-
-	return disc->track.type;
+	return ClownCD_SetState(disc, track, index, 0, 0);
 }
 
 cc_bool ClownCD_SeekSector(ClownCD* const disc, const unsigned long sector)
@@ -112,7 +108,10 @@ cc_bool ClownCD_SeekSector(ClownCD* const disc, const unsigned long sector)
 	if (/*disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2048 && */disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2352)
 		return cc_false;
 
-	return ClownCD_SeekSectorInternal(disc, sector);
+	if (!ClownCD_SeekSectorInternal(disc, sector))
+		return cc_false;
+
+	return cc_true;
 }
 
 cc_bool ClownCD_SeekAudioFrame(ClownCD* const disc, const size_t frame)
@@ -123,17 +122,55 @@ cc_bool ClownCD_SeekAudioFrame(ClownCD* const disc, const size_t frame)
 	if (frame >= disc->track.total_frames)
 		return cc_false;
 
-	/* Seek to the start of the track. */
-	if (!ClownCD_SeekSectorInternal(disc, 0))
-		return cc_false;
+	if (frame != disc->track.current_frame)
+	{
+		disc->track.current_frame = frame;
 
-	disc->track.current_frame = frame;
+		/* Seek to the start of the track. */
+		if (!ClownCD_SeekSectorInternal(disc, 0))
+			return cc_false;
 
-	/* Seek to the correct frame within the track. */
-	if (ClownCD_FileSeek(&disc->track.file, disc->track.current_frame * CLOWNCD_AUDIO_FRAME_SIZE, CLOWNCD_SEEK_CUR) != 0)
-		return cc_false;
+		/* Seek to the correct frame within the track. */
+		if (ClownCD_FileSeek(&disc->track.file, disc->track.current_frame * CLOWNCD_AUDIO_FRAME_SIZE, CLOWNCD_SEEK_CUR) != 0)
+			return cc_false;
+	}
 
 	return cc_true;
+}
+
+ClownCD_CueTrackType ClownCD_SetState(ClownCD *disc, unsigned int track, unsigned int index, unsigned long sector, size_t frame)
+{
+	if (track != disc->track.current_track || index != disc->track.current_index)
+	{
+		disc->track.current_track = track;
+		disc->track.current_index = index;
+
+		if (!ClownCD_CueGetTrackIndexInfo(&disc->file, track, index, ClownCD_SeekTrackCallback, disc))
+			return CLOWNCD_CUE_TRACK_INVALID;
+
+		/* Force the sector and frame to update. */
+		disc->track.current_sector = -1;
+		disc->track.current_frame = -1;
+	}
+
+	switch (disc->track.type)
+	{
+		case CLOWNCD_CUE_TRACK_INVALID:
+			break;
+
+		case CLOWNCD_CUE_TRACK_MODE1_2048:
+		case CLOWNCD_CUE_TRACK_MODE1_2352:
+			if (!ClownCD_SeekSector(disc, sector))
+				return CLOWNCD_CUE_TRACK_INVALID;
+			break;
+
+		case CLOWNCD_CUE_TRACK_AUDIO:
+			if (!ClownCD_SeekAudioFrame(disc, frame))
+				return CLOWNCD_CUE_TRACK_INVALID;
+			break;
+	}
+
+	return disc->track.type;
 }
 
 cc_bool ClownCD_ReadSector(ClownCD* const disc, unsigned char* const buffer)
