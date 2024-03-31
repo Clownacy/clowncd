@@ -178,7 +178,7 @@ size_t ClownCD_ReadAudioFrames(ClownCD* const disc, short* const buffer, const s
 	if (disc->track.type != CLOWNCD_CUE_TRACK_AUDIO)
 		return 0;
 
-	for (i = 0; i < frames_to_do * 2; i += 2)
+	for (i = 0; i < frames_to_do; ++i)
 	{
 		*buffer_pointer++ = ClownCD_ReadS16LE(&disc->track.file);
 		*buffer_pointer++ = ClownCD_ReadS16LE(&disc->track.file);
