@@ -8,6 +8,7 @@
 #define CLOWNCD_SECTOR_RAW_SIZE 2352
 #define CLOWNCD_SECTOR_HEADER_SIZE 0x10
 #define CLOWNCD_SECTOR_DATA_SIZE 0x800
+#define CLOWNCD_AUDIO_FRAME_SIZE (2 * 2)
 
 #define CLOWNCD_CRC_POLYNOMIAL 0xD8018001
 
@@ -43,7 +44,8 @@ ClownCD ClownCD_OpenAlreadyOpen(void *stream, const char *file_path, const Clown
 	disc.track.file = ClownCD_FileOpenBlank();
 	disc.track.file_type = CLOWNCD_CUE_FILE_INVALID;
 	disc.track.type = CLOWNCD_CUE_TRACK_INVALID;
-	disc.track.remaining_frames = 0;
+	disc.track.current_audio_frame = 0;
+	disc.track.total_audio_frames = 0;
 	disc.track.starting_sector = 0;
 	disc.track.ending_sector = 0;
 	disc.track.current_sector = 0;
@@ -89,7 +91,8 @@ static void ClownCD_SeekTrackCallback(
 		disc->track.type = track_type;
 		disc->track.starting_sector = frame;
 		disc->track.ending_sector = ClownCD_CueGetTrackEndingFrame(&disc->file, filename, track, frame);
-		disc->track.remaining_frames = (size_t)(disc->track.ending_sector - disc->track.starting_sector) * (2352 / 4);
+		disc->track.current_audio_frame = 0;
+		disc->track.total_audio_frames = (size_t)(disc->track.ending_sector - disc->track.starting_sector) * (CLOWNCD_SECTOR_RAW_SIZE / CLOWNCD_AUDIO_FRAME_SIZE);
 	}
 }
 
@@ -110,6 +113,27 @@ cc_bool ClownCD_SeekSector(ClownCD* const disc, const unsigned long sector)
 		return cc_false;
 
 	return ClownCD_SeekSectorInternal(disc, sector);
+}
+
+cc_bool ClownCD_SeekAudioFrame(ClownCD* const disc, const size_t frame)
+{
+	if (disc->track.type != CLOWNCD_CUE_TRACK_AUDIO)
+		return cc_false;
+
+	if (frame >= disc->track.total_audio_frames)
+		return cc_false;
+
+	disc->track.current_audio_frame = frame;
+
+	/* Seek to the start of the track. */
+	if (!ClownCD_SeekSectorInternal(disc, 0))
+		return cc_false;
+
+	/* Seek to the correct frame within the track. */
+	if (ClownCD_FileSeek(&disc->track.file, disc->track.current_audio_frame * CLOWNCD_AUDIO_FRAME_SIZE, CLOWNCD_SEEK_CUR) != 0)
+		return cc_false;
+
+	return cc_true;
 }
 
 static cc_bool ClownCD_ReadSectorAt(ClownCD* const disc, const unsigned long sector_index, unsigned char* const buffer, cc_bool (*callback)(ClownCD *disc, unsigned char *buffer))
@@ -175,7 +199,7 @@ cc_bool ClownCD_ReadSectorAtData(ClownCD* const disc, const unsigned long sector
 
 size_t ClownCD_ReadAudioFrames(ClownCD* const disc, short* const buffer, const size_t total_frames)
 {
-	const size_t frames_to_do = CC_MIN(disc->track.remaining_frames, total_frames);
+	const size_t frames_to_do = CC_MIN(disc->track.total_audio_frames - disc->track.current_audio_frame, total_frames);
 
 	short *buffer_pointer = buffer;
 	size_t i;
@@ -192,7 +216,7 @@ size_t ClownCD_ReadAudioFrames(ClownCD* const disc, short* const buffer, const s
 			break;
 	}
 
-	disc->track.remaining_frames -= frames_to_do;
+	disc->track.current_audio_frame += frames_to_do;
 
 	return i;
 }
