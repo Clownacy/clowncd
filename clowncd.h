@@ -22,8 +22,13 @@ typedef struct ClownCD
 	} track;
 } ClownCD;
 
-cc_bool ClownCD_OpenFromFile(ClownCD *disc, const char *file_path);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+ClownCD ClownCD_Open(const char *file_path, const ClownCD_FileCallbacks *callbacks);
 void ClownCD_Close(ClownCD *disc);
+#define ClownCD_IsOpen(disc) ClownCD_FileIsOpen(&(disc)->file)
 
 ClownCD_CueTrackType ClownCD_SeekTrackIndex(ClownCD *disc, unsigned int track, unsigned int index);
 cc_bool ClownCD_SeekSector(ClownCD *disc, unsigned long sector);
@@ -37,5 +42,9 @@ size_t ClownCD_ReadAudioFrames(ClownCD *disc, short *buffer, size_t total_frames
 
 unsigned long ClownCD_CalculateSectorCRC(const unsigned char *buffer);
 cc_bool ClownCD_ValidateSectorCRC(const unsigned char *buffer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CLOWNCD_H */

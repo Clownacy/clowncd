@@ -29,23 +29,21 @@ static cc_bool ClownCD_SeekSectorInternal(ClownCD* const disc, const unsigned lo
 	return cc_true;
 }
 
-cc_bool ClownCD_OpenFromFile(ClownCD* const disc, const char* const file_path)
+ClownCD ClownCD_Open(const char* const file_path, const ClownCD_FileCallbacks* const callbacks)
 {
-	disc->filename = ClownCD_DuplicateString(file_path);
+	ClownCD disc;
 
-	if (disc->filename == NULL)
-		return cc_false;
+	disc.filename = ClownCD_DuplicateString(file_path); /* It's okay for this to fail. */
+	disc.file = ClownCD_FileOpen(file_path, CLOWNCD_RB);
+	disc.track.file = ClownCD_FileOpenBlank();
+	disc.track.file_type = CLOWNCD_CUE_FILE_INVALID;
+	disc.track.type = CLOWNCD_CUE_TRACK_INVALID;
+	disc.track.remaining_frames = 0;
+	disc.track.starting_sector = 0;
+	disc.track.ending_sector = 0;
+	disc.track.current_sector = 0;
 
-	disc->file = ClownCD_FileOpen(file_path, CLOWNCD_RB);
-	disc->track.file = ClownCD_FileOpenBlank();
-	disc->track.file_type = CLOWNCD_CUE_FILE_INVALID;
-	disc->track.type = CLOWNCD_CUE_TRACK_INVALID;
-	disc->track.remaining_frames = 0;
-	disc->track.starting_sector = 0;
-	disc->track.ending_sector = 0;
-	disc->track.current_sector = 0;
-
-	return ClownCD_FileIsOpen(&disc->file);
+	return disc;
 }
 
 void ClownCD_Close(ClownCD* const disc)
@@ -53,7 +51,9 @@ void ClownCD_Close(ClownCD* const disc)
 	if (ClownCD_FileIsOpen(&disc->track.file))
 		ClownCD_FileClose(&disc->track.file);
 
-	ClownCD_FileClose(&disc->file);
+	if (ClownCD_FileIsOpen(&disc->file))
+		ClownCD_FileClose(&disc->file);
+
 	free(disc->filename);
 }
 

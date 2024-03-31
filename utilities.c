@@ -35,27 +35,41 @@ static size_t ClownCD_GetIndexOfFilenameInPath(const char* const filename)
 
 char* ClownCD_GetFullFilePath(const char* const directory, const char* const filename)
 {
-	const size_t directory_length = ClownCD_GetIndexOfFilenameInPath(directory);
-	const size_t filename_length = strlen(filename);
-	char* const full_path = (char*)malloc(directory_length + filename_length + 1);
+	if (directory == NULL)
+	{
+		return ClownCD_DuplicateString(filename);
+	}
+	else
+	{
+		const size_t directory_length = ClownCD_GetIndexOfFilenameInPath(directory);
+		const size_t filename_length = strlen(filename);
+		char* const full_path = (char*)malloc(directory_length + filename_length + 1);
 
-	if (full_path == NULL)
-		return NULL;
+		if (full_path == NULL)
+			return NULL;
 
-	memcpy(full_path, directory, directory_length);
-	memcpy(full_path + directory_length, filename, filename_length);
-	full_path[directory_length + filename_length] = '\0';
+		memcpy(full_path, directory, directory_length);
+		memcpy(full_path + directory_length, filename, filename_length);
+		full_path[directory_length + filename_length] = '\0';
 
-	return full_path;
+		return full_path;
+	}
 }
 
 char* ClownCD_DuplicateString(const char* const string)
 {
-	const size_t length = strlen(string) + 1;
-	char* const buffer = (char*)malloc(length);
+	if (string == NULL)
+	{
+		return NULL;
+	}
+	else
+	{
+		const size_t length = strlen(string) + 1;
+		char* const buffer = (char*)malloc(length);
 
-	if (buffer != NULL)
-		memcpy(buffer, string, length);
+		if (buffer != NULL)
+			memcpy(buffer, string, length);
 
-	return buffer;
+		return buffer;
+	}
 }
