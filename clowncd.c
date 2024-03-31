@@ -31,10 +31,15 @@ static cc_bool ClownCD_SeekSectorInternal(ClownCD* const disc, const unsigned lo
 
 ClownCD ClownCD_Open(const char* const file_path, const ClownCD_FileCallbacks* const callbacks)
 {
+	return ClownCD_OpenAlreadyOpen(NULL, file_path, callbacks);
+}
+
+ClownCD ClownCD_OpenAlreadyOpen(void *stream, const char *file_path, const ClownCD_FileCallbacks *callbacks)
+{
 	ClownCD disc;
 
 	disc.filename = ClownCD_DuplicateString(file_path); /* It's okay for this to fail. */
-	disc.file = ClownCD_FileOpen(file_path, CLOWNCD_RB);
+	disc.file = stream != NULL ? ClownCD_FileOpenAlreadyOpen(stream, callbacks) : ClownCD_FileOpen(file_path, CLOWNCD_RB, callbacks);
 	disc.track.file = ClownCD_FileOpenBlank();
 	disc.track.file_type = CLOWNCD_CUE_FILE_INVALID;
 	disc.track.type = CLOWNCD_CUE_TRACK_INVALID;
@@ -77,7 +82,7 @@ static void ClownCD_SeekTrackCallback(
 
 	if (full_path != NULL)
 	{
-		disc->track.file = ClownCD_FileOpen(full_path, CLOWNCD_RB);
+		disc->track.file = ClownCD_FileOpen(full_path, CLOWNCD_RB, disc->file.functions);
 		free(full_path);
 
 		disc->track.file_type = file_type;

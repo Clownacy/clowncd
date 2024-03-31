@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 ClownCD ClownCD_Open(const char *file_path, const ClownCD_FileCallbacks *callbacks);
+ClownCD ClownCD_OpenAlreadyOpen(void *stream, const char *file_path, const ClownCD_FileCallbacks *callbacks);
 void ClownCD_Close(ClownCD *disc);
 #define ClownCD_IsOpen(disc) ClownCD_FileIsOpen(&(disc)->file)
 

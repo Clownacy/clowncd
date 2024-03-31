@@ -75,12 +75,13 @@ ClownCD_File ClownCD_FileOpenBlank(void)
 	ClownCD_File file;
 	file.functions = NULL;
 	file.stream = NULL;
+	file.eof = cc_false;
 	return file;
 }
 
-ClownCD_File ClownCD_FileOpen(const char* const filename, const ClownCD_FileMode mode)
+static const ClownCD_FileCallbacks* ClownCD_GetCallbacks(const ClownCD_FileCallbacks *callbacks)
 {
-	static const ClownCD_FileCallbacks callbacks = {
+	static const ClownCD_FileCallbacks standard_callbacks = {
 		ClownCD_FileOpenStandard,
 		ClownCD_FileCloseStandard,
 		ClownCD_FileReadStandard,
@@ -89,14 +90,19 @@ ClownCD_File ClownCD_FileOpen(const char* const filename, const ClownCD_FileMode
 		ClownCD_FileSeekStandard
 	};
 
-	return ClownCD_FileOpenCustomIO(&callbacks, filename, mode);
+	return callbacks != NULL ? callbacks : &standard_callbacks;
 }
 
-ClownCD_File ClownCD_FileOpenCustomIO(const ClownCD_FileCallbacks* const callbacks, const char* const filename, const ClownCD_FileMode mode)
+ClownCD_File ClownCD_FileOpen(const char* const filename, const ClownCD_FileMode mode, const ClownCD_FileCallbacks* const callbacks)
+{
+	return ClownCD_FileOpenAlreadyOpen(ClownCD_GetCallbacks(callbacks)->open(filename, mode), callbacks);
+}
+
+ClownCD_File ClownCD_FileOpenAlreadyOpen(void* const stream, const ClownCD_FileCallbacks* const callbacks)
 {
 	ClownCD_File file = ClownCD_FileOpenBlank();
-	file.functions = callbacks;
-	file.stream = file.functions->open(filename, mode);
+	file.functions = ClownCD_GetCallbacks(callbacks);
+	file.stream = stream;
 	return file;
 }
 
