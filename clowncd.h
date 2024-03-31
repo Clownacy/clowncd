@@ -17,7 +17,7 @@ typedef struct ClownCD
 		ClownCD_File file;
 		ClownCD_CueFileType file_type;
 		ClownCD_CueTrackType type;
-		size_t current_audio_frame, total_audio_frames;
+		size_t current_frame, total_frames;
 		unsigned long starting_sector, ending_sector, current_sector;
 	} track;
 } ClownCD;
@@ -35,12 +35,9 @@ ClownCD_CueTrackType ClownCD_SeekTrackIndex(ClownCD *disc, unsigned int track, u
 cc_bool ClownCD_SeekSector(ClownCD *disc, unsigned long sector);
 cc_bool ClownCD_SeekAudioFrame(ClownCD *disc, size_t frame);
 
-cc_bool ClownCD_ReadSectorRaw(ClownCD *disc, unsigned char *buffer);
-cc_bool ClownCD_ReadSectorAtRaw(ClownCD *disc, unsigned long sector_index, unsigned char *buffer);
-cc_bool ClownCD_ReadSectorData(ClownCD *disc, unsigned char *buffer);
-cc_bool ClownCD_ReadSectorAtData(ClownCD *disc, unsigned long sector_index, unsigned char *buffer);
+cc_bool ClownCD_ReadSector(ClownCD *disc, unsigned char *buffer);
 
-size_t ClownCD_ReadAudioFrames(ClownCD *disc, short *buffer, size_t total_frames);
+size_t ClownCD_ReadFrames(ClownCD *disc, short *buffer, size_t total_frames);
 
 unsigned long ClownCD_CalculateSectorCRC(const unsigned char *buffer);
 cc_bool ClownCD_ValidateSectorCRC(const unsigned char *buffer);
