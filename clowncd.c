@@ -123,11 +123,11 @@ cc_bool ClownCD_SeekAudioFrame(ClownCD* const disc, const size_t frame)
 	if (frame >= disc->track.total_audio_frames)
 		return cc_false;
 
-	disc->track.current_audio_frame = frame;
-
 	/* Seek to the start of the track. */
 	if (!ClownCD_SeekSectorInternal(disc, 0))
 		return cc_false;
+
+	disc->track.current_audio_frame = frame;
 
 	/* Seek to the correct frame within the track. */
 	if (ClownCD_FileSeek(&disc->track.file, disc->track.current_audio_frame * CLOWNCD_AUDIO_FRAME_SIZE, CLOWNCD_SEEK_CUR) != 0)
