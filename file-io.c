@@ -108,6 +108,9 @@ ClownCD_File ClownCD_FileOpenAlreadyOpen(void* const stream, const ClownCD_FileC
 
 int ClownCD_FileClose(ClownCD_File* const file)
 {
+	if (!ClownCD_FileIsOpen(file))
+		return 0;
+
 	void* const stream = file->stream;
 	file->stream = NULL;
 	return file->functions->close(stream);
@@ -115,42 +118,65 @@ int ClownCD_FileClose(ClownCD_File* const file)
 
 size_t ClownCD_FileRead(void* const buffer, const size_t size, const size_t count, ClownCD_File* const file)
 {
-	const size_t total_done = file->functions->read(buffer, size, count, file->stream);
+	if (!ClownCD_FileIsOpen(file))
+	{
+		return 0;
+	}
+	else
+	{
+		const size_t total_done = file->functions->read(buffer, size, count, file->stream);
 
-	if (total_done != count)
-		file->eof = cc_true;
+		if (total_done != count)
+			file->eof = cc_true;
 
-	return total_done;
+		return total_done;
+	}
 }
 
 size_t ClownCD_FileWrite(const void* const buffer, const size_t size, const size_t count, ClownCD_File* const file)
 {
-	return file->functions->write(buffer, size, count, file->stream);
+	if (!ClownCD_FileIsOpen(file))
+		return 0;
+	else
+		return file->functions->write(buffer, size, count, file->stream);
 }
 
 long ClownCD_FileTell(ClownCD_File* const file)
 {
-	return file->functions->tell(file->stream);
+	if (!ClownCD_FileIsOpen(file))
+		return -1L;
+	else
+		return file->functions->tell(file->stream);
 }
 
 int ClownCD_FileSeek(ClownCD_File* const file, const long position, const ClownCD_FileOrigin origin)
 {
-	file->eof = cc_false;
-	return file->functions->seek(file->stream, position, origin);
+	if (!ClownCD_FileIsOpen(file))
+	{
+		return -1;
+	}
+	else
+	{
+		file->eof = cc_false;
+		return file->functions->seek(file->stream, position, origin);
+	}
 }
 
 size_t ClownCD_FileSize(ClownCD_File* const file)
 {
-	const long position = ClownCD_FileTell(file);
-
 	size_t file_size = -1;
 
-	if (position != -1L)
+	if (ClownCD_FileIsOpen(file))
 	{
-		if (ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_END) == 0)
-			file_size = ClownCD_FileTell(file);
+		const long position = ClownCD_FileTell(file);
 
-		ClownCD_FileSeek(file, position, CLOWNCD_SEEK_SET);
+		if (position != -1L)
+		{
+			if (ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_END) == 0)
+				file_size = ClownCD_FileTell(file);
+
+			ClownCD_FileSeek(file, position, CLOWNCD_SEEK_SET);
+		}
 	}
 
 	return file_size;

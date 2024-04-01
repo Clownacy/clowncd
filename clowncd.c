@@ -148,6 +148,9 @@ ClownCD_CueTrackType ClownCD_SetState(ClownCD *disc, unsigned int track, unsigne
 		if (!ClownCD_CueGetTrackIndexInfo(&disc->file, track, index, ClownCD_SeekTrackCallback, disc))
 			return CLOWNCD_CUE_TRACK_INVALID;
 
+		if (!ClownCD_FileIsOpen(&disc->track.file))
+			return CLOWNCD_CUE_TRACK_INVALID;
+
 		/* Force the sector and frame to update. */
 		disc->track.current_sector = -1;
 		disc->track.current_frame = -1;
