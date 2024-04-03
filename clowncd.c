@@ -21,12 +21,14 @@ static cc_bool ClownCD_SeekSectorInternal(ClownCD* const disc, const unsigned lo
 {
 	if (sector != disc->track.current_sector)
 	{
+		const unsigned long sector_size = disc->track.type == CLOWNCD_CUE_TRACK_MODE1_2048 ? CLOWNCD_SECTOR_DATA_SIZE : CLOWNCD_SECTOR_RAW_SIZE;
+
 		disc->track.current_sector = disc->track.starting_sector + sector;
 
 		if (!ClownCD_IsSectorValid(disc))
 			return cc_false;
 
-		if (ClownCD_FileSeek(&disc->track.file, disc->track.current_sector * CLOWNCD_SECTOR_RAW_SIZE, CLOWNCD_SEEK_SET) != 0)
+		if (ClownCD_FileSeek(&disc->track.file, disc->track.current_sector * sector_size, CLOWNCD_SEEK_SET) != 0)
 			return cc_false;
 	}
 
@@ -105,7 +107,7 @@ ClownCD_CueTrackType ClownCD_SeekTrackIndex(ClownCD* const disc, const unsigned 
 
 cc_bool ClownCD_SeekSector(ClownCD* const disc, const unsigned long sector)
 {
-	if (/*disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2048 && */disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2352)
+	if (disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2048 && disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2352)
 		return cc_false;
 
 	if (!ClownCD_SeekSectorInternal(disc, sector))
@@ -178,19 +180,24 @@ ClownCD_CueTrackType ClownCD_SetState(ClownCD *disc, unsigned int track, unsigne
 
 cc_bool ClownCD_ReadSector(ClownCD* const disc, unsigned char* const buffer)
 {
+	if (disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2048 && disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2352)
+		return cc_false;
+
 	if (!ClownCD_IsSectorValid(disc))
 		return cc_false;
 
 	++disc->track.current_sector;
 
-	if (ClownCD_FileSeek(&disc->track.file, CLOWNCD_SECTOR_HEADER_SIZE, CLOWNCD_SEEK_CUR) != 0)
-		return cc_false;
+	if (disc->track.type == CLOWNCD_CUE_TRACK_MODE1_2352)
+		if (ClownCD_FileSeek(&disc->track.file, CLOWNCD_SECTOR_HEADER_SIZE, CLOWNCD_SEEK_CUR) != 0)
+			return cc_false;
 
 	if (ClownCD_FileRead(buffer, CLOWNCD_SECTOR_DATA_SIZE, 1, &disc->track.file) != 1)
 		return cc_false;
 
-	if (ClownCD_FileSeek(&disc->track.file, CLOWNCD_SECTOR_RAW_SIZE - (CLOWNCD_SECTOR_HEADER_SIZE + CLOWNCD_SECTOR_DATA_SIZE), CLOWNCD_SEEK_CUR) != 0)
-		return cc_false;
+	if (disc->track.type == CLOWNCD_CUE_TRACK_MODE1_2352)
+		if (ClownCD_FileSeek(&disc->track.file, CLOWNCD_SECTOR_RAW_SIZE - (CLOWNCD_SECTOR_HEADER_SIZE + CLOWNCD_SECTOR_DATA_SIZE), CLOWNCD_SEEK_CUR) != 0)
+			return cc_false;
 
 	return cc_true;
 }
