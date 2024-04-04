@@ -73,7 +73,7 @@ int main(const int argc, char** const argv)
 	else
 	{
 		const char* const cue_filename = argv[1];
-		ClownCD_File cue_file = ClownCD_FileOpen(cue_filename, CLOWNCD_RB);
+		ClownCD_File cue_file = ClownCD_FileOpen(cue_filename, CLOWNCD_RB, NULL);
 
 		if (!ClownCD_FileIsOpen(&cue_file))
 		{
@@ -81,7 +81,7 @@ int main(const int argc, char** const argv)
 		}
 		else
 		{
-			ClownCD_File header_file = ClownCD_FileOpen(argv[2], CLOWNCD_WB);
+			ClownCD_File header_file = ClownCD_FileOpen(argv[2], CLOWNCD_WB, NULL);
 
 			if (!ClownCD_FileIsOpen(&header_file))
 			{

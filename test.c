@@ -7,126 +7,135 @@
 
 int main(const int argc, const char** const argv)
 {
-	ClownCD cd;
-
 	(void)argc;
 	(void)argv;
 
-	if (argc < 2 || !ClownCD_OpenFromFile(&cd, argv[1]))
+	if (argc < 2)
 	{
-		fprintf(stderr, "Could not open file '%s'.\n", argv[1]);
+		fputs("Input filename not specified.\n", stderr);
 	}
 	else
 	{
-		const char* const output_cue_filename = "output.cue";
-		FILE* const output_cue_file = fopen(output_cue_filename, "w");
+		ClownCD cd = ClownCD_Open(argv[1], NULL);
 
-		if (output_cue_file == NULL)
+		if (!ClownCD_IsOpen(&cd))
 		{
-			fprintf(stderr, "Could not open file '%s'.\n", output_cue_filename);
+			fprintf(stderr, "Could not open file '%s'.\n", argv[1]);
 		}
 		else
 		{
-			unsigned int i;
+			const char* const output_cue_filename = "output.cue";
+			FILE* const output_cue_file = fopen(output_cue_filename, "w");
 
-			for (i = 1; ; ++i)
+			if (output_cue_file == NULL)
 			{
-				const ClownCD_CueTrackType track_type = ClownCD_SeekTrackIndex(&cd, i, 1);
+				fprintf(stderr, "Could not open file '%s'.\n", output_cue_filename);
+			}
+			else
+			{
+				unsigned int i;
 
-				char filename[] = "01.wav";
-				const char *file_type_string, *track_type_string;
-				ClownCD_File out_file;
-
-				filename[0] = '0' + i / 10;
-				filename[1] = '0' + i % 10;
-
-				if (track_type == CLOWNCD_CUE_TRACK_INVALID)
+				for (i = 1; ; ++i)
 				{
-					break;
-				}
-				else if (track_type == CLOWNCD_CUE_TRACK_MODE1_2352)
-				{
-					/* Actually check that this is an ISO and default to '.bin' otherwise. */
-					filename[3] = 'i';
-					filename[4] = 's';
-					filename[5] = 'o';
+					const ClownCD_CueTrackType track_type = ClownCD_SeekTrackIndex(&cd, i, 1);
 
-					file_type_string = "BINARY";
-					track_type_string = "MODE1/2048";
-				}
-				else if (track_type == CLOWNCD_CUE_TRACK_AUDIO)
-				{
-					filename[3] = 'w';
-					filename[4] = 'a';
-					filename[5] = 'v';
+					char filename[] = "01.wav";
+					const char *file_type_string, *track_type_string;
+					ClownCD_File out_file;
 
-					file_type_string = "WAVE";
-					track_type_string = "AUDIO";
-				}
+					filename[0] = '0' + i / 10;
+					filename[1] = '0' + i % 10;
 
-				fprintf(output_cue_file, "FILE \"%s\" %s\n  TRACK %02u %s\n    INDEX 01 00:00:00\n", filename, file_type_string, i, track_type_string);
-
-				out_file = ClownCD_FileOpen(filename, CLOWNCD_WB);
-
-				if (!ClownCD_FileIsOpen(&out_file))
-				{
-					fprintf(stderr, "Could not open file '%s'.\n", filename);
-				}
-				else
-				{
-					if (track_type == CLOWNCD_CUE_TRACK_MODE1_2352)
+					if (track_type == CLOWNCD_CUE_TRACK_INVALID)
 					{
-						for (;;)
-						{
-							unsigned char sector[2048];
+						break;
+					}
+					else if (track_type == CLOWNCD_CUE_TRACK_MODE1_2352)
+					{
+						/* Actually check that this is an ISO and default to '.bin' otherwise. */
+						filename[3] = 'i';
+						filename[4] = 's';
+						filename[5] = 'o';
 
-							if (!ClownCD_ReadSectorData(&cd, sector))
-								break;
-
-							ClownCD_FileWrite(sector, 1, CC_COUNT_OF(sector), &out_file);
-						}
+						file_type_string = "BINARY";
+						track_type_string = "MODE1/2048";
 					}
 					else if (track_type == CLOWNCD_CUE_TRACK_AUDIO)
 					{
-						const size_t size = cd.track.remaining_frames * 4;
+						filename[3] = 'w';
+						filename[4] = 'a';
+						filename[5] = 'v';
 
-						ClownCD_FileWrite("RIFF", 4, 1, &out_file);
-						ClownCD_WriteU32LE(&out_file, size + (44 - 8));
-						ClownCD_FileWrite("WAVE", 4, 1, &out_file);
-						ClownCD_FileWrite("fmt ", 4, 1, &out_file);
-						ClownCD_WriteU32LE(&out_file, 16);
-						ClownCD_WriteU16LE(&out_file, 1);
-						ClownCD_WriteU16LE(&out_file, 2);
-						ClownCD_WriteU32LE(&out_file, 44100);
-						ClownCD_WriteU32LE(&out_file, 44100 * 4);
-						ClownCD_WriteU16LE(&out_file, 4);
-						ClownCD_WriteU16LE(&out_file, 16);
-						ClownCD_FileWrite("data", 4, 1, &out_file);
-						ClownCD_WriteU32LE(&out_file, size);
-
-						for (;;)
-						{
-							short frames[0x10][2];
-							const size_t frames_read = ClownCD_ReadAudioFrames(&cd, &frames[0][0], CC_COUNT_OF(frames));
-
-							size_t j;
-
-							for (j = 0; j < frames_read; ++j)
-							{
-								ClownCD_WriteS16LE(&out_file, frames[j][0]);
-								ClownCD_WriteS16LE(&out_file, frames[j][1]);
-							}
-
-							if (frames_read != CC_COUNT_OF(frames))
-								break;
-						}
+						file_type_string = "WAVE";
+						track_type_string = "AUDIO";
 					}
 
-					ClownCD_FileClose(&out_file);
+					fprintf(output_cue_file, "FILE \"%s\" %s\n  TRACK %02u %s\n    INDEX 01 00:00:00\n", filename, file_type_string, i, track_type_string);
+
+					out_file = ClownCD_FileOpen(filename, CLOWNCD_WB, NULL);
+
+					if (!ClownCD_FileIsOpen(&out_file))
+					{
+						fprintf(stderr, "Could not open file '%s'.\n", filename);
+					}
+					else
+					{
+						if (track_type == CLOWNCD_CUE_TRACK_MODE1_2352)
+						{
+							for (;;)
+							{
+								unsigned char sector[2048];
+
+								if (!ClownCD_ReadSector(&cd, sector))
+									break;
+
+								ClownCD_FileWrite(sector, 1, CC_COUNT_OF(sector), &out_file);
+							}
+						}
+						else if (track_type == CLOWNCD_CUE_TRACK_AUDIO)
+						{
+							const size_t size = cd.track.total_frames * 4;
+
+							ClownCD_FileWrite("RIFF", 4, 1, &out_file);
+							ClownCD_WriteU32LE(&out_file, size + (44 - 8));
+							ClownCD_FileWrite("WAVE", 4, 1, &out_file);
+							ClownCD_FileWrite("fmt ", 4, 1, &out_file);
+							ClownCD_WriteU32LE(&out_file, 16);
+							ClownCD_WriteU16LE(&out_file, 1);
+							ClownCD_WriteU16LE(&out_file, 2);
+							ClownCD_WriteU32LE(&out_file, 44100);
+							ClownCD_WriteU32LE(&out_file, 44100 * 4);
+							ClownCD_WriteU16LE(&out_file, 4);
+							ClownCD_WriteU16LE(&out_file, 16);
+							ClownCD_FileWrite("data", 4, 1, &out_file);
+							ClownCD_WriteU32LE(&out_file, size);
+
+							for (;;)
+							{
+								short frames[0x10][2];
+								const size_t frames_read = ClownCD_ReadFrames(&cd, &frames[0][0], CC_COUNT_OF(frames));
+
+								size_t j;
+
+								for (j = 0; j < frames_read; ++j)
+								{
+									ClownCD_WriteS16LE(&out_file, frames[j][0]);
+									ClownCD_WriteS16LE(&out_file, frames[j][1]);
+								}
+
+								if (frames_read != CC_COUNT_OF(frames))
+									break;
+							}
+						}
+
+						ClownCD_FileClose(&out_file);
+					}
 				}
+
+				fclose(output_cue_file);
 			}
 
-			fclose(output_cue_file);
+			ClownCD_Close(&cd);
 		}
 #if 0
 		FILE *file;
