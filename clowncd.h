@@ -12,7 +12,8 @@ typedef enum ClownCD_DiscType
 {
 	CLOWNCD_DISC_CUE,
 	CLOWNCD_DISC_RAW_2048,
-	CLOWNCD_DISC_RAW_2352
+	CLOWNCD_DISC_RAW_2352,
+	CLOWNCD_DISC_CLOWNCD
 } ClownCD_DiscType;
 
 typedef struct ClownCD
