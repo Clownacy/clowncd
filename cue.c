@@ -213,8 +213,12 @@ static void ClownCD_CueGetTrackIndexInfo_Callback(void* const user_data, const c
 
 	if (state->track == track && state->index == index)
 	{
-		state->callback(state->user_data, filename, file_type, track, track_type, index, frame);
+		if (state->callback != NULL)
+			state->callback(state->user_data, filename, file_type, track, track_type, index, frame);
+
 		state->found = cc_true;
+
+		/* TODO: Have this return a value to stop the parsing. */
 	}
 }
 

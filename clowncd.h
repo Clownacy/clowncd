@@ -8,10 +8,18 @@
 #include "cue.h"
 #include "file-io.h"
 
+typedef enum ClownCD_DiscType
+{
+	CLOWNCD_DISC_CUE,
+	CLOWNCD_DISC_RAW_2048,
+	CLOWNCD_DISC_RAW_2352
+} ClownCD_DiscType;
+
 typedef struct ClownCD
 {
 	char *filename;
 	ClownCD_File file;
+	ClownCD_DiscType type;
 	struct
 	{
 		ClownCD_File file;

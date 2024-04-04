@@ -1,6 +1,7 @@
 #include "clowncd.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "cue.h"
 #include "utilities.h"
@@ -35,6 +36,23 @@ static cc_bool ClownCD_SeekSectorInternal(ClownCD* const disc, const unsigned lo
 	return cc_true;
 }
 
+static ClownCD_DiscType ClownCD_GetDiscType(ClownCD_File* const file)
+{
+	static const unsigned char header_2048[0x10] = {0x53, 0x45, 0x47, 0x41, 0x44, 0x49, 0x53, 0x43, 0x53, 0x59, 0x53, 0x54, 0x45, 0x4D, 0x20, 0x20};
+	static const unsigned char header_2352[0x10] = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x02, 0x00, 0x01};
+
+	unsigned char buffer[0x10];
+
+	const cc_bool read_successful = ClownCD_FileRead(buffer, 0x10, 1, file) == 1;
+
+	if (read_successful && memcmp(buffer, header_2048, sizeof(buffer)) == 0)
+		return CLOWNCD_DISC_RAW_2048;
+	else if (read_successful && memcmp(buffer, header_2352, sizeof(buffer)) == 0)
+		return CLOWNCD_DISC_RAW_2352;
+	else
+		return CLOWNCD_DISC_CUE;
+}
+
 ClownCD ClownCD_Open(const char* const file_path, const ClownCD_FileCallbacks* const callbacks)
 {
 	return ClownCD_OpenAlreadyOpen(NULL, file_path, callbacks);
@@ -46,7 +64,22 @@ ClownCD ClownCD_OpenAlreadyOpen(void *stream, const char *file_path, const Clown
 
 	disc.filename = ClownCD_DuplicateString(file_path); /* It's okay for this to fail. */
 	disc.file = stream != NULL ? ClownCD_FileOpenAlreadyOpen(stream, callbacks) : ClownCD_FileOpen(file_path, CLOWNCD_RB, callbacks);
-	disc.track.file = ClownCD_FileOpenBlank();
+	disc.type = ClownCD_GetDiscType(&disc.file);
+
+	switch (disc.type)
+	{
+		default:
+		case CLOWNCD_DISC_CUE:
+			disc.track.file = ClownCD_FileOpenBlank();
+			break;
+
+		case CLOWNCD_DISC_RAW_2048:
+		case CLOWNCD_DISC_RAW_2352:
+			disc.track.file = disc.file;
+			disc.file = ClownCD_FileOpenBlank();
+			break;
+	}
+
 	disc.track.file_type = CLOWNCD_CUE_FILE_INVALID;
 	disc.track.type = CLOWNCD_CUE_TRACK_INVALID;
 	disc.track.current_frame = 0;
@@ -147,8 +180,25 @@ ClownCD_CueTrackType ClownCD_SetState(ClownCD *disc, unsigned int track, unsigne
 		disc->track.current_track = track;
 		disc->track.current_index = index;
 
-		if (!ClownCD_CueGetTrackIndexInfo(&disc->file, track, index, ClownCD_SeekTrackCallback, disc))
-			return CLOWNCD_CUE_TRACK_INVALID;
+		switch (disc->type)
+		{
+			case CLOWNCD_DISC_CUE:
+				if (!ClownCD_CueGetTrackIndexInfo(&disc->file, track, index, ClownCD_SeekTrackCallback, disc))
+					return CLOWNCD_CUE_TRACK_INVALID;
+				break;
+
+			case CLOWNCD_DISC_RAW_2048:
+			case CLOWNCD_DISC_RAW_2352:
+				if (track == 1 && index == 1)
+				{
+					disc->track.file_type = CLOWNCD_CUE_FILE_BINARY;
+					disc->track.type = disc->type == CLOWNCD_DISC_RAW_2048 ? CLOWNCD_CUE_TRACK_MODE1_2048 : CLOWNCD_CUE_TRACK_MODE1_2352;
+					disc->track.starting_sector = 0;
+					disc->track.ending_sector = 0xFFFFFFFF;
+					disc->track.total_frames = 0;
+				}
+				break;
+		}
 
 		if (!ClownCD_FileIsOpen(&disc->track.file))
 			return CLOWNCD_CUE_TRACK_INVALID;
