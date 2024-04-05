@@ -11,6 +11,8 @@ add_library(clowncd STATIC
 	"file-io.h"
 	"utilities.c"
 	"utilities.h"
+	"wav.c"
+	"wav.h"
 )
 
 add_executable(clowncd-test "test.c")

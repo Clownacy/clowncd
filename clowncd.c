@@ -6,6 +6,7 @@
 
 #include "cue.h"
 #include "utilities.h"
+#include "wav.h"
 
 #define CLOWNCD_SECTOR_RAW_SIZE 2352
 #define CLOWNCD_SECTOR_HEADER_SIZE 0x10
@@ -122,67 +123,17 @@ ClownCD ClownCD_OpenAlreadyOpen(void *stream, const char *file_path, const Clown
 void ClownCD_Close(ClownCD* const disc)
 {
 	if (ClownCD_FileIsOpen(&disc->track.file))
+	{
+		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE)
+			ClownCD_WAVClose(&disc->track.shared.wav);
+
 		ClownCD_FileClose(&disc->track.file);
+	}
 
 	if (ClownCD_FileIsOpen(&disc->file))
 		ClownCD_FileClose(&disc->file);
 
 	free(disc->filename);
-}
-
-ClownCD_CueTrackType ClownCD_SeekTrackIndex(ClownCD* const disc, const unsigned int track, const unsigned int index)
-{
-	return ClownCD_SetState(disc, track, index, 0, 0);
-}
-
-cc_bool ClownCD_SeekSector(ClownCD* const disc, const unsigned long sector)
-{
-	if (disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2048 && disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2352)
-		return cc_false;
-
-	if (!ClownCD_SeekSectorInternal(disc, sector))
-		return cc_false;
-
-	return cc_true;
-}
-
-cc_bool ClownCD_SeekAudioFrame(ClownCD* const disc, const size_t frame)
-{
-	if (disc->track.type != CLOWNCD_CUE_TRACK_AUDIO)
-		return cc_false;
-
-	if (frame >= disc->track.total_frames)
-		return cc_false;
-
-	if (frame != disc->track.current_frame)
-	{
-		disc->track.current_frame = frame;
-
-		/* Seek to the start of the track. */
-		if (!ClownCD_SeekSectorInternal(disc, 0))
-			return cc_false;
-
-		/* Seek to the correct frame within the track. */
-		if (ClownCD_FileSeek(&disc->track.file, disc->track.current_frame * CLOWNCD_AUDIO_FRAME_SIZE, CLOWNCD_SEEK_CUR) != 0)
-			return cc_false;
-	}
-
-	return cc_true;
-}
-
-static ClownCD_CueTrackType ClownCD_GetClownCDTrackType(const unsigned int value)
-{
-	switch (value)
-	{
-		case 0:
-			return CLOWNCD_CUE_TRACK_MODE1_2352;
-
-		case 1:
-			return CLOWNCD_CUE_TRACK_AUDIO;
-
-		default:
-			return CLOWNCD_CUE_TRACK_INVALID;
-	}
 }
 
 static void ClownCD_SeekTrackCallback(
@@ -201,7 +152,12 @@ static void ClownCD_SeekTrackCallback(
 	(void)index;
 
 	if (ClownCD_FileIsOpen(&disc->track.file))
+	{
+		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE)
+			ClownCD_WAVClose(&disc->track.shared.wav);
+
 		ClownCD_FileClose(&disc->track.file);
+	}
 
 	if (full_path != NULL)
 	{
@@ -212,10 +168,29 @@ static void ClownCD_SeekTrackCallback(
 		disc->track.type = track_type;
 		disc->track.starting_sector = frame;
 		disc->track.ending_sector = ClownCD_CueGetTrackEndingFrame(&disc->file, filename, track, frame);
+
+		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE)
+			if (!ClownCD_WAVOpen(&disc->track.shared.wav, &disc->track.file))
+				ClownCD_FileClose(&disc->track.file);
 	}
 }
 
-ClownCD_CueTrackType ClownCD_SetState(ClownCD* const disc, const unsigned int track, const unsigned int index, const unsigned long sector, const size_t frame)
+static ClownCD_CueTrackType ClownCD_GetClownCDTrackType(const unsigned int value)
+{
+	switch (value)
+	{
+		case 0:
+			return CLOWNCD_CUE_TRACK_MODE1_2352;
+
+		case 1:
+			return CLOWNCD_CUE_TRACK_AUDIO;
+
+		default:
+			return CLOWNCD_CUE_TRACK_INVALID;
+	}
+}
+
+static ClownCD_CueTrackType ClownCD_SeekTrackIndexInternal(ClownCD* const disc, const unsigned int track, const unsigned int index)
 {
 	if (track != disc->track.current_track || index != disc->track.current_index)
 	{
@@ -269,6 +244,11 @@ ClownCD_CueTrackType ClownCD_SetState(ClownCD* const disc, const unsigned int tr
 		disc->track.current_frame = -1;
 	}
 
+	return disc->track.type;
+}
+
+static cc_bool ClownCD_SeekSectorOrFrame(ClownCD* const disc, const unsigned long sector, const size_t frame)
+{
 	switch (disc->track.type)
 	{
 		case CLOWNCD_CUE_TRACK_INVALID:
@@ -277,16 +257,94 @@ ClownCD_CueTrackType ClownCD_SetState(ClownCD* const disc, const unsigned int tr
 		case CLOWNCD_CUE_TRACK_MODE1_2048:
 		case CLOWNCD_CUE_TRACK_MODE1_2352:
 			if (!ClownCD_SeekSector(disc, sector))
-				return CLOWNCD_CUE_TRACK_INVALID;
+				return cc_false;
 			break;
 
 		case CLOWNCD_CUE_TRACK_AUDIO:
 			if (!ClownCD_SeekAudioFrame(disc, frame))
-				return CLOWNCD_CUE_TRACK_INVALID;
+				return cc_false;
 			break;
 	}
 
-	return disc->track.type;
+	return cc_true;
+}
+
+static size_t ClownCD_SectorToFrame(const unsigned long sector)
+{
+	const size_t frames_per_second = 75;
+	const size_t sample_rate = 44100;
+	const size_t frame = sector / frames_per_second * sample_rate + sector % frames_per_second * sample_rate / frames_per_second;
+	return frame;
+}
+
+ClownCD_CueTrackType ClownCD_SeekTrackIndex(ClownCD* const disc, const unsigned int track, const unsigned int index)
+{
+	const ClownCD_CueTrackType track_type = ClownCD_SeekTrackIndexInternal(disc, track, index);
+
+	if (!ClownCD_SeekSectorOrFrame(disc, disc->track.starting_sector, ClownCD_SectorToFrame(disc->track.starting_sector)))
+		return CLOWNCD_CUE_TRACK_INVALID;
+
+	return track_type;
+}
+
+cc_bool ClownCD_SeekSector(ClownCD* const disc, const unsigned long sector)
+{
+	if (disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2048 && disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2352)
+		return cc_false;
+
+	if (!ClownCD_SeekSectorInternal(disc, sector))
+		return cc_false;
+
+	return cc_true;
+}
+
+cc_bool ClownCD_SeekAudioFrame(ClownCD* const disc, const size_t frame)
+{
+	if (disc->track.type != CLOWNCD_CUE_TRACK_AUDIO)
+		return cc_false;
+
+	if (frame >= disc->track.total_frames)
+		return cc_false;
+
+	if (frame != disc->track.current_frame)
+	{
+		disc->track.current_frame = frame;
+
+		switch (disc->track.file_type)
+		{
+			case CLOWNCD_CUE_FILE_BINARY:
+				/* Seek to the start of the track. */
+				if (!ClownCD_SeekSectorInternal(disc, 0))
+					return cc_false;
+
+				/* Seek to the correct frame within the track. */
+				if (ClownCD_FileSeek(&disc->track.file, disc->track.current_frame * CLOWNCD_AUDIO_FRAME_SIZE, CLOWNCD_SEEK_CUR) != 0)
+					return cc_false;
+
+				break;
+
+			case CLOWNCD_CUE_FILE_WAVE:
+				if (!ClownCD_WAVSeek(&disc->track.shared.wav, frame))
+					return cc_false;
+				break;
+
+			default:
+				assert(cc_false);
+				return cc_false;
+		}
+	}
+
+	return cc_true;
+}
+
+ClownCD_CueTrackType ClownCD_SetState(ClownCD* const disc, const unsigned int track, const unsigned int index, const unsigned long sector, const size_t frame)
+{
+	const ClownCD_CueTrackType track_type = ClownCD_SeekTrackIndexInternal(disc, track, index);
+
+	if (!ClownCD_SeekSectorOrFrame(disc, sector, frame))
+		return CLOWNCD_CUE_TRACK_INVALID;
+
+	return track_type;
 }
 
 cc_bool ClownCD_ReadSector(ClownCD* const disc, unsigned char* const buffer)
@@ -315,26 +373,44 @@ cc_bool ClownCD_ReadSector(ClownCD* const disc, unsigned char* const buffer)
 
 size_t ClownCD_ReadFrames(ClownCD* const disc, short* const buffer, const size_t total_frames)
 {
-	const size_t frames_to_do = CC_MIN(disc->track.total_frames - disc->track.current_frame, total_frames);
+	size_t frames_done;
 
-	short *buffer_pointer = buffer;
-	size_t i;
-
-	if (disc->track.type != CLOWNCD_CUE_TRACK_AUDIO)
-		return 0;
-
-	for (i = 0; i < frames_to_do; ++i)
+	switch (disc->track.file_type)
 	{
-		*buffer_pointer++ = ClownCD_ReadS16LE(&disc->track.file);
-		*buffer_pointer++ = ClownCD_ReadS16LE(&disc->track.file);
+		case CLOWNCD_CUE_FILE_BINARY:
+		{
+			const size_t frames_to_do = CC_MIN(disc->track.total_frames - disc->track.current_frame, total_frames);
 
-		if (disc->track.file.eof)
+			short *buffer_pointer = buffer;
+
+			if (disc->track.type != CLOWNCD_CUE_TRACK_AUDIO)
+				return 0;
+
+			for (frames_done = 0; frames_done < frames_to_do; ++frames_done)
+			{
+				*buffer_pointer++ = ClownCD_ReadS16LE(&disc->track.file);
+				*buffer_pointer++ = ClownCD_ReadS16LE(&disc->track.file);
+
+				if (disc->track.file.eof)
+					break;
+			}
+
+			break;
+		}
+
+		case CLOWNCD_CUE_FILE_WAVE:
+			frames_done = ClownCD_WAVRead(&disc->track.shared.wav, buffer, total_frames);
+			break;
+
+		default:
+			assert(cc_false);
+			frames_done = 0;
 			break;
 	}
 
-	disc->track.current_frame += frames_to_do;
+	disc->track.current_frame += frames_done;
 
-	return i;
+	return frames_done;
 }
 
 unsigned long ClownCD_CalculateSectorCRC(const unsigned char* const buffer)
