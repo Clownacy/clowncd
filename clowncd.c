@@ -130,36 +130,6 @@ void ClownCD_Close(ClownCD* const disc)
 	free(disc->filename);
 }
 
-static void ClownCD_SeekTrackCallback(
-	void* const user_data,
-	const char* const filename,
-	const ClownCD_CueFileType file_type,
-	const unsigned int track,
-	const ClownCD_CueTrackType track_type,
-	const unsigned int index,
-	const unsigned long frame)
-{
-	/* TODO: Cache the track filename so that we don't reopen files unnecessarily. */
-	ClownCD* const disc = (ClownCD*)user_data;
-	char* const full_path = ClownCD_GetFullFilePath(disc->filename, filename);
-
-	(void)index;
-
-	if (ClownCD_FileIsOpen(&disc->track.file))
-		ClownCD_FileClose(&disc->track.file);
-
-	if (full_path != NULL)
-	{
-		disc->track.file = ClownCD_FileOpen(full_path, CLOWNCD_RB, disc->file.functions);
-		free(full_path);
-
-		disc->track.file_type = file_type;
-		disc->track.type = track_type;
-		disc->track.starting_sector = frame;
-		disc->track.ending_sector = ClownCD_CueGetTrackEndingFrame(&disc->file, filename, track, frame);
-	}
-}
-
 ClownCD_CueTrackType ClownCD_SeekTrackIndex(ClownCD* const disc, const unsigned int track, const unsigned int index)
 {
 	return ClownCD_SetState(disc, track, index, 0, 0);
@@ -202,24 +172,47 @@ cc_bool ClownCD_SeekAudioFrame(ClownCD* const disc, const size_t frame)
 
 static ClownCD_CueTrackType ClownCD_GetClownCDTrackType(const unsigned int value)
 {
-	ClownCD_CueTrackType track_type;
-
 	switch (value)
 	{
 		case 0:
-			track_type = CLOWNCD_CUE_TRACK_MODE1_2352;
-			break;
+			return CLOWNCD_CUE_TRACK_MODE1_2352;
 
 		case 1:
-			track_type = CLOWNCD_CUE_TRACK_AUDIO;
-			break;
+			return CLOWNCD_CUE_TRACK_AUDIO;
 
 		default:
-			track_type = CLOWNCD_CUE_TRACK_INVALID;
-			break;
+			return CLOWNCD_CUE_TRACK_INVALID;
 	}
+}
 
-	return track_type;
+static void ClownCD_SeekTrackCallback(
+	void* const user_data,
+	const char* const filename,
+	const ClownCD_CueFileType file_type,
+	const unsigned int track,
+	const ClownCD_CueTrackType track_type,
+	const unsigned int index,
+	const unsigned long frame)
+{
+	/* TODO: Cache the track filename so that we don't reopen files unnecessarily. */
+	ClownCD* const disc = (ClownCD*)user_data;
+	char* const full_path = ClownCD_GetFullFilePath(disc->filename, filename);
+
+	(void)index;
+
+	if (ClownCD_FileIsOpen(&disc->track.file))
+		ClownCD_FileClose(&disc->track.file);
+
+	if (full_path != NULL)
+	{
+		disc->track.file = ClownCD_FileOpen(full_path, CLOWNCD_RB, disc->file.functions);
+		free(full_path);
+
+		disc->track.file_type = file_type;
+		disc->track.type = track_type;
+		disc->track.starting_sector = frame;
+		disc->track.ending_sector = ClownCD_CueGetTrackEndingFrame(&disc->file, filename, track, frame);
+	}
 }
 
 ClownCD_CueTrackType ClownCD_SetState(ClownCD* const disc, const unsigned int track, const unsigned int index, const unsigned long sector, const size_t frame)
