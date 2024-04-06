@@ -235,6 +235,9 @@ static cc_bool ClownCD_SeekTrackIndexInternal(ClownCD* const disc, const unsigne
 				break;
 
 			case CLOWNCD_DISC_CLOWNCD:
+				if (index != 1)
+					return cc_false;
+
 				if (ClownCD_FileSeek(&disc->track.file, 10, CLOWNCD_SEEK_SET) != 0)
 					return cc_false;
 
