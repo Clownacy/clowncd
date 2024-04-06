@@ -19,7 +19,7 @@ add_executable(clowncd-test "test.c")
 
 target_link_libraries(clowncd-test PRIVATE clowncd)
 
-find_package(SndFile REQUIRED)
+find_package(SndFile)
 target_link_libraries(clowncd-test PRIVATE SndFile::sndfile)
 
 add_executable(clowncd-cue-converter
