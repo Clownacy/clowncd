@@ -265,16 +265,6 @@ static cc_bool ClownCD_SeekTrackIndexInternal(ClownCD* const disc, const unsigne
 
 					size_t i;
 
-					if (audio_filename == NULL)
-						return cc_false;
-
-					memcpy(audio_filename, disc->filename, filename_length_minus_extension);
-					audio_filename[filename_length_minus_extension + 0] = ' ';
-					audio_filename[filename_length_minus_extension + 1] = '0' + track / 10;
-					audio_filename[filename_length_minus_extension + 2] = '0' + track % 10;
-					audio_filename[filename_length_minus_extension + 3] = '.';
-					audio_filename[filename_length_minus_extension + 4 + sizeof(extensions[0])] = '\0';
-
 					/* Make the disc file not the active track file. */
 					if (!ClownCD_FileIsOpen(&disc->file))
 					{
@@ -288,6 +278,16 @@ static cc_bool ClownCD_SeekTrackIndexInternal(ClownCD* const disc, const unsigne
 					disc->track.type = CLOWNCD_CUE_TRACK_AUDIO;
 					disc->track.starting_sector = 0;
 					disc->track.ending_sector = 0xFFFFFFFF;
+
+					if (audio_filename == NULL)
+						return cc_false;
+
+					memcpy(audio_filename, disc->filename, filename_length_minus_extension);
+					audio_filename[filename_length_minus_extension + 0] = ' ';
+					audio_filename[filename_length_minus_extension + 1] = '0' + track / 10;
+					audio_filename[filename_length_minus_extension + 2] = '0' + track % 10;
+					audio_filename[filename_length_minus_extension + 3] = '.';
+					audio_filename[filename_length_minus_extension + 4 + sizeof(extensions[0])] = '\0';
 
 					for (i = 0; i < CC_COUNT_OF(extensions); ++i)
 					{
