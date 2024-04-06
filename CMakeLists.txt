@@ -37,11 +37,11 @@ else()
 	)
 endif()
 
-add_executable(clowncd-test "test.c")
+add_executable(clowncd-split "split.c")
 
-target_link_libraries(clowncd-test PRIVATE clowncd)
+target_link_libraries(clowncd-split PRIVATE clowncd)
 
-target_link_libraries(clowncd-test PRIVATE SndFile::sndfile)
+target_link_libraries(clowncd-split PRIVATE SndFile::sndfile)
 
 add_executable(clowncd-cue-converter
 	"cue-converter.c"
