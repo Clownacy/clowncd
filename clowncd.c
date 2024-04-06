@@ -6,8 +6,6 @@
 
 #include "cue.h"
 #include "utilities.h"
-#include "vorbis.h"
-#include "wav.h"
 
 #define CLOWNCD_SECTOR_RAW_SIZE 2352
 #define CLOWNCD_SECTOR_HEADER_SIZE 0x10
