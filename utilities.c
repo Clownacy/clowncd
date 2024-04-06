@@ -23,14 +23,21 @@ static char* ClownCD_GetLastPathSeparator(const char* const file_path)
 #endif
 }
 
-static size_t ClownCD_GetIndexOfFilenameInPath(const char* const filename)
+static const char* ClownCD_GetFilename(const char* const path)
 {
-	const char* const separator = ClownCD_GetLastPathSeparator(filename);
+	const char* const separator = ClownCD_GetLastPathSeparator(path);
 
 	if (separator == NULL)
-		return 0;
+		return path;
 
-	return separator - filename + 1;
+	return separator + 1;
+}
+
+static size_t ClownCD_GetDirectoryLength(const char* const path)
+{
+	const char* const filename = ClownCD_GetFilename(path);
+
+	return filename - path;
 }
 
 char* ClownCD_GetFullFilePath(const char* const directory, const char* const filename)
@@ -41,7 +48,7 @@ char* ClownCD_GetFullFilePath(const char* const directory, const char* const fil
 	}
 	else
 	{
-		const size_t directory_length = ClownCD_GetIndexOfFilenameInPath(directory);
+		const size_t directory_length = ClownCD_GetDirectoryLength(directory);
 		const size_t filename_length = strlen(filename);
 		char* const full_path = (char*)malloc(directory_length + filename_length + 1);
 
@@ -72,4 +79,11 @@ char* ClownCD_DuplicateString(const char* const string)
 
 		return buffer;
 	}
+}
+
+const char* ClownCD_GetFileExtension(const char* const file_path)
+{
+	const char* const filename = ClownCD_GetFilename(file_path);
+
+	return strrchr(filename, '.');
 }

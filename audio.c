@@ -28,6 +28,7 @@ cc_bool ClownCD_AudioOpen(ClownCD_Audio* const audio, ClownCD_File* const file)
 		return cc_true;
 	}
 
+	audio->format = CLOWNCD_AUDIO_INVALID;
 	return cc_false;
 }
 
@@ -35,6 +36,9 @@ void ClownCD_AudioClose(ClownCD_Audio* const audio)
 {
 	switch (audio->format)
 	{
+		case CLOWNCD_AUDIO_INVALID:
+			break;
+
 		case CLOWNCD_AUDIO_FLAC:
 			ClownCD_FLACClose(&audio->formats.flac);
 			break;
@@ -61,6 +65,9 @@ cc_bool ClownCD_AudioSeek(ClownCD_Audio* const audio, const size_t frame)
 {
 	switch (audio->format)
 	{
+		case CLOWNCD_AUDIO_INVALID:
+			return cc_false;
+
 		case CLOWNCD_AUDIO_FLAC:
 			return ClownCD_FLACSeek(&audio->formats.flac, frame);
 
@@ -83,6 +90,9 @@ size_t ClownCD_AudioRead(ClownCD_Audio* const audio, short* const buffer, const 
 {
 	switch (audio->format)
 	{
+		case CLOWNCD_AUDIO_INVALID:
+			return 0;
+
 		case CLOWNCD_AUDIO_FLAC:
 			return ClownCD_FLACRead(&audio->formats.flac, buffer, total_frames);
 

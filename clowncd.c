@@ -138,6 +138,17 @@ void ClownCD_Close(ClownCD* const disc)
 	free(disc->filename);
 }
 
+static void ClownCD_CloseTrackFile(ClownCD* const disc)
+{
+	if (ClownCD_FileIsOpen(&disc->track.file))
+	{
+		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE || disc->track.file_type == CLOWNCD_CUE_FILE_MP3)
+			ClownCD_AudioClose(&disc->track.audio);
+
+		ClownCD_FileClose(&disc->track.file);
+	}
+}
+
 static void ClownCD_SeekTrackCallback(
 	void* const user_data,
 	const char* const filename,
@@ -153,13 +164,7 @@ static void ClownCD_SeekTrackCallback(
 
 	(void)index;
 
-	if (ClownCD_FileIsOpen(&disc->track.file))
-	{
-		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE || disc->track.file_type == CLOWNCD_CUE_FILE_MP3)
-			ClownCD_AudioClose(&disc->track.audio);
-
-		ClownCD_FileClose(&disc->track.file);
-	}
+	ClownCD_CloseTrackFile(disc);
 
 	if (full_path != NULL)
 	{
@@ -225,13 +230,86 @@ static cc_bool ClownCD_SeekTrackIndexInternal(ClownCD* const disc, const unsigne
 
 			case CLOWNCD_DISC_RAW_2048:
 			case CLOWNCD_DISC_RAW_2352:
-				if (track == 1 && index == 1)
+				if (index != 1)
+					return cc_false;
+
+				if (track == 1)
 				{
+					/* Make the disc file the active track file. */
+					if (ClownCD_FileIsOpen(&disc->file))
+					{
+						disc->track.file = disc->file;
+						disc->file = ClownCD_FileOpenBlank();
+					}
+
 					disc->track.file_type = CLOWNCD_CUE_FILE_BINARY;
 					disc->track.type = disc->type == CLOWNCD_DISC_RAW_2048 ? CLOWNCD_CUE_TRACK_MODE1_2048 : CLOWNCD_CUE_TRACK_MODE1_2352;
 					disc->track.starting_sector = 0;
 					disc->track.ending_sector = 0xFFFFFFFF;
 				}
+				else if (track <= 99 && disc->filename != NULL)
+				{
+					const char extensions[][4] = {
+						{'F', 'L', 'A', 'C'},
+						{'f', 'l', 'a', 'c'},
+						{'M', 'P', '3', '\0'},
+						{'m', 'p', '3', '\0'},
+						{'O', 'G', 'G', '\0'},
+						{'o', 'g', 'g', '\0'},
+						{'W', 'A', 'V', '\0'},
+						{'w', 'a', 'v', '\0'},
+					};
+					const char* const file_extension = ClownCD_GetFileExtension(disc->filename);
+					const size_t filename_length_minus_extension = file_extension == NULL ? strlen(disc->filename) : (size_t)(file_extension - disc->filename);
+					char* const audio_filename = (char*)malloc(filename_length_minus_extension + 4 + sizeof(extensions[0]) + 1);
+
+					size_t i;
+
+					if (audio_filename == NULL)
+						return cc_false;
+
+					memcpy(audio_filename, disc->filename, filename_length_minus_extension);
+					audio_filename[filename_length_minus_extension + 0] = ' ';
+					audio_filename[filename_length_minus_extension + 1] = '0' + track / 10;
+					audio_filename[filename_length_minus_extension + 2] = '0' + track % 10;
+					audio_filename[filename_length_minus_extension + 3] = '.';
+					audio_filename[filename_length_minus_extension + 4 + sizeof(extensions[0])] = '\0';
+
+					/* Make the disc file not the active track file. */
+					if (!ClownCD_FileIsOpen(&disc->file))
+					{
+						disc->file = disc->track.file;
+						disc->track.file = ClownCD_FileOpenBlank();
+					}
+
+					ClownCD_CloseTrackFile(disc);
+
+					disc->track.file_type = CLOWNCD_CUE_FILE_WAVE;
+					disc->track.type = CLOWNCD_CUE_TRACK_AUDIO;
+					disc->track.starting_sector = 0;
+					disc->track.ending_sector = 0xFFFFFFFF;
+
+					for (i = 0; i < CC_COUNT_OF(extensions); ++i)
+					{
+						const char* const extension = extensions[i];
+
+						memcpy(&audio_filename[filename_length_minus_extension + 4], extension, sizeof(extensions[i]));
+
+						disc->track.file = ClownCD_FileOpen(audio_filename, CLOWNCD_RB, disc->file.functions);
+
+						if (!ClownCD_AudioOpen(&disc->track.audio, &disc->track.file))
+							ClownCD_FileClose(&disc->track.file);
+						else
+							break;
+					}
+
+					free(audio_filename);
+				}
+				else
+				{
+					return cc_false;
+				}
+
 				break;
 
 			case CLOWNCD_DISC_CLOWNCD:
@@ -289,7 +367,7 @@ static cc_bool ClownCD_SeekSectorOrFrame(ClownCD* const disc, const unsigned lon
 
 ClownCD_CueTrackType ClownCD_SeekTrackIndex(ClownCD* const disc, const unsigned int track, const unsigned int index)
 {
-	return ClownCD_SetState(disc, track, inde, 0, 0);
+	return ClownCD_SetState(disc, track, index, 0, 0);
 }
 
 cc_bool ClownCD_SeekSector(ClownCD* const disc, const unsigned long sector)
