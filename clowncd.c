@@ -126,7 +126,7 @@ void ClownCD_Close(ClownCD* const disc)
 {
 	if (ClownCD_FileIsOpen(&disc->track.file))
 	{
-		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE)
+		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE || disc->track.file_type == CLOWNCD_CUE_FILE_MP3)
 			ClownCD_AudioClose(&disc->track.audio);
 
 		ClownCD_FileClose(&disc->track.file);
@@ -155,7 +155,7 @@ static void ClownCD_SeekTrackCallback(
 
 	if (ClownCD_FileIsOpen(&disc->track.file))
 	{
-		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE)
+		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE || disc->track.file_type == CLOWNCD_CUE_FILE_MP3)
 			ClownCD_AudioClose(&disc->track.audio);
 
 		ClownCD_FileClose(&disc->track.file);
@@ -171,7 +171,7 @@ static void ClownCD_SeekTrackCallback(
 		disc->track.starting_sector = frame;
 		disc->track.ending_sector = ClownCD_CueGetTrackEndingFrame(&disc->file, filename, track, frame);
 
-		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE)
+		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE || disc->track.file_type == CLOWNCD_CUE_FILE_MP3)
 			if (!ClownCD_AudioOpen(&disc->track.audio, &disc->track.file))
 				ClownCD_FileClose(&disc->track.file);
 	}
@@ -326,6 +326,7 @@ cc_bool ClownCD_SeekAudioFrame(ClownCD* const disc, const size_t frame)
 				break;
 
 			case CLOWNCD_CUE_FILE_WAVE:
+			case CLOWNCD_CUE_FILE_MP3:
 				if (!ClownCD_AudioSeek(&disc->track.audio, disc->track.starting_frame + frame))
 					return cc_false;
 				break;
@@ -402,6 +403,7 @@ size_t ClownCD_ReadFrames(ClownCD* const disc, short* const buffer, const size_t
 		}
 
 		case CLOWNCD_CUE_FILE_WAVE:
+		case CLOWNCD_CUE_FILE_MP3:
 			frames_done = ClownCD_AudioRead(&disc->track.audio, buffer, frames_to_do);
 			break;
 

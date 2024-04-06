@@ -9,7 +9,8 @@ typedef enum ClownCD_CueFileType
 {
 	CLOWNCD_CUE_FILE_INVALID,
 	CLOWNCD_CUE_FILE_BINARY,
-	CLOWNCD_CUE_FILE_WAVE
+	CLOWNCD_CUE_FILE_WAVE,
+	CLOWNCD_CUE_FILE_MP3
 } ClownCD_CueFileType;
 
 typedef enum ClownCD_CueTrackType

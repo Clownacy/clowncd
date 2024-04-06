@@ -33,6 +33,8 @@ static ClownCD_CueFileType ClownCD_CueFileTypeFromString(const char* const strin
 		return CLOWNCD_CUE_FILE_BINARY;
 	else if (strcmp(string, "WAVE") == 0)
 		return CLOWNCD_CUE_FILE_WAVE;
+	else if (strcmp(string, "MP3") == 0)
+		return CLOWNCD_CUE_FILE_MP3;
 	else
 		return CLOWNCD_CUE_FILE_INVALID;
 }
