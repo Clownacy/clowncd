@@ -286,13 +286,7 @@ static cc_bool ClownCD_SeekSectorOrFrame(ClownCD* const disc, const unsigned lon
 
 ClownCD_CueTrackType ClownCD_SeekTrackIndex(ClownCD* const disc, const unsigned int track, const unsigned int index)
 {
-	if (!ClownCD_SeekTrackIndexInternal(disc, track, index))
-		return CLOWNCD_CUE_TRACK_INVALID;
-
-	if (!ClownCD_SeekSectorOrFrame(disc, 0, 0))
-		return CLOWNCD_CUE_TRACK_INVALID;
-
-	return disc->track.type;
+	return ClownCD_SetState(disc, track, inde, 0, 0);
 }
 
 cc_bool ClownCD_SeekSector(ClownCD* const disc, const unsigned long sector)
