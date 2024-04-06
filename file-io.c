@@ -109,11 +109,15 @@ ClownCD_File ClownCD_FileOpenAlreadyOpen(void* const stream, const ClownCD_FileC
 int ClownCD_FileClose(ClownCD_File* const file)
 {
 	if (!ClownCD_FileIsOpen(file))
+	{
 		return 0;
-
-	void* const stream = file->stream;
-	file->stream = NULL;
-	return file->functions->close(stream);
+	}
+	else
+	{
+		void* const stream = file->stream;
+		file->stream = NULL;
+		return file->functions->close(stream);
+	}
 }
 
 size_t ClownCD_FileRead(void* const buffer, const size_t size, const size_t count, ClownCD_File* const file)
