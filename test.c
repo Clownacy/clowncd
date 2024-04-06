@@ -5,8 +5,6 @@
 
 #include "clowncd.h"
 
-/*static unsigned char sector_buffer[2352];*/
-
 int main(const int argc, const char** const argv)
 {
 	(void)argc;
@@ -148,29 +146,6 @@ int main(const int argc, const char** const argv)
 
 			ClownCD_Close(&cd);
 		}
-#if 0
-		FILE *file;
-
-		if (ClownCD_SeekTrackIndex(&cd, 1, 1) == CLOWNCD_CUE_TRACK_INVALID)
-			fputs("Couldn't seek to track 1 index 1.\n", stderr);
-
-		if (!ClownCD_ReadSectorAtRaw(&cd, 0, sector_buffer))
-			fputs("Couldn't read sector 0.\n", stderr);
-
-		file = fopen("out.bin", "wb");
-
-		if (file == NULL)
-		{
-			fputs("Couldn't open file for writing.\n", stderr);
-		}
-		else
-		{
-			fwrite(sector_buffer, 2352, 1, file);
-			fclose(file);
-
-			fprintf(stderr, "CRC is %scorrect\n", ClownCD_ValidateSectorCRC(sector_buffer) ? "" : "in");
-		}
-#endif
 	}
 
 	return EXIT_SUCCESS;
