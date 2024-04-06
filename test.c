@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -35,7 +36,7 @@ int main(const int argc, const char** const argv)
 			{
 				unsigned int i;
 
-				for (i = 1; ; ++i)
+				for (i = 1; i <= 99; ++i)
 				{
 					const ClownCD_CueTrackType track_type = ClownCD_SeekTrackIndex(&cd, i, 1);
 
@@ -49,7 +50,7 @@ int main(const int argc, const char** const argv)
 					{
 						break;
 					}
-					else if (track_type == CLOWNCD_CUE_TRACK_MODE1_2352)
+					else if (track_type == CLOWNCD_CUE_TRACK_MODE1_2048 || track_type == CLOWNCD_CUE_TRACK_MODE1_2352)
 					{
 						/* Actually check that this is an ISO and default to '.bin' otherwise. */
 						filename[3] = 'i';
@@ -68,10 +69,15 @@ int main(const int argc, const char** const argv)
 						file_type_string = "WAVE";
 						track_type_string = "AUDIO";
 					}
+					else
+					{
+						assert(cc_false);
+						break;
+					}
 
 					fprintf(output_cue_file, "FILE \"%s\" %s\n  TRACK %02u %s\n    INDEX 01 00:00:00\n", filename, file_type_string, i, track_type_string);
 
-					if (track_type == CLOWNCD_CUE_TRACK_MODE1_2352)
+					if (track_type == CLOWNCD_CUE_TRACK_MODE1_2048 || track_type == CLOWNCD_CUE_TRACK_MODE1_2352)
 					{
 						FILE* const out_file = fopen(filename, "wb");
 
@@ -138,6 +144,11 @@ int main(const int argc, const char** const argv)
 
 							sf_close(out_file);
 						}
+					}
+					else
+					{
+						assert(cc_false);
+						break;
 					}
 				}
 
