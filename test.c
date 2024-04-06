@@ -10,14 +10,14 @@ static cc_bool DoTrack(ClownCD* const cd, FILE* const output_cue_file, const uns
 {
 	const ClownCD_CueTrackType track_type = ClownCD_SeekTrackIndex(cd, track_number, 1);
 
-	char filename[] = "01.iso";
+	char filename[] = "Track 01.iso";
 	const char *file_type_string, *track_type_string;
 
 	if (track_number < 1 || track_number > 99)
 		return cc_false;
 
-	filename[0] = '0' + track_number / 10;
-	filename[1] = '0' + track_number % 10;
+	filename[6] = '0' + track_number / 10;
+	filename[7] = '0' + track_number % 10;
 
 	switch (track_type)
 	{
@@ -27,9 +27,9 @@ static cc_bool DoTrack(ClownCD* const cd, FILE* const output_cue_file, const uns
 		case CLOWNCD_CUE_TRACK_MODE1_2048:
 		case CLOWNCD_CUE_TRACK_MODE1_2352:
 			/* Actually check that this is an ISO and default to '.bin' otherwise. */
-			filename[3] = 'i';
-			filename[4] = 's';
-			filename[5] = 'o';
+			filename[ 9] = 'i';
+			filename[10] = 's';
+			filename[11] = 'o';
 
 			file_type_string = "BINARY";
 			track_type_string = "MODE1/2048";
@@ -37,9 +37,9 @@ static cc_bool DoTrack(ClownCD* const cd, FILE* const output_cue_file, const uns
 
 
 		case CLOWNCD_CUE_TRACK_AUDIO:
-			filename[3] = 'o';
-			filename[4] = 'g';
-			filename[5] = 'g';
+			filename[ 9] = 'o';
+			filename[10] = 'g';
+			filename[11] = 'g';
 
 			file_type_string = "WAVE";
 			track_type_string = "AUDIO";
