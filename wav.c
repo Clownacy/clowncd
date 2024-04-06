@@ -38,6 +38,9 @@ static drwav_bool32 ClownCD_WAVSeekCallback(void* const user_data, const int off
 
 cc_bool ClownCD_WAVOpen(ClownCD_WAV* const wav, ClownCD_File* const file)
 {
+	if (ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_SET) != 0)
+		return cc_false;
+
 	if (drwav_init(&wav->dr_wav, ClownCD_WAVReadCallback, ClownCD_WAVSeekCallback, file, NULL))
 	{
 		/* Verify that the audio is in a supported format. */

@@ -13,6 +13,8 @@ add_library(clowncd STATIC
 	"file-io.h"
 	"flac.c"
 	"flac.h"
+	"mp3.c"
+	"mp3.h"
 	"utilities.c"
 	"utilities.h"
 	"vorbis.c"

@@ -7,12 +7,14 @@
 
 #include "file-io.h"
 #include "flac.h"
+#include "mp3.h"
 #include "vorbis.h"
 #include "wav.h"
 
 typedef enum ClownCD_AudioFormat
 {
 	CLOWNCD_AUDIO_FLAC,
+	CLOWNCD_AUDIO_MP3,
 	CLOWNCD_AUDIO_VORBIS,
 	CLOWNCD_AUDIO_WAV
 } ClownCD_AudioFormat;
@@ -23,6 +25,7 @@ typedef struct ClownCD_Audio
 	union
 	{
 		ClownCD_FLAC flac;
+		ClownCD_MP3 mp3;
 		ClownCD_Vorbis vorbis;
 		ClownCD_WAV wav;
 	} formats;

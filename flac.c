@@ -38,6 +38,9 @@ static drflac_bool32 ClownCD_FLACSeekCallback(void* const user_data, const int o
 
 cc_bool ClownCD_FLACOpen(ClownCD_FLAC* const flac, ClownCD_File* const file)
 {
+	if (ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_SET) != 0)
+		return cc_false;
+
 	flac->dr_flac = drflac_open(ClownCD_FLACReadCallback, ClownCD_FLACSeekCallback, file, NULL);
 	if (flac->dr_flac != NULL)
 	{
