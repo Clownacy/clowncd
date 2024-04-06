@@ -171,8 +171,6 @@ int main(const int argc, const char** const argv)
 			fprintf(stderr, "CRC is %scorrect\n", ClownCD_ValidateSectorCRC(sector_buffer) ? "" : "in");
 		}
 #endif
-
-		ClownCD_Close(&cd);
 	}
 
 	return EXIT_SUCCESS;
