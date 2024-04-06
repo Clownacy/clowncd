@@ -109,27 +109,22 @@ void ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback callba
 	for (;;)
 	{
 		char* const line = ClownCD_CueReadLine(file);
-		char *line_pointer = line;
 
-		int advance;
 		char command_string[6 + 1];
 
 		if (line == NULL)
 			break;
 
-		if (sscanf(line_pointer, "%6s%n", command_string, &advance) == 1)
+		if (sscanf(line, "%6s", command_string) == 1)
 		{
-			line_pointer += advance;
-
 			switch (ClownCD_CueCommandTypeFromString(command_string))
 			{
 				case CLOWNCD_CUE_COMMAND_FILE:
 				{
 					int file_name_length;
 
-					sscanf(line_pointer, " \"%n", &advance);
-					line_pointer += advance;
-					sscanf(line_pointer, "%*[^\"]%n", &file_name_length);
+					sscanf(line, " FILE \"%n", &file_name_length);
+					sscanf(line + file_name_length, "%*[^\"]%n", &file_name_length);
 
 					free(file_name);
 					file_name = (char*)malloc(file_name_length + 1);
@@ -142,11 +137,10 @@ void ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback callba
 					{
 						char file_type_string[6 + 1];
 
-						if (sscanf(line_pointer, "%[^\"]\" %6s%n", file_name, file_type_string, &advance) < 2)
+						if (sscanf(line, " FILE \"%[^\"]\" %6s", file_name, file_type_string) < 2)
 							fputs("Could not read FILE parameters.\n", stderr);
 						else
 							file_type = ClownCD_CueFileTypeFromString(file_type_string);
-						line_pointer += advance;
 					}
 
 					break;
@@ -156,11 +150,10 @@ void ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback callba
 				{
 					char track_type_string[10 + 1];
 
-					if (sscanf(line_pointer, "%u %10s%n", &track, track_type_string, &advance) < 2)
+					if (sscanf(line, " TRACK %u %10s", &track, track_type_string) < 2)
 						fputs("Could not read TRACK parameters.\n", stderr);
 					else
 						track_type = ClownCD_CueTrackTypeFromString(track_type_string);
-					line_pointer += advance;
 
 					break;
 				}
@@ -169,7 +162,7 @@ void ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback callba
 				{
 					unsigned int index, minute, second, frame;
 
-					if (sscanf(line_pointer, "%u %u:%u:%u%n", &index, &minute, &second, &frame, &advance) < 4)
+					if (sscanf(line, " INDEX %u %u:%u:%u", &index, &minute, &second, &frame) < 4)
 						fputs("Could not read INDEX parameters.\n", stderr);
 					else if (file_name == NULL)
 						fputs("INDEX encountered with no filename specified.\n", stderr);
@@ -181,7 +174,6 @@ void ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback callba
 						fputs("INDEX encountered with no track type specified.\n", stderr);
 					else
 						callback((void*)user_data, file_name, file_type, track, track_type, index, ((unsigned long)minute * 60 + second) * 75 + frame);
-					line_pointer += advance;
 
 					break;
 				}
