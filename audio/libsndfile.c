@@ -69,12 +69,7 @@ cc_bool ClownCD_libSndFileOpen(ClownCD_libSndFile* const track, ClownCD_File* co
 
 	track->libsndfile = sf_open_virtual(&callbacks, SFM_READ, &info, file);
 
-	if (track->libsndfile == NULL)
-	{
-		const char* const error_message = sf_strerror(NULL);
-		fputs(error_message, stderr);
-	}
-	else
+	if (track->libsndfile != NULL)
 	{
 		/* Prevent popping caused by the float->integer conversion. */
 		sf_command(track->libsndfile, SFC_SET_SCALE_FLOAT_INT_READ, NULL, SF_TRUE);
