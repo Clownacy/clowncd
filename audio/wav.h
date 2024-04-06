@@ -8,9 +8,9 @@
 #define DRWAV_PRIVATE static
 #include "libraries/dr_wav.h"
 
-#include "clowncommon/clowncommon.h"
+#include "../clowncommon/clowncommon.h"
 
-#include "file-io.h"
+#include "../file-io.h"
 
 typedef struct ClownCD_WAV
 {

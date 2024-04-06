@@ -8,7 +8,7 @@
 #define STB_VORBIS_NO_PUSHDATA_API
 #include "libraries/stb_vorbis.c"
 
-#include "utilities.h"
+#include "../utilities.h"
 
 static cc_bool ClownCD_VorbisFileToMemory(ClownCD_File* const file, void** const out_buffer, size_t* const out_size)
 {

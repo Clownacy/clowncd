@@ -5,9 +5,9 @@
 
 #include <sndfile.h>
 
-#include "clowncommon/clowncommon.h"
+#include "../clowncommon/clowncommon.h"
 
-#include "file-io.h"
+#include "../file-io.h"
 
 typedef struct ClownCD_libSndFile
 {

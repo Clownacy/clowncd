@@ -21,19 +21,19 @@ if(TARGET SndFile::sndfile)
 	target_link_libraries(clowncd PRIVATE SndFile::sndfile)
 	target_compile_definitions(clowncd PRIVATE CLOWNCD_LIBSNDFILE)
 	target_sources(clowncd PRIVATE
-		"libsndfile.c"
-		"libsndfile.h"
+		"audio/libsndfile.c"
+		"audio/libsndfile.h"
 	)
 else()
 	target_sources(clowncd PRIVATE
-		"flac.c"
-		"flac.h"
-		"mp3.c"
-		"mp3.h"
-		"vorbis.c"
-		"vorbis.h"
-		"wav.c"
-		"wav.h"
+		"audio/flac.c"
+		"audio/flac.h"
+		"audio/mp3.c"
+		"audio/mp3.h"
+		"audio/vorbis.c"
+		"audio/vorbis.h"
+		"audio/wav.c"
+		"audio/wav.h"
 	)
 endif()
 

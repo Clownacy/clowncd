@@ -5,12 +5,15 @@
 
 #include "clowncommon/clowncommon.h"
 
+#ifdef CLOWNCD_LIBSNDFILE
+ #include "audio/libsndfile.h"
+#else
+ #include "audio/flac.h"
+ #include "audio/mp3.h"
+ #include "audio/vorbis.h"
+ #include "audio/wav.h"
+#endif
 #include "file-io.h"
-#include "flac.h"
-#include "libsndfile.h"
-#include "mp3.h"
-#include "vorbis.h"
-#include "wav.h"
 
 typedef enum ClownCD_AudioFormat
 {
