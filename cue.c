@@ -1,5 +1,6 @@
 #include "cue.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,24 +8,50 @@
 typedef enum ClownCD_CueCommandType
 {
 	CLOWNCD_CUE_COMMAND_INVALID,
+	CLOWNCD_CUE_COMMAND_CATALOG,
+	CLOWNCD_CUE_COMMAND_CDTEXTFILE,
 	CLOWNCD_CUE_COMMAND_FILE,
-	CLOWNCD_CUE_COMMAND_TRACK,
+	CLOWNCD_CUE_COMMAND_FLAGS,
 	CLOWNCD_CUE_COMMAND_INDEX,
-	CLOWNCD_CUE_COMMAND_PREGAP
+	CLOWNCD_CUE_COMMAND_ISRC,
+	CLOWNCD_CUE_COMMAND_PERFORMER,
+	CLOWNCD_CUE_COMMAND_POSTGAP,
+	CLOWNCD_CUE_COMMAND_PREGAP,
+	CLOWNCD_CUE_COMMAND_REM,
+	CLOWNCD_CUE_COMMAND_SONGWRITER,
+	CLOWNCD_CUE_COMMAND_TITLE,
+	CLOWNCD_CUE_COMMAND_TRACK
 } ClownCD_CueCommandType;
 
 static ClownCD_CueCommandType ClownCD_CueCommandTypeFromString(const char* const string)
 {
-	if (strcmp(string, "FILE") == 0)
-		return CLOWNCD_CUE_COMMAND_FILE;
-	else if (strcmp(string, "TRACK") == 0)
-		return CLOWNCD_CUE_COMMAND_TRACK;
-	else if (strcmp(string, "INDEX") == 0)
-		return CLOWNCD_CUE_COMMAND_INDEX;
-	else if (strcmp(string, "PREGAP") == 0)
-		return CLOWNCD_CUE_COMMAND_PREGAP;
-	else
-		return CLOWNCD_CUE_COMMAND_INVALID;
+	static const struct
+	{
+		const char *string;
+		ClownCD_CueCommandType command_type;
+	} commands[] = {
+		{"CATALOG"   , CLOWNCD_CUE_COMMAND_CATALOG},
+		{"CDTEXTFILE", CLOWNCD_CUE_COMMAND_CDTEXTFILE},
+		{"FILE"      , CLOWNCD_CUE_COMMAND_FILE},
+		{"FLAGS"     , CLOWNCD_CUE_COMMAND_FLAGS},
+		{"INDEX"     , CLOWNCD_CUE_COMMAND_INDEX},
+		{"ISRC"      , CLOWNCD_CUE_COMMAND_ISRC},
+		{"PERFORMER" , CLOWNCD_CUE_COMMAND_PERFORMER},
+		{"POSTGAP"   , CLOWNCD_CUE_COMMAND_POSTGAP},
+		{"PREGAP"    , CLOWNCD_CUE_COMMAND_PREGAP},
+		{"REM"       , CLOWNCD_CUE_COMMAND_REM},
+		{"SONGWRITER", CLOWNCD_CUE_COMMAND_SONGWRITER},
+		{"TITLE"     , CLOWNCD_CUE_COMMAND_TITLE},
+		{"TRACK"     , CLOWNCD_CUE_COMMAND_TRACK},
+	};
+
+	size_t i;
+
+	for (i = 0; i < CC_COUNT_OF(commands); ++i)
+		if (strcmp(string, commands[i].string) == 0)
+			return commands[i].command_type;
+
+	return CLOWNCD_CUE_COMMAND_INVALID;
 }
 
 static ClownCD_CueFileType ClownCD_CueFileTypeFromString(const char* const string)
@@ -95,7 +122,7 @@ static char* ClownCD_CueReadLine(ClownCD_File* const file)
 	return line;
 }
 
-void ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback callback, const void* const user_data)
+cc_bool ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback callback, const void* const user_data)
 {
 	const long starting_file_position = ClownCD_FileTell(file);
 
@@ -103,19 +130,20 @@ void ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback callba
 	ClownCD_CueFileType file_type = CLOWNCD_CUE_FILE_INVALID;
 	unsigned int track = 0xFFFF;
 	ClownCD_CueTrackType track_type = CLOWNCD_CUE_TRACK_INVALID;
+	cc_bool valid = cc_true;
 
 	ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_SET);
 
-	for (;;)
+	while (valid)
 	{
 		char* const line = ClownCD_CueReadLine(file);
 
-		char command_string[6 + 1];
+		char command_string[10 + 1];
 
 		if (line == NULL)
 			break;
 
-		if (sscanf(line, "%6s", command_string) == 1)
+		if (sscanf(line, "%10s", command_string) == 1)
 		{
 			switch (ClownCD_CueCommandTypeFromString(command_string))
 			{
@@ -178,12 +206,22 @@ void ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback callba
 					break;
 				}
 
+				case CLOWNCD_CUE_COMMAND_CATALOG:
+				case CLOWNCD_CUE_COMMAND_CDTEXTFILE:
+				case CLOWNCD_CUE_COMMAND_FLAGS:
+				case CLOWNCD_CUE_COMMAND_ISRC:
+				case CLOWNCD_CUE_COMMAND_PERFORMER:
+				case CLOWNCD_CUE_COMMAND_POSTGAP:
 				case CLOWNCD_CUE_COMMAND_PREGAP:
-					/* We do not care about this. */
+				case CLOWNCD_CUE_COMMAND_REM:
+				case CLOWNCD_CUE_COMMAND_SONGWRITER:
+				case CLOWNCD_CUE_COMMAND_TITLE:
+					/* We do not care about these. */
 					break;
 
 				default:
-					fprintf(stderr, "Unrecognised command '%s'.\n", command_string);
+				case CLOWNCD_CUE_COMMAND_INVALID:
+					valid = cc_false;
 					break;
 			}
 		}
@@ -193,6 +231,8 @@ void ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback callba
 
 	free(file_name);
 	ClownCD_FileSeek(file, starting_file_position, CLOWNCD_SEEK_SET);
+
+	return valid;
 }
 
 typedef struct ClownCD_CueGetTrackIndexInfo_State

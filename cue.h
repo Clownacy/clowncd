@@ -23,7 +23,7 @@ typedef enum ClownCD_CueTrackType
 
 typedef void (*ClownCD_CueCallback)(void *user_data, const char *filename, ClownCD_CueFileType file_type, unsigned int track, ClownCD_CueTrackType track_type, unsigned int index, unsigned long frame);
 
-void ClownCD_CueParse(ClownCD_File *file, ClownCD_CueCallback callback, const void *user_data);
+cc_bool ClownCD_CueParse(ClownCD_File *file, ClownCD_CueCallback callback, const void *user_data);
 cc_bool ClownCD_CueGetTrackIndexInfo(ClownCD_File *file, unsigned int track, unsigned int index, ClownCD_CueCallback callback, const void *user_data);
 unsigned long ClownCD_CueGetTrackEndingFrame(ClownCD_File *file, const char *track_filename, unsigned int track, unsigned long starting_frame);
 
