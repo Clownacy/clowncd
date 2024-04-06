@@ -8,31 +8,13 @@
 #define STB_VORBIS_NO_PUSHDATA_API
 #include "libraries/stb_vorbis.c"
 
-static size_t ClownCD_VorbisFileSize(ClownCD_File* const file)
-{
-	const long position = ClownCD_FileTell(file);
-
-	long size;
-
-	if (ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_END) != 0)
-		return 0;
-
-	size = ClownCD_FileTell(file);
-
-	if (ClownCD_FileSeek(file, position, CLOWNCD_SEEK_SET) != 0)
-		return 0;
-
-	if (size < 0)
-		return 0;
-
-	return size;
-}
+#include "utilities.h"
 
 static cc_bool ClownCD_VorbisFileToMemory(ClownCD_File* const file, void** const out_buffer, size_t* const out_size)
 {
 	if (out_buffer != NULL && out_size != NULL)
 	{
-		const size_t size = ClownCD_VorbisFileSize(file);
+		const size_t size = ClownCD_FileSize(file);
 		void* const buffer = malloc(size);
 
 		if (buffer != NULL)
