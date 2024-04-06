@@ -120,6 +120,7 @@ size_t ClownCD_FileRead(void* const buffer, const size_t size, const size_t coun
 {
 	if (!ClownCD_FileIsOpen(file))
 	{
+		file->eof = cc_true;
 		return 0;
 	}
 	else
