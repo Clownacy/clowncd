@@ -11,23 +11,36 @@ add_library(clowncd STATIC
 	"cue.h"
 	"file-io.c"
 	"file-io.h"
-	"flac.c"
-	"flac.h"
-	"mp3.c"
-	"mp3.h"
 	"utilities.c"
 	"utilities.h"
-	"vorbis.c"
-	"vorbis.h"
-	"wav.c"
-	"wav.h"
 )
+
+find_package(SndFile)
+
+if(TARGET SndFile::sndfile)
+	target_link_libraries(clowncd PRIVATE SndFile::sndfile)
+	target_compile_definitions(clowncd PRIVATE CLOWNCD_LIBSNDFILE)
+	target_sources(clowncd PRIVATE
+		"libsndfile.c"
+		"libsndfile.h"
+	)
+else()
+	target_sources(clowncd PRIVATE
+		"flac.c"
+		"flac.h"
+		"mp3.c"
+		"mp3.h"
+		"vorbis.c"
+		"vorbis.h"
+		"wav.c"
+		"wav.h"
+	)
+endif()
 
 add_executable(clowncd-test "test.c")
 
 target_link_libraries(clowncd-test PRIVATE clowncd)
 
-find_package(SndFile)
 target_link_libraries(clowncd-test PRIVATE SndFile::sndfile)
 
 add_executable(clowncd-cue-converter
