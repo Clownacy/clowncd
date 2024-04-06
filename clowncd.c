@@ -62,7 +62,6 @@ static cc_bool ClownCD_SeekSectorInternal(ClownCD* const disc, const unsigned lo
 
 static ClownCD_DiscType ClownCD_GetDiscType(ClownCD_File* const file)
 {
-	static const unsigned char header_2048[0x10] = {0x53, 0x45, 0x47, 0x41, 0x44, 0x49, 0x53, 0x43, 0x53, 0x59, 0x53, 0x54, 0x45, 0x4D, 0x20, 0x20};
 	static const unsigned char header_2352[0x10] = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x02, 0x00, 0x01};
 	static const unsigned char header_clowncd_v0[0xA] = {0x63, 0x6C, 0x6F, 0x77, 0x6E, 0x63, 0x64, 0x00, 0x00, 0x00};
 
@@ -70,14 +69,14 @@ static ClownCD_DiscType ClownCD_GetDiscType(ClownCD_File* const file)
 
 	const cc_bool read_successful = ClownCD_FileRead(buffer, 0x10, 1, file) == 1;
 
-	if (read_successful && memcmp(buffer, header_2048, sizeof(header_2048)) == 0)
-		return CLOWNCD_DISC_RAW_2048;
-	else if (read_successful && memcmp(buffer, header_2352, sizeof(header_2352)) == 0)
+	if (read_successful && memcmp(buffer, header_2352, sizeof(header_2352)) == 0)
 		return CLOWNCD_DISC_RAW_2352;
 	else if (read_successful && memcmp(buffer, header_clowncd_v0, sizeof(header_clowncd_v0)) == 0)
 		return CLOWNCD_DISC_CLOWNCD;
-	else
+	else if (ClownCD_CueIsValid(file))
 		return CLOWNCD_DISC_CUE;
+	else
+		return CLOWNCD_DISC_RAW_2048;
 }
 
 ClownCD ClownCD_Open(const char* const file_path, const ClownCD_FileCallbacks* const callbacks)

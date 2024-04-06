@@ -200,7 +200,7 @@ cc_bool ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback cal
 						fputs("INDEX encountered with no track specified.\n", stderr);
 					else if (track_type == CLOWNCD_CUE_TRACK_INVALID)
 						fputs("INDEX encountered with no track type specified.\n", stderr);
-					else
+					else if (callback != NULL)
 						callback((void*)user_data, file_name, file_type, track, track_type, index, ((unsigned long)minute * 60 + second) * 75 + frame);
 
 					break;
