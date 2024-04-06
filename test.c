@@ -156,7 +156,7 @@ int main(const int argc, const char** const argv)
 		}
 		else
 		{
-			const char* const output_cue_filename = "output.cue";
+			const char* const output_cue_filename = "Disc.cue";
 			FILE* const output_cue_file = fopen(output_cue_filename, "w");
 
 			if (output_cue_file == NULL)
