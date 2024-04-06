@@ -168,9 +168,13 @@ cc_bool ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback cal
 						if (sscanf(line, " FILE \"%[^\"]\" %6s", file_name, file_type_string) < 2)
 							fputs("Could not read FILE parameters.\n", stderr);
 						else
+						{
 							file_type = ClownCD_CueFileTypeFromString(file_type_string);
+							break;
+						}
 					}
 
+					valid = cc_false;
 					break;
 				}
 
@@ -181,8 +185,12 @@ cc_bool ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback cal
 					if (sscanf(line, " TRACK %u %10s", &track, track_type_string) < 2)
 						fputs("Could not read TRACK parameters.\n", stderr);
 					else
+					{
 						track_type = ClownCD_CueTrackTypeFromString(track_type_string);
+						break;
+					}
 
+					valid = cc_false;
 					break;
 				}
 
@@ -200,9 +208,15 @@ cc_bool ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback cal
 						fputs("INDEX encountered with no track specified.\n", stderr);
 					else if (track_type == CLOWNCD_CUE_TRACK_INVALID)
 						fputs("INDEX encountered with no track type specified.\n", stderr);
-					else if (callback != NULL)
-						callback((void*)user_data, file_name, file_type, track, track_type, index, ((unsigned long)minute * 60 + second) * 75 + frame);
+					else
+					{
+						if (callback != NULL)
+							callback((void*)user_data, file_name, file_type, track, track_type, index, ((unsigned long)minute * 60 + second) * 75 + frame);
 
+						break;
+					}
+
+					valid = cc_false;
 					break;
 				}
 
