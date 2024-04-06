@@ -5,9 +5,9 @@
 
 #include "clowncommon/clowncommon.h"
 
+#include "audio.h"
 #include "cue.h"
 #include "file-io.h"
-#include "wav.h"
 
 typedef enum ClownCD_DiscType
 {
@@ -30,10 +30,7 @@ typedef struct ClownCD
 		size_t starting_frame, current_frame, total_frames;
 		unsigned long starting_sector, ending_sector, current_sector;
 		unsigned int current_track, current_index;
-		union
-		{
-			ClownCD_WAV wav;
-		} shared;
+		ClownCD_Audio audio;
 	} track;
 } ClownCD;
 

@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.0...3.12)
 project(clowncd LANGUAGES C)
 
 add_library(clowncd STATIC
+	"audio.c"
+	"audio.h"
 	"clowncd.c"
 	"clowncd.h"
 	"cue.c"
@@ -11,6 +13,8 @@ add_library(clowncd STATIC
 	"file-io.h"
 	"utilities.c"
 	"utilities.h"
+	"vorbis.c"
+	"vorbis.h"
 	"wav.c"
 	"wav.h"
 )

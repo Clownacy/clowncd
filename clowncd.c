@@ -6,6 +6,7 @@
 
 #include "cue.h"
 #include "utilities.h"
+#include "vorbis.h"
 #include "wav.h"
 
 #define CLOWNCD_SECTOR_RAW_SIZE 2352
@@ -126,7 +127,7 @@ void ClownCD_Close(ClownCD* const disc)
 	if (ClownCD_FileIsOpen(&disc->track.file))
 	{
 		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE)
-			ClownCD_WAVClose(&disc->track.shared.wav);
+			ClownCD_AudioClose(&disc->track.audio);
 
 		ClownCD_FileClose(&disc->track.file);
 	}
@@ -155,7 +156,7 @@ static void ClownCD_SeekTrackCallback(
 	if (ClownCD_FileIsOpen(&disc->track.file))
 	{
 		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE)
-			ClownCD_WAVClose(&disc->track.shared.wav);
+			ClownCD_AudioClose(&disc->track.audio);
 
 		ClownCD_FileClose(&disc->track.file);
 	}
@@ -171,7 +172,7 @@ static void ClownCD_SeekTrackCallback(
 		disc->track.ending_sector = ClownCD_CueGetTrackEndingFrame(&disc->file, filename, track, frame);
 
 		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE)
-			if (!ClownCD_WAVOpen(&disc->track.shared.wav, &disc->track.file))
+			if (!ClownCD_AudioOpen(&disc->track.audio, &disc->track.file))
 				ClownCD_FileClose(&disc->track.file);
 	}
 }
@@ -326,7 +327,7 @@ cc_bool ClownCD_SeekAudioFrame(ClownCD* const disc, const size_t frame)
 				break;
 
 			case CLOWNCD_CUE_FILE_WAVE:
-				if (!ClownCD_WAVSeek(&disc->track.shared.wav, disc->track.starting_frame + frame))
+				if (!ClownCD_AudioSeek(&disc->track.audio, disc->track.starting_frame + frame))
 					return cc_false;
 				break;
 
@@ -401,7 +402,7 @@ size_t ClownCD_ReadFrames(ClownCD* const disc, short* const buffer, const size_t
 		}
 
 		case CLOWNCD_CUE_FILE_WAVE:
-			frames_done = ClownCD_WAVRead(&disc->track.shared.wav, buffer, frames_to_do);
+			frames_done = ClownCD_AudioRead(&disc->track.audio, buffer, frames_to_do);
 			break;
 
 		default:
