@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <sndfile.h>
+
 #include "clowncd.h"
 
 /*static unsigned char sector_buffer[2352];*/
@@ -39,9 +41,8 @@ int main(const int argc, const char** const argv)
 				{
 					const ClownCD_CueTrackType track_type = ClownCD_SeekTrackIndex(&cd, i, 1);
 
-					char filename[] = "01.wav";
+					char filename[] = "01.iso";
 					const char *file_type_string, *track_type_string;
-					ClownCD_File out_file;
 
 					filename[0] = '0' + i / 10;
 					filename[1] = '0' + i % 10;
@@ -62,9 +63,9 @@ int main(const int argc, const char** const argv)
 					}
 					else if (track_type == CLOWNCD_CUE_TRACK_AUDIO)
 					{
-						filename[3] = 'w';
-						filename[4] = 'a';
-						filename[5] = 'v';
+						filename[3] = 'o';
+						filename[4] = 'g';
+						filename[5] = 'g';
 
 						file_type_string = "WAVE";
 						track_type_string = "AUDIO";
@@ -72,15 +73,15 @@ int main(const int argc, const char** const argv)
 
 					fprintf(output_cue_file, "FILE \"%s\" %s\n  TRACK %02u %s\n    INDEX 01 00:00:00\n", filename, file_type_string, i, track_type_string);
 
-					out_file = ClownCD_FileOpen(filename, CLOWNCD_WB, NULL);
+					if (track_type == CLOWNCD_CUE_TRACK_MODE1_2352)
+					{
+						FILE* const out_file = fopen(filename, "wb");
 
-					if (!ClownCD_FileIsOpen(&out_file))
-					{
-						fprintf(stderr, "Could not open file '%s'.\n", filename);
-					}
-					else
-					{
-						if (track_type == CLOWNCD_CUE_TRACK_MODE1_2352)
+						if (out_file == NULL)
+						{
+							fprintf(stderr, "Could not open file '%s'.\n", filename);
+						}
+						else
 						{
 							for (;;)
 							{
@@ -89,46 +90,56 @@ int main(const int argc, const char** const argv)
 								if (!ClownCD_ReadSector(&cd, sector))
 									break;
 
-								ClownCD_FileWrite(sector, 1, CC_COUNT_OF(sector), &out_file);
+								if (fwrite(sector, CC_COUNT_OF(sector), 1, out_file) != 1)
+								{
+									fputs("Failed to write sector to file.\n", stderr);
+									break;
+								}
 							}
-						}
-						else if (track_type == CLOWNCD_CUE_TRACK_AUDIO)
-						{
-							const size_t size = cd.track.total_frames * 4;
 
-							ClownCD_FileWrite("RIFF", 4, 1, &out_file);
-							ClownCD_WriteU32LE(&out_file, size + (44 - 8));
-							ClownCD_FileWrite("WAVE", 4, 1, &out_file);
-							ClownCD_FileWrite("fmt ", 4, 1, &out_file);
-							ClownCD_WriteU32LE(&out_file, 16);
-							ClownCD_WriteU16LE(&out_file, 1);
-							ClownCD_WriteU16LE(&out_file, 2);
-							ClownCD_WriteU32LE(&out_file, 44100);
-							ClownCD_WriteU32LE(&out_file, 44100 * 4);
-							ClownCD_WriteU16LE(&out_file, 4);
-							ClownCD_WriteU16LE(&out_file, 16);
-							ClownCD_FileWrite("data", 4, 1, &out_file);
-							ClownCD_WriteU32LE(&out_file, size);
+							fclose(out_file);
+						}
+					}
+					else if (track_type == CLOWNCD_CUE_TRACK_AUDIO)
+					{
+						SF_INFO info = {0};
+						SNDFILE *out_file;
+
+						info.frames = cd.track.total_frames;
+						info.samplerate = 44100;
+						info.channels = 2;
+						info.format = SF_FORMAT_OGG | SF_FORMAT_VORBIS;
+
+						out_file = sf_open(filename, SFM_WRITE, &info);
+
+						if (out_file == NULL)
+						{
+							fprintf(stderr, "Could not open file '%s'. Error message was '%s'.\n", filename, sf_strerror(NULL));
+						}
+						else
+						{
+							double compression_level = 1.0;
+
+							if (sf_command(out_file, SFC_SET_COMPRESSION_LEVEL, &compression_level, sizeof(compression_level)) != SF_TRUE)
+								fprintf(stderr, "Failed to set compression level. Error message was '%s'.\n", sf_strerror(out_file));
 
 							for (;;)
 							{
 								short frames[0x10][2];
 								const size_t frames_read = ClownCD_ReadFrames(&cd, &frames[0][0], CC_COUNT_OF(frames));
 
-								size_t j;
-
-								for (j = 0; j < frames_read; ++j)
+								if (sf_writef_short(out_file, &frames[0][0], CC_COUNT_OF(frames)) != CC_COUNT_OF(frames))
 								{
-									ClownCD_WriteS16LE(&out_file, frames[j][0]);
-									ClownCD_WriteS16LE(&out_file, frames[j][1]);
+									fprintf(stderr, "Failed to write the correct number of frames. Error message was '%s'.\n", sf_strerror(out_file));
+									break;
 								}
 
 								if (frames_read != CC_COUNT_OF(frames))
 									break;
 							}
-						}
 
-						ClownCD_FileClose(&out_file);
+							sf_close(out_file);
+						}
 					}
 				}
 
