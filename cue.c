@@ -308,8 +308,8 @@ cc_bool ClownCD_CueGetTrackIndexInfo(ClownCD_File* const file, const unsigned in
 
 typedef struct ClownCD_CueGetTrackEndingFrame_State
 {
-	const char *track_filename;
-	unsigned int track;
+	const char *track_index_filename;
+	unsigned int track, index;
 	unsigned long starting_frame, ending_frame;
 } ClownCD_CueGetTrackEndingFrame_State;
 
@@ -319,18 +319,18 @@ static void ClownCD_CueGetTrackEndingFrame_Callback(void* const user_data, const
 
 	(void)file_type;
 	(void)track_type;
-	(void)index;
 
-	if (strcmp(filename, state->track_filename) == 0 && track != state->track && frame > state->starting_frame && frame < state->ending_frame)
+	if (strcmp(filename, state->track_index_filename) == 0 && (track != state->track || index != state->index) && frame > state->starting_frame && frame < state->ending_frame)
 		state->ending_frame = frame;
 }
 
-unsigned long ClownCD_CueGetTrackEndingFrame(ClownCD_File* const file, const char* const track_filename, const unsigned int track, const unsigned long starting_frame)
+unsigned long ClownCD_CueGetTrackIndexEndingFrame(ClownCD_File* const file, const char* const track_index_filename, const unsigned int track, const unsigned int index, const unsigned long starting_frame)
 {
 	ClownCD_CueGetTrackEndingFrame_State state;
 
-	state.track_filename = track_filename;
+	state.track_index_filename = track_index_filename;
 	state.track = track;
+	state.index = index;
 	state.starting_frame = starting_frame;
 	state.ending_frame = 0xFFFFFFFF;
 

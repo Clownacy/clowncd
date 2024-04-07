@@ -7,11 +7,6 @@
 #include "cue.h"
 #include "utilities.h"
 
-#define CLOWNCD_SECTOR_RAW_SIZE 2352
-#define CLOWNCD_SECTOR_HEADER_SIZE 0x10
-#define CLOWNCD_SECTOR_DATA_SIZE 0x800
-#define CLOWNCD_AUDIO_FRAME_SIZE (2 * 2)
-
 #define CLOWNCD_CRC_POLYNOMIAL 0xD8018001
 
 static size_t ClownCD_ClownCDTrackMetadataOffset(const unsigned int track)
@@ -159,8 +154,6 @@ static void ClownCD_SeekTrackCallback(
 	ClownCD* const disc = (ClownCD*)user_data;
 	char* const full_path = ClownCD_GetFullFilePath(disc->filename, filename);
 
-	(void)index;
-
 	ClownCD_CloseTrackFile(disc);
 
 	if (full_path != NULL)
@@ -171,7 +164,7 @@ static void ClownCD_SeekTrackCallback(
 		disc->track.file_type = file_type;
 		disc->track.type = track_type;
 		disc->track.starting_sector = frame;
-		disc->track.ending_sector = ClownCD_CueGetTrackEndingFrame(&disc->file, filename, track, frame);
+		disc->track.ending_sector = ClownCD_CueGetTrackIndexEndingFrame(&disc->file, filename, track, index, frame);
 
 		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE || disc->track.file_type == CLOWNCD_CUE_FILE_MP3)
 			if (!ClownCD_AudioOpen(&disc->track.audio, &disc->track.file))
@@ -196,6 +189,7 @@ static ClownCD_CueTrackType ClownCD_GetClownCDTrackType(const unsigned int value
 
 static size_t ClownCD_SectorToFrame(const unsigned long sector)
 {
+	/* TODO: This can be optimised. */
 	const size_t frames_per_second = 75;
 	const size_t sample_rate = 44100;
 	const size_t frame = sector / frames_per_second * sample_rate + sector % frames_per_second * sample_rate / frames_per_second;
@@ -453,7 +447,7 @@ cc_bool ClownCD_ReadSector(ClownCD* const disc, unsigned char* const buffer)
 	return cc_true;
 }
 
-size_t ClownCD_ReadFrames(ClownCD* const disc, short* const buffer, const size_t total_frames)
+static size_t ClownCD_ReadFramesGetAudio(ClownCD* const disc, short* const buffer, const size_t total_frames)
 {
 	const size_t frames_to_do = CC_MIN(disc->track.total_frames - disc->track.current_frame, total_frames);
 
@@ -494,6 +488,26 @@ size_t ClownCD_ReadFrames(ClownCD* const disc, short* const buffer, const size_t
 	disc->track.current_frame += frames_done;
 
 	return frames_done;
+}
+
+static size_t ClownCD_ReadFramesGeneratePadding(ClownCD* const disc, short* const buffer, const size_t total_frames)
+{
+	const size_t occupied_frames_in_sector = disc->track.current_frame % CLOWNCD_AUDIO_FRAMES_PER_SECTOR;
+	const size_t empty_frames_in_sector = occupied_frames_in_sector == 0 ? 0 : CLOWNCD_AUDIO_FRAMES_PER_SECTOR - occupied_frames_in_sector;
+
+	const size_t frames_to_do = CC_MIN(empty_frames_in_sector, total_frames);
+
+	memset(buffer, 0, frames_to_do * CLOWNCD_AUDIO_FRAME_SIZE);
+
+	return frames_to_do;
+}
+
+size_t ClownCD_ReadFrames(ClownCD* const disc, short* const buffer, const size_t total_frames)
+{
+	const size_t audio_frames_done = ClownCD_ReadFramesGetAudio(disc, buffer, total_frames);
+	const size_t padding_frames_done = ClownCD_ReadFramesGeneratePadding(disc, buffer + audio_frames_done * CLOWNCD_AUDIO_CHANNELS, total_frames - audio_frames_done);
+
+	return audio_frames_done + padding_frames_done;
 }
 
 unsigned long ClownCD_CalculateSectorCRC(const unsigned char* const buffer)
