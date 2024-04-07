@@ -6,8 +6,6 @@
 #include "file-io.h"
 #include "utilities.h"
 
-/* TODO: Disable the error messages. */
-
 typedef struct State
 {
 	ClownCD_File *cue_file, *header_file;
@@ -89,7 +87,7 @@ int main(const int argc, char** const argv)
 			}
 			else
 			{
-				static const char identifier[8] = {'c', 'l', 'o', 'w', 'n', 'c', 'd', '\0'};
+				static const char identifier[] = "clowncd";
 				State state;
 				unsigned int i;
 

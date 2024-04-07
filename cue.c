@@ -149,32 +149,37 @@ cc_bool ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback cal
 			{
 				case CLOWNCD_CUE_COMMAND_FILE:
 				{
-					int file_name_length;
+					int file_name_start = 0, file_name_end = 0;
 
-					sscanf(line, " FILE \"%n", &file_name_length);
-					sscanf(line + file_name_length, "%*[^\"]%n", &file_name_length);
-
-					free(file_name);
-					file_name = (char*)malloc(file_name_length + 1);
-
-					if (file_name == NULL)
+					if (sscanf(line, " FILE \"%n%*[^\"]%n", &file_name_start, &file_name_end) == 0 && file_name_start != 0 && file_name_end > file_name_start)
 					{
-						fputs("Could not allocate memory for filename.\n", stderr);
-					}
-					else
-					{
-						char file_type_string[6 + 1];
+						free(file_name);
+						file_name = (char*)malloc(file_name_end - file_name_start + 1);
 
-						if (sscanf(line, " FILE \"%[^\"]\" %6s", file_name, file_type_string) < 2)
-							fputs("Could not read FILE parameters.\n", stderr);
+						if (file_name == NULL)
+						{
+							fputs("Could not allocate memory for filename.\n", stderr);
+						}
 						else
 						{
-							file_type = ClownCD_CueFileTypeFromString(file_type_string);
-							break;
+							char file_type_string[6 + 1];
+
+							if (sscanf(line, " FILE \"%[^\"]\" %6s", file_name, file_type_string) < 2)
+							{
+								fputs("Could not read FILE parameters.\n", stderr);
+							}
+							else
+							{
+								file_type = ClownCD_CueFileTypeFromString(file_type_string);
+								break;
+							}
 						}
 					}
 
+					free(file_name);
+					file_name = NULL;
 					valid = cc_false;
+
 					break;
 				}
 
