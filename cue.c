@@ -149,27 +149,40 @@ cc_bool ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback cal
 			{
 				case CLOWNCD_CUE_COMMAND_FILE:
 				{
-					int file_name_start = 0, file_name_end = 0;
+					char first_character;
 
-					if (sscanf(line, " FILE \"%n%*[^\"]%n", &file_name_start, &file_name_end) == 0 && file_name_start != 0 && file_name_end > file_name_start)
+					if (sscanf(line, " FILE %c", &first_character) == 1)
 					{
-						free(file_name);
-						file_name = (char*)malloc(file_name_end - file_name_start + 1);
+						int file_name_start = 0, file_name_end = 0;
+						char file_type_string[6 + 1];
 
-						if (file_name == NULL)
+						if (first_character == '"')
 						{
-							fputs("Could not allocate memory for filename.\n", stderr);
+							if (sscanf(line, " FILE \"%n%*[^\"]%n\" %6s", &file_name_start, &file_name_end, file_type_string) != 1)
+								file_name_start = 0;
 						}
 						else
 						{
-							char file_type_string[6 + 1];
+							if (sscanf(line, " FILE %n%*s%n %6s", &file_name_start, &file_name_end, file_type_string) != 1)
+								file_name_start = 0;
+						}
 
-							if (sscanf(line, " FILE \"%[^\"]\" %6s", file_name, file_type_string) < 2)
+						if (file_name_start != 0 && file_name_end > file_name_start)
+						{
+							const int file_name_length = file_name_end - file_name_start;
+
+							free(file_name);
+							file_name = (char*)malloc(file_name_length + 1);
+
+							if (file_name == NULL)
 							{
-								fputs("Could not read FILE parameters.\n", stderr);
+								fputs("Could not allocate memory for filename.\n", stderr);
 							}
 							else
 							{
+								memcpy(file_name, line + file_name_start, file_name_length);
+								file_name[file_name_length] = '\0';
+
 								file_type = ClownCD_CueFileTypeFromString(file_type_string);
 								break;
 							}
@@ -178,6 +191,7 @@ cc_bool ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback cal
 
 					free(file_name);
 					file_name = NULL;
+
 					valid = cc_false;
 
 					break;
