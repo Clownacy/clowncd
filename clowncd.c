@@ -141,14 +141,14 @@ static void ClownCD_CloseTrackFile(ClownCD* const disc)
 	}
 }
 
-static void ClownCD_SeekTrackCallback(
+static void ClownCD_SeekTrackIndexCallback(
 	void* const user_data,
 	const char* const filename,
 	const ClownCD_CueFileType file_type,
 	const unsigned int track,
 	const ClownCD_CueTrackType track_type,
 	const unsigned int index,
-	const unsigned long frame)
+	const unsigned long sector)
 {
 	/* TODO: Cache the track filename so that we don't reopen files unnecessarily. */
 	ClownCD* const disc = (ClownCD*)user_data;
@@ -163,8 +163,8 @@ static void ClownCD_SeekTrackCallback(
 
 		disc->track.file_type = file_type;
 		disc->track.type = track_type;
-		disc->track.starting_sector = frame;
-		disc->track.ending_sector = ClownCD_CueGetTrackIndexEndingFrame(&disc->file, filename, track, index, frame);
+		disc->track.starting_sector = sector;
+		disc->track.ending_sector = ClownCD_CueGetTrackIndexEndingSector(&disc->file, filename, track, index, sector);
 
 		if (disc->track.file_type == CLOWNCD_CUE_FILE_WAVE || disc->track.file_type == CLOWNCD_CUE_FILE_MP3)
 			if (!ClownCD_AudioOpen(&disc->track.audio, &disc->track.file))
@@ -208,7 +208,7 @@ static cc_bool ClownCD_SeekTrackIndexInternal(ClownCD* const disc, const unsigne
 		switch (disc->type)
 		{
 			case CLOWNCD_DISC_CUE:
-				if (!ClownCD_CueGetTrackIndexInfo(&disc->file, track, index, ClownCD_SeekTrackCallback, disc))
+				if (!ClownCD_CueGetTrackIndexInfo(&disc->file, track, index, ClownCD_SeekTrackIndexCallback, disc))
 					return cc_false;
 
 				if (!ClownCD_FileIsOpen(&disc->track.file))
