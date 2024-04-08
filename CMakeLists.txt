@@ -19,7 +19,7 @@ find_package(SndFile)
 
 if(TARGET SndFile::sndfile)
 	target_link_libraries(clowncd PRIVATE SndFile::sndfile)
-	target_compile_definitions(clowncd PRIVATE CLOWNCD_LIBSNDFILE)
+	target_compile_definitions(clowncd PUBLIC CLOWNCD_LIBSNDFILE)
 	target_sources(clowncd PRIVATE
 		"audio/libsndfile.c"
 		"audio/libsndfile.h"
