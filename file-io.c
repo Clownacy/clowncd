@@ -169,7 +169,7 @@ int ClownCD_FileSeek(ClownCD_File* const file, const long position, const ClownC
 
 size_t ClownCD_FileSize(ClownCD_File* const file)
 {
-	size_t file_size = -1;
+	size_t file_size = CLOWNCD_SIZE_INVALID;
 
 	if (ClownCD_FileIsOpen(file))
 	{

@@ -15,22 +15,26 @@ static cc_bool ClownCD_VorbisFileToMemory(ClownCD_File* const file, void** const
 	if (out_buffer != NULL && out_size != NULL)
 	{
 		const size_t size = ClownCD_FileSize(file);
-		void* const buffer = malloc(size);
 
-		if (buffer != NULL)
+		if (size != CLOWNCD_SIZE_INVALID)
 		{
-			if (ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_SET) == 0)
+			void* const buffer = malloc(size);
+
+			if (buffer != NULL)
 			{
-				if (ClownCD_FileRead(buffer, size, 1, file) == 1)
+				if (ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_SET) == 0)
 				{
-					*out_buffer = buffer;
-					*out_size = size;
+					if (ClownCD_FileRead(buffer, size, 1, file) == 1)
+					{
+						*out_buffer = buffer;
+						*out_size = size;
 
-					return cc_true;
+						return cc_true;
+					}
 				}
-			}
 
-			free(buffer);
+				free(buffer);
+			}
 		}
 	}
 

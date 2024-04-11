@@ -5,6 +5,8 @@
 
 #include "clowncommon/clowncommon.h"
 
+#define CLOWNCD_SIZE_INVALID ((size_t)-1)
+
 typedef enum ClownCD_FileMode
 {
 	CLOWNCD_RB,

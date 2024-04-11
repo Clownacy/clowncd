@@ -49,8 +49,9 @@ static sf_count_t ClownCD_libSndFileTellCallback(void* const user_data)
 static sf_count_t ClownCD_libSndFileSizeCallback(void* const user_data)
 {
 	ClownCD_File* const file = (ClownCD_File*)user_data;
+	const size_t size = ClownCD_FileSize(file);
 
-	return ClownCD_FileSize(file);
+	return size == CLOWNCD_SIZE_INVALID ? 0 : size;
 }
 
 cc_bool ClownCD_libSndFileOpen(ClownCD_libSndFile* const track, ClownCD_File* const file)
