@@ -13,10 +13,10 @@ typedef struct State
 	char *track_filename;
 } State;
 
-static void Callback(void* const user_data, const char* const filename, const ClownCD_CueFileType file_type, const unsigned int track, const ClownCD_CueTrackType track_type, const unsigned int index, const unsigned long frame)
+static void Callback(void* const user_data, const char* const filename, const ClownCD_CueFileType file_type, const unsigned int track, const ClownCD_CueTrackType track_type, const unsigned int index, const unsigned long sector)
 {
 	State* const state = (State*)user_data;
-	const unsigned long ending_frame = ClownCD_CueGetTrackEndingFrame(state->cue_file, filename, track, frame);
+	const unsigned long ending_sector = ClownCD_CueGetTrackIndexEndingSector(state->cue_file, filename, track, 0, sector);
 
 	unsigned int type;
 
@@ -58,8 +58,8 @@ static void Callback(void* const user_data, const char* const filename, const Cl
 	}
 
 	ClownCD_WriteU16BE(state->header_file, type);
-	ClownCD_WriteU32BE(state->header_file, frame);
-	ClownCD_WriteU32BE(state->header_file, ending_frame == 0xFFFFFFFF ? 0xFFFFFFFF : ending_frame - frame);
+	ClownCD_WriteU32BE(state->header_file, sector);
+	ClownCD_WriteU32BE(state->header_file, ending_sector == 0xFFFFFFFF ? 0xFFFFFFFF : ending_sector - sector);
 }
 
 int main(const int argc, char** const argv)
