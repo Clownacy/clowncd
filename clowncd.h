@@ -7,6 +7,7 @@
 
 #include "audio.h"
 #include "cue.h"
+#include "error.h"
 #include "file-io.h"
 
 #define CLOWNCD_SECTOR_RAW_SIZE 2352

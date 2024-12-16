@@ -9,6 +9,8 @@ add_library(clowncd STATIC
 	"clowncd.h"
 	"cue.c"
 	"cue.h"
+	"error.c"
+	"error.h"
 	"file-io.c"
 	"file-io.h"
 	"utilities.c"
