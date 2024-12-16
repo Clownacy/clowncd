@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "error.h"
+
 typedef enum ClownCD_CueCommandType
 {
 	CLOWNCD_CUE_COMMAND_INVALID,
@@ -176,7 +178,7 @@ cc_bool ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback cal
 
 							if (file_name == NULL)
 							{
-								fputs("Could not allocate memory for filename.\n", stderr);
+								ClownCD_LogError("Could not allocate memory for filename.\n");
 							}
 							else
 							{
@@ -202,7 +204,7 @@ cc_bool ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback cal
 					char track_type_string[10 + 1];
 
 					if (sscanf(line, " TRACK %u %10s", &track, track_type_string) < 2)
-						fputs("Could not read TRACK parameters.\n", stderr);
+						ClownCD_LogError("Could not read TRACK parameters.\n");
 					else
 					{
 						track_type = ClownCD_CueTrackTypeFromString(track_type_string);
@@ -218,15 +220,15 @@ cc_bool ClownCD_CueParse(ClownCD_File* const file, const ClownCD_CueCallback cal
 					unsigned int index, minute, second, sector;
 
 					if (sscanf(line, " INDEX %u %u:%u:%u", &index, &minute, &second, &sector) < 4)
-						fputs("Could not read INDEX parameters.\n", stderr);
+						ClownCD_LogError("Could not read INDEX parameters.\n");
 					else if (file_name == NULL)
-						fputs("INDEX encountered with no filename specified.\n", stderr);
+						ClownCD_LogError("INDEX encountered with no filename specified.\n");
 					else if (file_type == CLOWNCD_CUE_FILE_INVALID)
-						fputs("INDEX encountered with no file type specified.\n", stderr);
+						ClownCD_LogError("INDEX encountered with no file type specified.\n");
 					else if (track == 0xFFFF)
-						fputs("INDEX encountered with no track specified.\n", stderr);
+						ClownCD_LogError("INDEX encountered with no track specified.\n");
 					else if (track_type == CLOWNCD_CUE_TRACK_INVALID)
-						fputs("INDEX encountered with no track type specified.\n", stderr);
+						ClownCD_LogError("INDEX encountered with no track type specified.\n");
 					else
 					{
 						if (callback != NULL)
