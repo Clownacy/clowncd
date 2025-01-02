@@ -423,7 +423,7 @@ ClownCD_CueTrackType ClownCD_SetState(ClownCD* const disc, const unsigned int tr
 	return disc->track.type;
 }
 
-cc_bool ClownCD_ReadSector(ClownCD* const disc, unsigned char* const buffer)
+cc_bool ClownCD_BeginSectorStream(ClownCD* const disc)
 {
 	if (disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2048 && disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2352)
 		return cc_false;
@@ -437,12 +437,33 @@ cc_bool ClownCD_ReadSector(ClownCD* const disc, unsigned char* const buffer)
 		if (ClownCD_FileSeek(&disc->track.file, CLOWNCD_SECTOR_HEADER_SIZE, CLOWNCD_SEEK_CUR) != 0)
 			return cc_false;
 
-	if (ClownCD_FileRead(buffer, CLOWNCD_SECTOR_DATA_SIZE, 1, &disc->track.file) != 1)
-		return cc_false;
+	return cc_true;
+}
 
+cc_bool ClownCD_ReadSectorStream(ClownCD* const disc, unsigned char* const buffer, const size_t total_bytes)
+{
+	return ClownCD_FileRead(buffer, total_bytes, 1, &disc->track.file) == 1;
+}
+
+cc_bool ClownCD_EndSectorStream(ClownCD* const disc)
+{
 	if (disc->track.type == CLOWNCD_CUE_TRACK_MODE1_2352)
 		if (ClownCD_FileSeek(&disc->track.file, CLOWNCD_SECTOR_RAW_SIZE - (CLOWNCD_SECTOR_HEADER_SIZE + CLOWNCD_SECTOR_DATA_SIZE), CLOWNCD_SEEK_CUR) != 0)
 			return cc_false;
+
+	return cc_true;
+}
+
+cc_bool ClownCD_ReadSector(ClownCD* const disc, unsigned char* const buffer)
+{
+	if (!ClownCD_BeginSectorStream(disc))
+		return cc_false;
+
+	if (!ClownCD_ReadSectorStream(disc, buffer, CLOWNCD_SECTOR_DATA_SIZE))
+		return cc_false;
+
+	if (!ClownCD_EndSectorStream(disc))
+		return cc_false;
 
 	return cc_true;
 }
