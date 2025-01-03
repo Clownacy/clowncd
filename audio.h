@@ -5,6 +5,8 @@
 
 #include "clowncommon/clowncommon.h"
 
+#include "audio/libraries/clownresampler/clownresampler.h"
+
 #ifdef CLOWNCD_LIBSNDFILE
  #include "audio/libsndfile.h"
 #else
@@ -42,6 +44,7 @@ typedef struct ClownCD_Audio
 		ClownCD_WAV wav;
 #endif
 	} formats;
+	ClownResampler_HighLevel_State resampler;
 } ClownCD_Audio;
 
 cc_bool ClownCD_AudioOpen(ClownCD_Audio *audio, ClownCD_File *file);
