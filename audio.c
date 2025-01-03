@@ -35,7 +35,7 @@ cc_bool ClownCD_AudioOpen(ClownCD_Audio* const audio, ClownCD_File* const file)
 
 	/* Verify that the audio is in a supported format. */
 	/* TODO: Support mono audio! */
-	if (audio->format == CLOWNCD_AUDIO_INVALID || metadata.total_channels != CLOWNCD_AUDIO_TOTAL_CHANNELS)
+	if (audio->format == CLOWNCD_AUDIO_INVALID || metadata.total_channels != 1 && metadata.total_channels != 2)
 		return cc_false;
 
 	if (!clowncd_precomputed_done)
@@ -45,7 +45,7 @@ cc_bool ClownCD_AudioOpen(ClownCD_Audio* const audio, ClownCD_File* const file)
 	}
 
 	/* Resample to the native CD sample rate. */
-	ClownResampler_HighLevel_Init(&audio->resampler, CLOWNCD_AUDIO_TOTAL_CHANNELS, metadata.sample_rate, CLOWNCD_AUDIO_SAMPLE_RATE, CLOWNCD_AUDIO_SAMPLE_RATE);
+	ClownResampler_HighLevel_Init(&audio->resampler, metadata.total_channels, metadata.sample_rate, CLOWNCD_AUDIO_SAMPLE_RATE, CLOWNCD_AUDIO_SAMPLE_RATE);
 
 	return cc_true;
 }
@@ -175,8 +175,14 @@ static cc_bool ClownCD_ResamplerOutputCallback(void* const user_data, const cc_s
 			sample = -0x7FFF;
 
 		/* Push the sample to the output buffer. */
-		*callback_data->output_pointer++ = (short)sample;
+		callback_data->output_pointer[i] = (short)sample;
 	}
+
+	/* Upsample mono to stereo. */
+	if (total_samples == 1)
+		callback_data->output_pointer[1] = callback_data->output_pointer[0];
+
+	callback_data->output_pointer += CLOWNCD_AUDIO_TOTAL_CHANNELS;
 
 	/* Signal whether there is more room in the output buffer. */
 	return --callback_data->output_buffer_frames_remaining != 0;
