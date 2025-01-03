@@ -5,6 +5,7 @@
 
 #include "../clowncommon/clowncommon.h"
 
+#include "../audio-common.h"
 #include "../file-io.h"
 
 struct stb_vorbis;
@@ -15,7 +16,7 @@ typedef struct ClownCD_Vorbis
 	struct stb_vorbis *instance;
 } ClownCD_Vorbis;
 
-cc_bool ClownCD_VorbisOpen(ClownCD_Vorbis *vorbis, ClownCD_File *file);
+cc_bool ClownCD_VorbisOpen(ClownCD_Vorbis *vorbis, ClownCD_File *file, ClownCD_AudioMetadata *metadata);
 void ClownCD_VorbisClose(ClownCD_Vorbis *vorbis);
 
 cc_bool ClownCD_VorbisSeek(ClownCD_Vorbis *vorbis, size_t frame);

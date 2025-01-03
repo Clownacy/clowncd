@@ -7,6 +7,7 @@
 
 #include "../clowncommon/clowncommon.h"
 
+#include "../audio-common.h"
 #include "../file-io.h"
 
 typedef struct ClownCD_libSndFile
@@ -14,7 +15,7 @@ typedef struct ClownCD_libSndFile
 	SNDFILE *libsndfile;
 } ClownCD_libSndFile;
 
-cc_bool ClownCD_libSndFileOpen(ClownCD_libSndFile *libsndfile, ClownCD_File *file);
+cc_bool ClownCD_libSndFileOpen(ClownCD_libSndFile *libsndfile, ClownCD_File *file, ClownCD_AudioMetadata *metadata);
 void ClownCD_libSndFileClose(ClownCD_libSndFile *libsndfile);
 
 cc_bool ClownCD_libSndFileSeek(ClownCD_libSndFile *libsndfile, size_t frame);

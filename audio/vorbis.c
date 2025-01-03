@@ -41,7 +41,7 @@ static cc_bool ClownCD_VorbisFileToMemory(ClownCD_File* const file, void** const
 	return cc_false;
 }
 
-cc_bool ClownCD_VorbisOpen(ClownCD_Vorbis* const vorbis, ClownCD_File* const file)
+cc_bool ClownCD_VorbisOpen(ClownCD_Vorbis* const vorbis, ClownCD_File* const file, ClownCD_AudioMetadata* const metadata)
 {
 	size_t size;
 
@@ -53,10 +53,10 @@ cc_bool ClownCD_VorbisOpen(ClownCD_Vorbis* const vorbis, ClownCD_File* const fil
 		{
 			const stb_vorbis_info vorbis_info = stb_vorbis_get_info(vorbis->instance);
 
-			if (vorbis_info.sample_rate == 44100 && vorbis_info.channels == 2)
-				return cc_true;
+			metadata->sample_rate = vorbis_info.sample_rate;
+			metadata->total_channels = vorbis_info.channels;
 
-			stb_vorbis_close(vorbis->instance);
+			return cc_true;
 		}
 
 		free(vorbis->file_buffer);

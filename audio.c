@@ -4,39 +4,27 @@
 
 cc_bool ClownCD_AudioOpen(ClownCD_Audio* const audio, ClownCD_File* const file)
 {
-#ifdef CLOWNCD_LIBSNDFILE
-	if (ClownCD_libSndFileOpen(&audio->formats.libsndfile, file))
-	{
-		audio->format = CLOWNCD_AUDIO_LIBSNDFILE;
-		return cc_true;
-	}
-#else
-	if (ClownCD_FLACOpen(&audio->formats.flac, file))
-	{
-		audio->format = CLOWNCD_AUDIO_FLAC;
-		return cc_true;
-	}
+	ClownCD_AudioMetadata metadata;
 
-	if (ClownCD_MP3Open(&audio->formats.mp3, file))
-	{
-		audio->format = CLOWNCD_AUDIO_MP3;
-		return cc_true;
-	}
-
-	if (ClownCD_VorbisOpen(&audio->formats.vorbis, file))
-	{
-		audio->format = CLOWNCD_AUDIO_VORBIS;
-		return cc_true;
-	}
-
-	if (ClownCD_WAVOpen(&audio->formats.wav, file))
-	{
-		audio->format = CLOWNCD_AUDIO_WAV;
-		return cc_true;
-	}
-#endif
 	audio->format = CLOWNCD_AUDIO_INVALID;
-	return cc_false;
+
+#ifdef CLOWNCD_LIBSNDFILE
+	if (ClownCD_libSndFileOpen(&audio->formats.libsndfile, file, &local_metadata))
+		audio->format = CLOWNCD_AUDIO_LIBSNDFILE;
+	else
+#else
+	if (ClownCD_FLACOpen(&audio->formats.flac, file, &metadata))
+		audio->format = CLOWNCD_AUDIO_FLAC;
+	else if (ClownCD_MP3Open(&audio->formats.mp3, file, &metadata))
+		audio->format = CLOWNCD_AUDIO_MP3;
+	else if (ClownCD_VorbisOpen(&audio->formats.vorbis, file, &metadata))
+		audio->format = CLOWNCD_AUDIO_VORBIS;
+	else if (ClownCD_WAVOpen(&audio->formats.wav, file, &metadata))
+		audio->format = CLOWNCD_AUDIO_WAV;
+#endif
+
+	/* Verify that the audio is in a supported format. */
+	return audio->format != CLOWNCD_AUDIO_INVALID && metadata.sample_rate == 44100 && metadata.total_channels == 2;
 }
 
 void ClownCD_AudioClose(ClownCD_Audio* const audio)

@@ -36,18 +36,17 @@ static drmp3_bool32 ClownCD_MP3SeekCallback(void* const user_data, const int off
 	return ClownCD_FileSeek(file, offset, ccd_origin) == 0;
 }
 
-cc_bool ClownCD_MP3Open(ClownCD_MP3* const mp3, ClownCD_File* const file)
+cc_bool ClownCD_MP3Open(ClownCD_MP3* const mp3, ClownCD_File* const file, ClownCD_AudioMetadata* const metadata)
 {
 	if (ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_SET) != 0)
 		return cc_false;
 
 	if (drmp3_init(&mp3->dr_mp3, ClownCD_MP3ReadCallback, ClownCD_MP3SeekCallback, file, NULL))
 	{
-		/* Verify that the audio is in a supported format. */
-		if (mp3->dr_mp3.channels == 2 && mp3->dr_mp3.sampleRate == 44100)
-			return cc_true;
+		metadata->sample_rate = mp3->dr_mp3.sampleRate;
+		metadata->total_channels = mp3->dr_mp3.channels;
 
-		drmp3_uninit(&mp3->dr_mp3);
+		return cc_true;
 	}
 
 	return cc_false;

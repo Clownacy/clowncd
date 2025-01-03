@@ -10,6 +10,7 @@
 
 #include "../clowncommon/clowncommon.h"
 
+#include "../audio-common.h"
 #include "../file-io.h"
 
 typedef struct ClownCD_MP3
@@ -17,7 +18,7 @@ typedef struct ClownCD_MP3
 	drmp3 dr_mp3;
 } ClownCD_MP3;
 
-cc_bool ClownCD_MP3Open(ClownCD_MP3 *mp3, ClownCD_File *file);
+cc_bool ClownCD_MP3Open(ClownCD_MP3 *mp3, ClownCD_File *file, ClownCD_AudioMetadata* metadata);
 void ClownCD_MP3Close(ClownCD_MP3 *mp3);
 
 cc_bool ClownCD_MP3Seek(ClownCD_MP3 *mp3, size_t frame);

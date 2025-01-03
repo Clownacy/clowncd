@@ -36,18 +36,17 @@ static drwav_bool32 ClownCD_WAVSeekCallback(void* const user_data, const int off
 	return ClownCD_FileSeek(file, offset, ccd_origin) == 0;
 }
 
-cc_bool ClownCD_WAVOpen(ClownCD_WAV* const wav, ClownCD_File* const file)
+cc_bool ClownCD_WAVOpen(ClownCD_WAV* const wav, ClownCD_File* const file, ClownCD_AudioMetadata* const metadata)
 {
 	if (ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_SET) != 0)
 		return cc_false;
 
 	if (drwav_init(&wav->dr_wav, ClownCD_WAVReadCallback, ClownCD_WAVSeekCallback, file, NULL))
 	{
-		/* Verify that the audio is in a supported format. */
-		if (wav->dr_wav.channels == 2 && wav->dr_wav.sampleRate == 44100)
-			return cc_true;
+		metadata->sample_rate = wav->dr_wav.sampleRate;
+		metadata->total_channels = wav->dr_wav.channels;
 
-		drwav_uninit(&wav->dr_wav);
+		return cc_true;
 	}
 
 	return cc_false;

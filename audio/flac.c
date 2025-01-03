@@ -36,7 +36,7 @@ static drflac_bool32 ClownCD_FLACSeekCallback(void* const user_data, const int o
 	return ClownCD_FileSeek(file, offset, ccd_origin) == 0;
 }
 
-cc_bool ClownCD_FLACOpen(ClownCD_FLAC* const flac, ClownCD_File* const file)
+cc_bool ClownCD_FLACOpen(ClownCD_FLAC* const flac, ClownCD_File* const file, ClownCD_AudioMetadata* const metadata)
 {
 	if (ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_SET) != 0)
 		return cc_false;
@@ -44,11 +44,10 @@ cc_bool ClownCD_FLACOpen(ClownCD_FLAC* const flac, ClownCD_File* const file)
 	flac->dr_flac = drflac_open(ClownCD_FLACReadCallback, ClownCD_FLACSeekCallback, file, NULL);
 	if (flac->dr_flac != NULL)
 	{
-		/* Verify that the audio is in a supported format. */
-		if (flac->dr_flac->channels == 2 && flac->dr_flac->sampleRate == 44100)
-			return cc_true;
+		metadata->sample_rate = flac->dr_flac->sampleRate;
+		metadata->total_channels = flac->dr_flac->channels;
 
-		drflac_close(flac->dr_flac);
+		return cc_true;
 	}
 
 	return cc_false;

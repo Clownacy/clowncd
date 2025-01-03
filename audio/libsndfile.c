@@ -54,7 +54,7 @@ static sf_count_t ClownCD_libSndFileSizeCallback(void* const user_data)
 	return size == CLOWNCD_SIZE_INVALID ? 0 : size;
 }
 
-cc_bool ClownCD_libSndFileOpen(ClownCD_libSndFile* const track, ClownCD_File* const file)
+cc_bool ClownCD_libSndFileOpen(ClownCD_libSndFile* const track, ClownCD_File* const file, ClownCD_AudioMetadata* const metadata)
 {
 	SF_VIRTUAL_IO callbacks = {
 		ClownCD_libSndFileSizeCallback,
@@ -75,11 +75,10 @@ cc_bool ClownCD_libSndFileOpen(ClownCD_libSndFile* const track, ClownCD_File* co
 		/* Prevent popping caused by the float->integer conversion. */
 		sf_command(track->libsndfile, SFC_SET_SCALE_FLOAT_INT_READ, NULL, SF_TRUE);
 
-		/* Verify that the audio is in a supported format. */
-		if (info.channels == 2 && info.samplerate == 44100)
-			return cc_true;
+		metadata->sample_rate = info.samplerate;
+		metadata->total_channels = info.channels;
 
-		sf_close(track->libsndfile);
+		return cc_true;
 	}
 
 	return cc_false;

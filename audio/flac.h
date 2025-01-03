@@ -10,6 +10,7 @@
 
 #include "../clowncommon/clowncommon.h"
 
+#include "../audio-common.h"
 #include "../file-io.h"
 
 typedef struct ClownCD_FLAC
@@ -17,7 +18,7 @@ typedef struct ClownCD_FLAC
 	drflac *dr_flac;
 } ClownCD_FLAC;
 
-cc_bool ClownCD_FLACOpen(ClownCD_FLAC *flac, ClownCD_File *file);
+cc_bool ClownCD_FLACOpen(ClownCD_FLAC *flac, ClownCD_File *file, ClownCD_AudioMetadata *metadata);
 void ClownCD_FLACClose(ClownCD_FLAC *flac);
 
 cc_bool ClownCD_FLACSeek(ClownCD_FLAC *flac, size_t frame);
