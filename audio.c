@@ -19,7 +19,7 @@ cc_bool ClownCD_AudioOpen(ClownCD_Audio* const audio, ClownCD_File* const file)
 	audio->format = CLOWNCD_AUDIO_INVALID;
 
 #ifdef CLOWNCD_LIBSNDFILE
-	if (ClownCD_libSndFileOpen(&audio->formats.libsndfile, file, &local_metadata))
+	if (ClownCD_libSndFileOpen(&audio->formats.libsndfile, file, &metadata))
 		audio->format = CLOWNCD_AUDIO_LIBSNDFILE;
 	else
 #else
@@ -35,7 +35,7 @@ cc_bool ClownCD_AudioOpen(ClownCD_Audio* const audio, ClownCD_File* const file)
 
 	/* Verify that the audio is in a supported format. */
 	/* TODO: Support mono audio! */
-	if (audio->format == CLOWNCD_AUDIO_INVALID || metadata.total_channels != 1 && metadata.total_channels != 2)
+	if (audio->format == CLOWNCD_AUDIO_INVALID || (metadata.total_channels != 1 && metadata.total_channels != 2))
 		return cc_false;
 
 	if (!clowncd_precomputed_done)
