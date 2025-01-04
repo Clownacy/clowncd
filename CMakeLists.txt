@@ -5,6 +5,7 @@ project(clowncd LANGUAGES C)
 add_library(clowncd STATIC
 	"audio.c"
 	"audio.h"
+	"audio-common.h"
 	"clowncd.c"
 	"clowncd.h"
 	"cue.c"
