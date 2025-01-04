@@ -8,3 +8,4 @@
 #include "audio/mp3.c"
 #include "audio/vorbis.c"
 #include "audio/wav.c"
+#include "audio/libraries/clownresampler/clownresampler.c"

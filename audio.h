@@ -5,12 +5,6 @@
 
 #include "clowncommon/clowncommon.h"
 
-#define CLOWNRESAMPLER_STATIC
-#undef CLOWNRESAMPLER_NO_HIGH_LEVEL_API
-#undef CLOWNRESAMPLER_NO_LOW_LEVEL_API
-#define CLOWNRESAMPLER_NO_HIGH_LEVEL_ADJUST
-#define CLOWNRESAMPLER_NO_HIGH_LEVEL_RESAMPLE_END
-#define CLOWNRESAMPLER_MAXIMUM_CHANNELS 2 /* We only need stereo. */
 #include "audio/libraries/clownresampler/clownresampler.h"
 
 #ifdef CLOWNCD_LIBSNDFILE

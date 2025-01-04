@@ -18,6 +18,9 @@ add_library(clowncd STATIC
 	"utilities.h"
 )
 
+add_subdirectory("audio/libraries/clownresampler" EXCLUDE_FROM_ALL)
+target_link_libraries(clowncd PRIVATE clownresampler)
+
 find_package(SndFile)
 
 if(TARGET SndFile::sndfile)
