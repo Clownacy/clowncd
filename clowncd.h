@@ -58,9 +58,9 @@ cc_bool ClownCD_SeekAudioFrame(ClownCD *disc, size_t frame);
 ClownCD_CueTrackType ClownCD_SetState(ClownCD *disc, unsigned int track, unsigned int index, unsigned long sector, size_t frame);
 
 cc_bool ClownCD_BeginSectorStream(ClownCD* disc);
-cc_bool ClownCD_ReadSectorStream(ClownCD* disc, unsigned char *buffer, size_t total_bytes);
+size_t ClownCD_ReadSectorStream(ClownCD* disc, unsigned char *buffer, size_t total_bytes);
 cc_bool ClownCD_EndSectorStream(ClownCD* disc);
-cc_bool ClownCD_ReadSector(ClownCD* disc, unsigned char *buffer);
+size_t ClownCD_ReadSector(ClownCD* disc, unsigned char *buffer);
 
 size_t ClownCD_ReadFrames(ClownCD *disc, short *buffer, size_t total_frames);
 

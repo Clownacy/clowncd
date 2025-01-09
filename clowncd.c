@@ -440,9 +440,9 @@ cc_bool ClownCD_BeginSectorStream(ClownCD* const disc)
 	return cc_true;
 }
 
-cc_bool ClownCD_ReadSectorStream(ClownCD* const disc, unsigned char* const buffer, const size_t total_bytes)
+size_t ClownCD_ReadSectorStream(ClownCD* const disc, unsigned char* const buffer, const size_t total_bytes)
 {
-	return ClownCD_FileRead(buffer, total_bytes, 1, &disc->track.file) == 1;
+	return ClownCD_FileRead(buffer, 1, total_bytes, &disc->track.file);
 }
 
 cc_bool ClownCD_EndSectorStream(ClownCD* const disc)
@@ -454,18 +454,18 @@ cc_bool ClownCD_EndSectorStream(ClownCD* const disc)
 	return cc_true;
 }
 
-cc_bool ClownCD_ReadSector(ClownCD* const disc, unsigned char* const buffer)
+size_t ClownCD_ReadSector(ClownCD* const disc, unsigned char* const buffer)
 {
+	size_t bytes_read;
+
 	if (!ClownCD_BeginSectorStream(disc))
-		return cc_false;
+		return 0;
 
-	if (!ClownCD_ReadSectorStream(disc, buffer, CLOWNCD_SECTOR_DATA_SIZE))
-		return cc_false;
+	bytes_read = ClownCD_ReadSectorStream(disc, buffer, CLOWNCD_SECTOR_DATA_SIZE);
 
-	if (!ClownCD_EndSectorStream(disc))
-		return cc_false;
+	ClownCD_EndSectorStream(disc);
 
-	return cc_true;
+	return bytes_read;
 }
 
 static size_t ClownCD_ReadFramesGetAudio(ClownCD* const disc, short* const buffer, const size_t total_frames)
