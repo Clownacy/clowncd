@@ -43,10 +43,18 @@ cc_bool ClownCD_MP3Open(ClownCD_MP3* const mp3, ClownCD_File* const file, ClownC
 
 	if (drmp3_init(&mp3->dr_mp3, ClownCD_MP3ReadCallback, ClownCD_MP3SeekCallback, file, NULL))
 	{
-		metadata->sample_rate = mp3->dr_mp3.sampleRate;
-		metadata->total_channels = mp3->dr_mp3.channels;
+		drmp3_uint32 seek_point_count = CC_COUNT_OF(mp3->seek_points);
 
-		return cc_true;
+		/* Compute seek points so that seeking is not dreadfully slow. */
+		if (drmp3_calculate_seek_points(&mp3->dr_mp3, &seek_point_count, &mp3->seek_points) && drmp3_bind_seek_table(&mp3->dr_mp3, seek_point_count, &mp3->seek_points))
+		{
+			metadata->sample_rate = mp3->dr_mp3.sampleRate;
+			metadata->total_channels = mp3->dr_mp3.channels;
+
+			return cc_true;
+		}
+
+		drmp3_uninit(&mp3->dr_mp3);
 	}
 
 	return cc_false;

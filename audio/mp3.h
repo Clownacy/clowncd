@@ -16,6 +16,7 @@
 typedef struct ClownCD_MP3
 {
 	drmp3 dr_mp3;
+	drmp3_seek_point seek_points[0x100];
 } ClownCD_MP3;
 
 cc_bool ClownCD_MP3Open(ClownCD_MP3 *mp3, ClownCD_File *file, ClownCD_AudioMetadata* metadata);
