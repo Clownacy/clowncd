@@ -6,6 +6,8 @@
 
 #define STB_VORBIS_NO_STDIO
 #define STB_VORBIS_NO_PUSHDATA_API
+#define STB_VORBIS_MAX_CHANNELS 2
+#define STB_VORBIS_NO_COMMENTS
 #include "libraries/stb_vorbis.c"
 
 #include "../utilities.h"
