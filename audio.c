@@ -20,14 +20,16 @@ cc_bool ClownCD_AudioOpen(ClownCD_Audio* const audio, ClownCD_File* const file)
 		audio->format = CLOWNCD_AUDIO_LIBSNDFILE;
 	else
 #else
+	/* Always test MP3 last since it is not easy to detect MP3 files automatically,
+	   so only use it as a last resort. */
 	if (ClownCD_FLACOpen(&audio->formats.flac, file, &metadata))
 		audio->format = CLOWNCD_AUDIO_FLAC;
-	else if (ClownCD_MP3Open(&audio->formats.mp3, file, &metadata))
-		audio->format = CLOWNCD_AUDIO_MP3;
 	else if (ClownCD_VorbisOpen(&audio->formats.vorbis, file, &metadata))
 		audio->format = CLOWNCD_AUDIO_VORBIS;
 	else if (ClownCD_WAVOpen(&audio->formats.wav, file, &metadata))
 		audio->format = CLOWNCD_AUDIO_WAV;
+	else if (ClownCD_MP3Open(&audio->formats.mp3, file, &metadata))
+		audio->format = CLOWNCD_AUDIO_MP3;
 #endif
 
 	/* Verify that the audio is in a supported format. */
