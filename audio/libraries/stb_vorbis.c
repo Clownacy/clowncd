@@ -61,7 +61,7 @@
 /*    1.04    - 2014-08-27 - fix missing const-correct case in API */
 /*    1.03    - 2014-08-07 - warning fixes */
 /*    1.02    - 2014-07-09 - declare qsort comparison as explicitly _cdecl in Windows */
-/*    1.01    - 2014-06-18 - fix stb_vorbis_get_samples_float (interleaved was correct) */
+/*    1.01    - 2014-06-18 - fix clowncd_stb_vorbis_get_samples_float (interleaved was correct) */
 /*    1.0     - 2014-05-26 - fix memory leaks; fix warnings; fix bugs in >2-channel; */
 /*                           (API change) report sample rate for decode-full-file funcs */
 /*  */
@@ -90,14 +90,14 @@ extern "C" {
 
 /* /////////   THREAD SAFETY */
 
-/* Individual stb_vorbis* handles are not thread-safe; you cannot decode from */
+/* Individual clowncd_stb_vorbis* handles are not thread-safe; you cannot decode from */
 /* them from multiple threads at the same time. However, you can have multiple */
-/* stb_vorbis* handles and decode from them independently in multiple thrads. */
+/* clowncd_stb_vorbis* handles and decode from them independently in multiple thrads. */
 
 
 /* /////////   MEMORY ALLOCATION */
 
-/* normally stb_vorbis uses malloc() to allocate memory at startup, */
+/* normally clowncd_stb_vorbis uses malloc() to allocate memory at startup, */
 /* and alloca() to allocate temporary memory during a frame on the */
 /* stack. (Memory consumption will depend on the amount of setup */
 /* data in the file and how you set the compile flags for speed */
@@ -106,7 +106,7 @@ extern "C" {
 /* You can modify the wrapper functions in the source (setup_malloc, */
 /* setup_temp_malloc, temp_malloc) to change this behavior, or you */
 /* can use a simpler allocation model: you pass in a buffer from */
-/* which stb_vorbis will allocate _all_ its memory (including the */
+/* which clowncd_stb_vorbis will allocate _all_ its memory (including the */
 /* temp memory). "open" may fail with a VORBIS_outofmem if you */
 /* do not pass in enough data; there is no way to determine how */
 /* much you do need except to succeed (at which point you can */
@@ -121,12 +121,12 @@ typedef struct
 {
    char *alloc_buffer;
    int   alloc_buffer_length_in_bytes;
-} stb_vorbis_alloc;
+} clowncd_stb_vorbis_alloc;
 
 
 /* /////////   FUNCTIONS USEABLE WITH ALL INPUT MODES */
 
-typedef struct stb_vorbis stb_vorbis;
+typedef struct clowncd_stb_vorbis clowncd_stb_vorbis;
 
 typedef struct
 {
@@ -138,7 +138,7 @@ typedef struct
    unsigned int temp_memory_required;
 
    int max_frame_size;
-} stb_vorbis_info;
+} clowncd_stb_vorbis_info;
 
 typedef struct
 {
@@ -146,66 +146,66 @@ typedef struct
 
    int comment_list_length;
    char **comment_list;
-} stb_vorbis_comment;
+} clowncd_stb_vorbis_comment;
 
 /* get general information about the file */
-extern stb_vorbis_info stb_vorbis_get_info(stb_vorbis *f);
+extern clowncd_stb_vorbis_info clowncd_stb_vorbis_get_info(clowncd_stb_vorbis *f);
 
 #ifndef STB_VORBIS_NO_COMMENTS
 /* get ogg comments */
-extern stb_vorbis_comment stb_vorbis_get_comment(stb_vorbis *f);
+extern clowncd_stb_vorbis_comment clowncd_stb_vorbis_get_comment(clowncd_stb_vorbis *f);
 #endif
 
 /* get the last error detected (clears it, too) */
-extern int stb_vorbis_get_error(stb_vorbis *f);
+extern int clowncd_stb_vorbis_get_error(clowncd_stb_vorbis *f);
 
 /* close an ogg vorbis file and free all memory in use */
-extern void stb_vorbis_close(stb_vorbis *f);
+extern void clowncd_stb_vorbis_close(clowncd_stb_vorbis *f);
 
 /* this function returns the offset (in samples) from the beginning of the */
 /* file that will be returned by the next decode, if it is known, or -1 */
 /* otherwise. after a flush_pushdata() call, this may take a while before */
 /* it becomes valid again. */
 /* NOT WORKING YET after a seek with PULLDATA API */
-extern int stb_vorbis_get_sample_offset(stb_vorbis *f);
+extern int clowncd_stb_vorbis_get_sample_offset(clowncd_stb_vorbis *f);
 
 /*  this function returns the count of returned samples from the beginning of the */
-/*  file. Functions "stb_vorbis_get_samples_*", "stb_vorbis_seek_*()" will */
+/*  file. Functions "clowncd_stb_vorbis_get_samples_*", "clowncd_stb_vorbis_seek_*()" will */
 /*  affect the returned value. Use this call to get the accurate sample position */
 /*  during playback. */
-extern int stb_vorbis_get_playback_sample_offset(stb_vorbis *f);
+extern int clowncd_stb_vorbis_get_playback_sample_offset(clowncd_stb_vorbis *f);
 
 /* returns the current seek point within the file, or offset from the beginning */
 /* of the memory buffer. In pushdata mode it returns 0. */
-extern unsigned int stb_vorbis_get_file_offset(stb_vorbis *f);
+extern unsigned int clowncd_stb_vorbis_get_file_offset(clowncd_stb_vorbis *f);
 
 /* /////////   PUSHDATA API */
 
 #ifndef STB_VORBIS_NO_PUSHDATA_API
 
 /* this API allows you to get blocks of data from any source and hand */
-/* them to stb_vorbis. you have to buffer them; stb_vorbis will tell */
+/* them to clowncd_stb_vorbis. you have to buffer them; clowncd_stb_vorbis will tell */
 /* you how much it used, and you have to give it the rest next time; */
-/* and stb_vorbis may not have enough data to work with and you will */
+/* and clowncd_stb_vorbis may not have enough data to work with and you will */
 /* need to give it the same data again PLUS more. Note that the Vorbis */
 /* specification does not bound the size of an individual frame. */
 
-extern stb_vorbis *stb_vorbis_open_pushdata(
+extern clowncd_stb_vorbis *clowncd_stb_vorbis_open_pushdata(
          const unsigned char * datablock, int datablock_length_in_bytes,
          int *datablock_memory_consumed_in_bytes,
          int *error,
-         const stb_vorbis_alloc *alloc_buffer);
+         const clowncd_stb_vorbis_alloc *alloc_buffer);
 /* create a vorbis decoder by passing in the initial data block containing */
 /*    the ogg&vorbis headers (you don't need to do parse them, just provide */
 /*    the first N bytes of the file--you're told if it's not enough, see below) */
-/* on success, returns an stb_vorbis *, does not set error, returns the amount of */
+/* on success, returns an clowncd_stb_vorbis *, does not set error, returns the amount of */
 /*    data parsed/consumed on this call in *datablock_memory_consumed_in_bytes; */
 /* on failure, returns NULL on error and sets *error, does not change *datablock_memory_consumed */
 /* if returns NULL and *error is VORBIS_need_more_data, then the input block was */
 /*       incomplete and you need to pass in a larger block from the start of the file */
 
-extern int stb_vorbis_decode_frame_pushdata(
-         stb_vorbis *f,
+extern int clowncd_stb_vorbis_decode_frame_pushdata(
+         clowncd_stb_vorbis *f,
          const unsigned char *datablock, int datablock_length_in_bytes,
          int *channels,             /* place to write number of float * buffers */
          float ***output,           /* place to write float ** array of float * buffers */
@@ -222,7 +222,7 @@ extern int stb_vorbis_decode_frame_pushdata(
 /* note that after opening a file, you will ALWAYS get one N-bytes,0-sample */
 /* frame, because Vorbis always "discards" the first frame. */
 /*  */
-/* Note that on resynch, stb_vorbis will rarely consume all of the buffer, */
+/* Note that on resynch, clowncd_stb_vorbis will rarely consume all of the buffer, */
 /* instead only datablock_length_in_bytes-3 or less. This is because it wants */
 /* to avoid missing parts of a page header if they cross a datablock boundary, */
 /* without writing state-machiney code to record a partial detection. */
@@ -234,22 +234,22 @@ extern int stb_vorbis_decode_frame_pushdata(
 /* the first channel, and (*output)[1][0] contains the first sample from */
 /* the second channel. */
 /*  */
-/* *output points into stb_vorbis's internal output buffer storage; these */
-/* buffers are owned by stb_vorbis and application code should not free */
+/* *output points into clowncd_stb_vorbis's internal output buffer storage; these */
+/* buffers are owned by clowncd_stb_vorbis and application code should not free */
 /* them or modify their contents. They are transient and will be overwritten */
 /* once you ask for more data to get decoded, so be sure to grab any data */
 /* you need before then. */
 
-extern void stb_vorbis_flush_pushdata(stb_vorbis *f);
-/* inform stb_vorbis that your next datablock will not be contiguous with */
+extern void clowncd_stb_vorbis_flush_pushdata(clowncd_stb_vorbis *f);
+/* inform clowncd_stb_vorbis that your next datablock will not be contiguous with */
 /* previous ones (e.g. you've seeked in the data); future attempts to decode */
-/* frames will cause stb_vorbis to resynchronize (as noted above), and */
+/* frames will cause clowncd_stb_vorbis to resynchronize (as noted above), and */
 /* once it sees a valid Ogg page (typically 4-8KB, as large as 64KB), it */
 /* will begin decoding the _next_ frame. */
 /*  */
 /* if you want to seek using pushdata, you need to seek in your file, then */
-/* call stb_vorbis_flush_pushdata(), then start calling decoding, then once */
-/* decoding is returning you data, call stb_vorbis_get_sample_offset, and */
+/* call clowncd_stb_vorbis_flush_pushdata(), then start calling decoding, then once */
+/* decoding is returning you data, call clowncd_stb_vorbis_get_sample_offset, and */
 /* if you don't like the result, seek your file again and repeat. */
 #endif
 
@@ -257,7 +257,7 @@ extern void stb_vorbis_flush_pushdata(stb_vorbis *f);
 /* ////////   PULLING INPUT API */
 
 #ifndef STB_VORBIS_NO_PULLDATA_API
-/* This API assumes stb_vorbis is allowed to pull data from a source-- */
+/* This API assumes clowncd_stb_vorbis is allowed to pull data from a source-- */
 /* either a block of memory containing the _entire_ vorbis stream, or a */
 /* FILE * that you or it create, or possibly some other reading mechanism */
 /* if you go modify the source to replace the FILE * case with some kind */
@@ -265,80 +265,80 @@ extern void stb_vorbis_flush_pushdata(stb_vorbis *f);
 /* just want to go ahead and use pushdata.) */
 
 #if !defined(STB_VORBIS_NO_STDIO) && !defined(STB_VORBIS_NO_INTEGER_CONVERSION)
-extern int stb_vorbis_decode_filename(const char *filename, int *channels, int *sample_rate, short **output);
+extern int clowncd_stb_vorbis_decode_filename(const char *filename, int *channels, int *sample_rate, short **output);
 #endif
 #if !defined(STB_VORBIS_NO_INTEGER_CONVERSION)
-extern int stb_vorbis_decode_memory(const unsigned char *mem, int len, int *channels, int *sample_rate, short **output);
+extern int clowncd_stb_vorbis_decode_memory(const unsigned char *mem, int len, int *channels, int *sample_rate, short **output);
 #endif
 /* decode an entire file and output the data interleaved into a malloc()ed */
 /* buffer stored in *output. The return value is the number of samples */
 /* decoded, or -1 if the file could not be opened or was not an ogg vorbis file. */
 /* When you're done with it, just free() the pointer returned in *output. */
 
-extern stb_vorbis * stb_vorbis_open_memory(const unsigned char *data, int len,
-                                  int *error, const stb_vorbis_alloc *alloc_buffer);
+extern clowncd_stb_vorbis * clowncd_stb_vorbis_open_memory(const unsigned char *data, int len,
+                                  int *error, const clowncd_stb_vorbis_alloc *alloc_buffer);
 /* create an ogg vorbis decoder from an ogg vorbis stream in memory (note */
 /* this must be the entire stream!). on failure, returns NULL and sets *error */
 
 #ifndef STB_VORBIS_NO_STDIO
-extern stb_vorbis * stb_vorbis_open_filename(const char *filename,
-                                  int *error, const stb_vorbis_alloc *alloc_buffer);
+extern clowncd_stb_vorbis * clowncd_stb_vorbis_open_filename(const char *filename,
+                                  int *error, const clowncd_stb_vorbis_alloc *alloc_buffer);
 /* create an ogg vorbis decoder from a filename via fopen(). on failure, */
 /* returns NULL and sets *error (possibly to VORBIS_file_open_failure). */
 
-extern stb_vorbis * stb_vorbis_open_file(FILE *f, int close_handle_on_close,
-                                  int *error, const stb_vorbis_alloc *alloc_buffer);
+extern clowncd_stb_vorbis * clowncd_stb_vorbis_open_file(FILE *f, int close_handle_on_close,
+                                  int *error, const clowncd_stb_vorbis_alloc *alloc_buffer);
 /* create an ogg vorbis decoder from an open FILE *, looking for a stream at */
 /* the _current_ seek point (ftell). on failure, returns NULL and sets *error. */
-/* note that stb_vorbis must "own" this stream; if you seek it in between */
-/* calls to stb_vorbis, it will become confused. Moreover, if you attempt to */
-/* perform stb_vorbis_seek_*() operations on this file, it will assume it */
+/* note that clowncd_stb_vorbis must "own" this stream; if you seek it in between */
+/* calls to clowncd_stb_vorbis, it will become confused. Moreover, if you attempt to */
+/* perform clowncd_stb_vorbis_seek_*() operations on this file, it will assume it */
 /* owns the _entire_ rest of the file after the start point. Use the next */
-/* function, stb_vorbis_open_file_section(), to limit it. */
+/* function, clowncd_stb_vorbis_open_file_section(), to limit it. */
 
-extern stb_vorbis * stb_vorbis_open_file_section(FILE *f, int close_handle_on_close,
-                int *error, const stb_vorbis_alloc *alloc_buffer, unsigned int len);
+extern clowncd_stb_vorbis * clowncd_stb_vorbis_open_file_section(FILE *f, int close_handle_on_close,
+                int *error, const clowncd_stb_vorbis_alloc *alloc_buffer, unsigned int len);
 /* create an ogg vorbis decoder from an open FILE *, looking for a stream at */
 /* the _current_ seek point (ftell); the stream will be of length 'len' bytes. */
-/* on failure, returns NULL and sets *error. note that stb_vorbis must "own" */
-/* this stream; if you seek it in between calls to stb_vorbis, it will become */
+/* on failure, returns NULL and sets *error. note that clowncd_stb_vorbis must "own" */
+/* this stream; if you seek it in between calls to clowncd_stb_vorbis, it will become */
 /* confused. */
 #endif
 
 #ifdef STB_VORBIS_SDL
-extern stb_vorbis * stb_vorbis_open_rwops_section(SDL_IOStream *rwops, int close_on_free, int *error, const stb_vorbis_alloc *alloc, unsigned int length);
-extern stb_vorbis * stb_vorbis_open_rwops(SDL_IOStream *rwops, int close_on_free, int *error, const stb_vorbis_alloc *alloc);
+extern clowncd_stb_vorbis * clowncd_stb_vorbis_open_rwops_section(SDL_IOStream *rwops, int close_on_free, int *error, const clowncd_stb_vorbis_alloc *alloc, unsigned int length);
+extern clowncd_stb_vorbis * clowncd_stb_vorbis_open_rwops(SDL_IOStream *rwops, int close_on_free, int *error, const clowncd_stb_vorbis_alloc *alloc);
 #endif
 
-extern int stb_vorbis_seek_frame(stb_vorbis *f, unsigned int sample_number);
-extern int stb_vorbis_seek(stb_vorbis *f, unsigned int sample_number);
+extern int clowncd_stb_vorbis_seek_frame(clowncd_stb_vorbis *f, unsigned int sample_number);
+extern int clowncd_stb_vorbis_seek(clowncd_stb_vorbis *f, unsigned int sample_number);
 /* these functions seek in the Vorbis file to (approximately) 'sample_number'. */
 /* after calling seek_frame(), the next call to get_frame_*() will include */
-/* the specified sample. after calling stb_vorbis_seek(), the next call to */
-/* stb_vorbis_get_samples_* will start with the specified sample. If you */
+/* the specified sample. after calling clowncd_stb_vorbis_seek(), the next call to */
+/* clowncd_stb_vorbis_get_samples_* will start with the specified sample. If you */
 /* do not need to seek to EXACTLY the target sample when using get_samples_*, */
 /* you can also use seek_frame(). */
 
-extern int stb_vorbis_seek_start(stb_vorbis *f);
-/* this function is equivalent to stb_vorbis_seek(f,0) */
+extern int clowncd_stb_vorbis_seek_start(clowncd_stb_vorbis *f);
+/* this function is equivalent to clowncd_stb_vorbis_seek(f,0) */
 
-extern unsigned int stb_vorbis_stream_length_in_samples(stb_vorbis *f);
-extern float        stb_vorbis_stream_length_in_seconds(stb_vorbis *f);
+extern unsigned int clowncd_stb_vorbis_stream_length_in_samples(clowncd_stb_vorbis *f);
+extern float        clowncd_stb_vorbis_stream_length_in_seconds(clowncd_stb_vorbis *f);
 /* these functions return the total length of the vorbis stream */
 
-extern int stb_vorbis_get_frame_float(stb_vorbis *f, int *channels, float ***output);
+extern int clowncd_stb_vorbis_get_frame_float(clowncd_stb_vorbis *f, int *channels, float ***output);
 /* decode the next frame and return the number of samples. the number of */
 /* channels returned are stored in *channels (which can be NULL--it is always */
 /* the same as the number of channels reported by get_info). *output will */
 /* contain an array of float* buffers, one per channel. These outputs will */
-/* be overwritten on the next call to stb_vorbis_get_frame_*. */
+/* be overwritten on the next call to clowncd_stb_vorbis_get_frame_*. */
 /*  */
-/* You generally should not intermix calls to stb_vorbis_get_frame_*() */
-/* and stb_vorbis_get_samples_*(), since the latter calls the former. */
+/* You generally should not intermix calls to clowncd_stb_vorbis_get_frame_*() */
+/* and clowncd_stb_vorbis_get_samples_*(), since the latter calls the former. */
 
 #ifndef STB_VORBIS_NO_INTEGER_CONVERSION
-extern int stb_vorbis_get_frame_short_interleaved(stb_vorbis *f, int num_c, short *buffer, int num_shorts);
-extern int stb_vorbis_get_frame_short            (stb_vorbis *f, int num_c, short **buffer, int num_samples);
+extern int clowncd_stb_vorbis_get_frame_short_interleaved(clowncd_stb_vorbis *f, int num_c, short *buffer, int num_shorts);
+extern int clowncd_stb_vorbis_get_frame_short            (clowncd_stb_vorbis *f, int num_c, short **buffer, int num_samples);
 #endif
 /* decode the next frame and return the number of *samples* per channel. */
 /* Note that for interleaved data, you pass in the number of shorts (the */
@@ -347,7 +347,7 @@ extern int stb_vorbis_get_frame_short            (stb_vorbis *f, int num_c, shor
 /*  */
 /* The data is coerced to the number of channels you request according to the */
 /* channel coercion rules (see below). You must pass in the size of your */
-/* buffer(s) so that stb_vorbis will not overwrite the end of the buffer. */
+/* buffer(s) so that clowncd_stb_vorbis will not overwrite the end of the buffer. */
 /* The maximum buffer size needed can be gotten from get_info(); however, */
 /* the Vorbis I specification implies an absolute maximum of 4096 samples */
 /* per channel. */
@@ -365,16 +365,16 @@ extern int stb_vorbis_get_frame_short            (stb_vorbis *f, int num_c, shor
 /*    Note that this is not _good_ surround etc. mixing at all! It's just so */
 /*    you get something useful. */
 
-extern int stb_vorbis_get_samples_float_interleaved(stb_vorbis *f, int channels, float *buffer, int num_floats);
-extern int stb_vorbis_get_samples_float(stb_vorbis *f, int channels, float **buffer, int num_samples);
+extern int clowncd_stb_vorbis_get_samples_float_interleaved(clowncd_stb_vorbis *f, int channels, float *buffer, int num_floats);
+extern int clowncd_stb_vorbis_get_samples_float(clowncd_stb_vorbis *f, int channels, float **buffer, int num_samples);
 /* gets num_samples samples, not necessarily on a frame boundary--this requires */
 /* buffering so you have to supply the buffers. DOES NOT APPLY THE COERCION RULES. */
 /* Returns the number of samples stored per channel; it may be less than requested */
 /* at the end of the file. If there are no more samples in the file, returns 0. */
 
 #ifndef STB_VORBIS_NO_INTEGER_CONVERSION
-extern int stb_vorbis_get_samples_short_interleaved(stb_vorbis *f, int channels, short *buffer, int num_shorts);
-extern int stb_vorbis_get_samples_short(stb_vorbis *f, int channels, short **buffer, int num_samples);
+extern int clowncd_stb_vorbis_get_samples_short_interleaved(clowncd_stb_vorbis *f, int channels, short *buffer, int num_shorts);
+extern int clowncd_stb_vorbis_get_samples_short(clowncd_stb_vorbis *f, int channels, short **buffer, int num_samples);
 #endif
 /* gets num_samples samples, not necessarily on a frame boundary--this requires */
 /* buffering so you have to supply the buffers. Applies the coercion rules above */
@@ -440,7 +440,7 @@ enum STBVorbisError
 /* crucial) */
 
 /* STB_VORBIS_NO_PUSHDATA_API */
-/*     does not compile the code for the various stb_vorbis_*_pushdata() */
+/*     does not compile the code for the various clowncd_stb_vorbis_*_pushdata() */
 /*     functions */
 /* #define STB_VORBIS_NO_PUSHDATA_API */
 
@@ -477,7 +477,7 @@ enum STBVorbisError
 #endif
 
 /* STB_VORBIS_PUSHDATA_CRC_COUNT [number] */
-/*     after a flush_pushdata(), stb_vorbis begins scanning for the */
+/*     after a flush_pushdata(), clowncd_stb_vorbis begins scanning for the */
 /*     next valid page, without backtracking. when it finds something */
 /*     that looks like a page, it streams through it and verifies its */
 /*     CRC32. Should that validation fail, it keeps scanning. But it's */
@@ -516,7 +516,7 @@ enum STBVorbisError
 #endif
 
 /* STB_VORBIS_NO_HUFFMAN_BINARY_SEARCH */
-/*     If the 'fast huffman' search doesn't succeed, then stb_vorbis falls */
+/*     If the 'fast huffman' search doesn't succeed, then clowncd_stb_vorbis falls */
 /*     back on binary searching for the correct one. This requires storing */
 /*     extra tables with the huffman codes in sorted order. Defining this */
 /*     symbol trades off space for speed by forcing a linear search in the */
@@ -524,7 +524,7 @@ enum STBVorbisError
 /* #define STB_VORBIS_NO_HUFFMAN_BINARY_SEARCH */
 
 /* STB_VORBIS_DIVIDES_IN_RESIDUE */
-/*     stb_vorbis precomputes the result of the scalar residue decoding */
+/*     clowncd_stb_vorbis precomputes the result of the scalar residue decoding */
 /*     that would otherwise require a divide per chunk. you can trade off */
 /*     space for time by defining this symbol. */
 /* #define STB_VORBIS_DIVIDES_IN_RESIDUE */
@@ -532,7 +532,7 @@ enum STBVorbisError
 /* STB_VORBIS_DIVIDES_IN_CODEBOOK */
 /*     vorbis VQ codebooks can be encoded two ways: with every case explicitly */
 /*     stored, or with all elements being chosen from a small range of values, */
-/*     and all values possible in all elements. By default, stb_vorbis expands */
+/*     and all values possible in all elements. By default, clowncd_stb_vorbis expands */
 /*     this latter kind out to look like the former kind for ease of decoding, */
 /*     because otherwise an integer divide-per-vector-element is required to */
 /*     unpack the index. If you define STB_VORBIS_DIVIDES_IN_CODEBOOK, you can */
@@ -809,7 +809,7 @@ typedef struct
    uint32 last_decoded_sample;
 } ProbedPage;
 
-struct stb_vorbis
+struct clowncd_stb_vorbis
 {
   /* user-accessible info */
    unsigned int sample_rate;
@@ -853,7 +853,7 @@ struct stb_vorbis
    ProbedPage p_first, p_last;
 
   /* memory management */
-   stb_vorbis_alloc alloc;
+   clowncd_stb_vorbis_alloc alloc;
    int setup_offset;
    int temp_offset;
 
@@ -954,7 +954,7 @@ struct stb_vorbis
    #define IS_PUSH_MODE(f)   ((f)->push_mode)
 #endif
 
-typedef struct stb_vorbis vorb;
+typedef struct clowncd_stb_vorbis vorb;
 
 static int error(vorb *f, enum STBVorbisError e)
 {
@@ -1475,7 +1475,7 @@ static void skip(vorb *z, int n)
    #endif
 }
 
-static int set_file_offset(stb_vorbis *f, unsigned int loc)
+static int set_file_offset(clowncd_stb_vorbis *f, unsigned int loc)
 {
    #ifndef STB_VORBIS_NO_PUSHDATA_API
    if (f->push_mode) return 0;
@@ -1543,7 +1543,7 @@ static int start_page_no_capturepattern(vorb *f)
 {
    uint32 loc0,loc1,n;
    if (f->first_decode && !IS_PUSH_MODE(f)) {
-      f->p_first.page_start = stb_vorbis_get_file_offset(f) - 4;
+      f->p_first.page_start = clowncd_stb_vorbis_get_file_offset(f) - 4;
    }
    /* stream structure version */
    if (0 != get8(f)) return error(f, VORBIS_invalid_stream_structure_version);
@@ -3555,7 +3555,7 @@ static int vorbis_decode_packet(vorb *f, int *len, int *p_left, int *p_right)
    return vorbis_decode_packet_rest(f, len, f->mode_config + mode, *p_left, left_end, *p_right, right_end, p_left);
 }
 
-static int vorbis_finish_frame(stb_vorbis *f, int len, int left, int right)
+static int vorbis_finish_frame(clowncd_stb_vorbis *f, int len, int left, int right)
 {
    int prev,i,j;
    /* we use right&left (the start of the right- and left-window sin()-regions) */
@@ -3608,7 +3608,7 @@ static int vorbis_finish_frame(stb_vorbis *f, int len, int left, int right)
    return right - left;
 }
 
-static int vorbis_pump_first_frame(stb_vorbis *f)
+static int vorbis_pump_first_frame(clowncd_stb_vorbis *f)
 {
    int len, right, left, res;
    res = vorbis_decode_packet(f, &len, &left, &right);
@@ -3620,7 +3620,7 @@ static int vorbis_pump_first_frame(stb_vorbis *f)
 }
 
 #ifndef STB_VORBIS_NO_PUSHDATA_API
-static int is_whole_packet_present(stb_vorbis *f)
+static int is_whole_packet_present(clowncd_stb_vorbis *f)
 {
    /* make sure that we have the packet available before continuing... */
    /* this requires a full ogg parse, but we know we can fetch from f->stream */
@@ -4324,14 +4324,14 @@ static int start_decoder(vorb *f)
       if (f->work_buffer == NULL) return error(f, VORBIS_outofmem);
    }
 
-   /* @TODO: stb_vorbis_seek_start expects first_audio_page_offset to point to a page */
+   /* @TODO: clowncd_stb_vorbis_seek_start expects first_audio_page_offset to point to a page */
    /* without PAGEFLAG_continued_packet, so this either points to the first page, or */
    /* the page after the end of the headers. It might be cleaner to point to a page */
    /* in the middle of the headers, when that's the page where the first audio packet */
    /* starts, but we'd have to also correctly skip the end of any continued packet in */
-   /* stb_vorbis_seek_start. */
+   /* clowncd_stb_vorbis_seek_start. */
    if (f->next_seg == -1) {
-      f->first_audio_page_offset = stb_vorbis_get_file_offset(f);
+      f->first_audio_page_offset = clowncd_stb_vorbis_get_file_offset(f);
    } else {
       f->first_audio_page_offset = 0;
    }
@@ -4339,7 +4339,7 @@ static int start_decoder(vorb *f)
    return TRUE;
 }
 
-static void vorbis_deinit(stb_vorbis *p)
+static void vorbis_deinit(clowncd_stb_vorbis *p)
 {
    int i,j;
 
@@ -4415,14 +4415,14 @@ static void vorbis_deinit(stb_vorbis *p)
    #endif
 }
 
-void stb_vorbis_close(stb_vorbis *p)
+void clowncd_stb_vorbis_close(clowncd_stb_vorbis *p)
 {
    if (p == NULL) return;
    vorbis_deinit(p);
    setup_free(p,p);
 }
 
-static void vorbis_init(stb_vorbis *p, const stb_vorbis_alloc *z)
+static void vorbis_init(clowncd_stb_vorbis *p, const clowncd_stb_vorbis_alloc *z)
 {
    memset(p, 0, sizeof(*p)); /* NULL out all malloc'd pointers to start */
    if (z) {
@@ -4445,7 +4445,7 @@ static void vorbis_init(stb_vorbis *p, const stb_vorbis_alloc *z)
    #endif
 }
 
-int stb_vorbis_get_sample_offset(stb_vorbis *f)
+int clowncd_stb_vorbis_get_sample_offset(clowncd_stb_vorbis *f)
 {
    if (f->current_loc_valid)
       return f->current_loc;
@@ -4453,7 +4453,7 @@ int stb_vorbis_get_sample_offset(stb_vorbis *f)
       return -1;
 }
 
-int stb_vorbis_get_playback_sample_offset(stb_vorbis *f)
+int clowncd_stb_vorbis_get_playback_sample_offset(clowncd_stb_vorbis *f)
 {
    if (f->current_playback_loc_valid)
       return f->current_playback_loc;
@@ -4461,9 +4461,9 @@ int stb_vorbis_get_playback_sample_offset(stb_vorbis *f)
       return -1;
 }
 
-stb_vorbis_info stb_vorbis_get_info(stb_vorbis *f)
+clowncd_stb_vorbis_info clowncd_stb_vorbis_get_info(clowncd_stb_vorbis *f)
 {
-   stb_vorbis_info d;
+   clowncd_stb_vorbis_info d;
    d.channels = f->channels;
    d.sample_rate = f->sample_rate;
    d.setup_memory_required = f->setup_memory_required;
@@ -4474,9 +4474,9 @@ stb_vorbis_info stb_vorbis_get_info(stb_vorbis *f)
 }
 
 #ifndef STB_VORBIS_NO_COMMENTS
-stb_vorbis_comment stb_vorbis_get_comment(stb_vorbis *f)
+clowncd_stb_vorbis_comment clowncd_stb_vorbis_get_comment(clowncd_stb_vorbis *f)
 {
-   stb_vorbis_comment d;
+   clowncd_stb_vorbis_comment d;
    d.vendor = f->vendor;
    d.comment_list_length = f->comment_list_length;
    d.comment_list = f->comment_list;
@@ -4484,22 +4484,22 @@ stb_vorbis_comment stb_vorbis_get_comment(stb_vorbis *f)
 }
 #endif
 
-int stb_vorbis_get_error(stb_vorbis *f)
+int clowncd_stb_vorbis_get_error(clowncd_stb_vorbis *f)
 {
    int e = f->error;
    f->error = VORBIS__no_error;
    return e;
 }
 
-static stb_vorbis * vorbis_alloc(stb_vorbis *f)
+static clowncd_stb_vorbis * vorbis_alloc(clowncd_stb_vorbis *f)
 {
-   stb_vorbis *p = (stb_vorbis *) setup_malloc(f, sizeof(*p));
+   clowncd_stb_vorbis *p = (clowncd_stb_vorbis *) setup_malloc(f, sizeof(*p));
    return p;
 }
 
 #ifndef STB_VORBIS_NO_PUSHDATA_API
 
-void stb_vorbis_flush_pushdata(stb_vorbis *f)
+void clowncd_stb_vorbis_flush_pushdata(clowncd_stb_vorbis *f)
 {
    f->previous_length = 0;
    f->page_crc_tests  = 0;
@@ -4602,8 +4602,8 @@ static int vorbis_search_for_page_pushdata(vorb *f, uint8 *data, int data_len)
 }
 
 /* return value: number of bytes we used */
-int stb_vorbis_decode_frame_pushdata(
-         stb_vorbis *f,                   /* the file we're decoding */
+int clowncd_stb_vorbis_decode_frame_pushdata(
+         clowncd_stb_vorbis *f,                   /* the file we're decoding */
          const uint8 *data, int data_len, /* the memory available for decoding */
          int *channels,                   /* place to write number of float * buffers */
          float ***output,                 /* place to write float ** array of float * buffers */
@@ -4654,7 +4654,7 @@ int stb_vorbis_decode_frame_pushdata(
       }
       /* if we get an error while parsing, what to do? */
       /* well, it DEFINITELY won't work to continue from where we are! */
-      stb_vorbis_flush_pushdata(f);
+      clowncd_stb_vorbis_flush_pushdata(f);
       /* restore the error that actually made us bail */
       f->error = error;
       *samples = 0;
@@ -4672,12 +4672,12 @@ int stb_vorbis_decode_frame_pushdata(
    return (int) (f->stream - data);
 }
 
-stb_vorbis *stb_vorbis_open_pushdata(
+clowncd_stb_vorbis *clowncd_stb_vorbis_open_pushdata(
          const unsigned char *data, int data_len, /* the memory available for decoding */
          int *data_used,              /* only defined if result is not NULL */
-         int *error, const stb_vorbis_alloc *alloc)
+         int *error, const clowncd_stb_vorbis_alloc *alloc)
 {
-   stb_vorbis *f, p;
+   clowncd_stb_vorbis *f, p;
    vorbis_init(&p, alloc);
    p.stream     = (uint8 *) data;
    p.stream_end = (uint8 *) data + data_len;
@@ -4703,7 +4703,7 @@ stb_vorbis *stb_vorbis_open_pushdata(
 }
 #endif /* STB_VORBIS_NO_PUSHDATA_API */
 
-unsigned int stb_vorbis_get_file_offset(stb_vorbis *f)
+unsigned int clowncd_stb_vorbis_get_file_offset(clowncd_stb_vorbis *f)
 {
    #ifndef STB_VORBIS_NO_PUSHDATA_API
    if (f->push_mode) return 0;
@@ -4723,14 +4723,14 @@ unsigned int stb_vorbis_get_file_offset(stb_vorbis *f)
 /* DATA-PULLING API */
 /*  */
 
-static uint32 vorbis_find_page(stb_vorbis *f, uint32 *end, uint32 *last)
+static uint32 vorbis_find_page(clowncd_stb_vorbis *f, uint32 *end, uint32 *last)
 {
    for(;;) {
       int n;
       if (f->eof) return 0;
       n = get8(f);
       if (n == 0x4f) { /* page header candidate */
-         unsigned int retry_loc = stb_vorbis_get_file_offset(f);
+         unsigned int retry_loc = clowncd_stb_vorbis_get_file_offset(f);
          int i;
          /* check if we're off the end of a file_section stream */
          if (retry_loc - 25 > f->stream_len)
@@ -4775,7 +4775,7 @@ static uint32 vorbis_find_page(stb_vorbis *f, uint32 *end, uint32 *last)
                /* another 2^32, not worth it since it would hose those */
                /* invalid-but-useful files? */
                if (end)
-                  *end = stb_vorbis_get_file_offset(f);
+                  *end = clowncd_stb_vorbis_get_file_offset(f);
                if (last) {
                   if (header[5] & 0x04)
                      *last = 1;
@@ -4805,13 +4805,13 @@ static uint32 vorbis_find_page(stb_vorbis *f, uint32 *end, uint32 *last)
 /* to try to bound either side of the binary search sensibly, while still */
 /* working in O(log n) time if they fail. */
 
-static int get_seek_page_info(stb_vorbis *f, ProbedPage *z)
+static int get_seek_page_info(clowncd_stb_vorbis *f, ProbedPage *z)
 {
    uint8 header[27], lacing[255];
    int i,len;
 
    /* record where the page starts */
-   z->page_start = stb_vorbis_get_file_offset(f);
+   z->page_start = clowncd_stb_vorbis_get_file_offset(f);
 
    /* parse the header */
    if (!getn(f, header, 27))
@@ -4839,7 +4839,7 @@ static int get_seek_page_info(stb_vorbis *f, ProbedPage *z)
 
 /* rarely used function to seek back to the preceding page while finding the */
 /* start of a packet */
-static int go_to_page_before(stb_vorbis *f, unsigned int limit_offset)
+static int go_to_page_before(clowncd_stb_vorbis *f, unsigned int limit_offset)
 {
    unsigned int previous_safe;
    uint32 end;
@@ -4853,7 +4853,7 @@ static int go_to_page_before(stb_vorbis *f, unsigned int limit_offset)
    set_file_offset(f, previous_safe);
 
    while (vorbis_find_page(f, &end, NULL)) {
-      if (end >= limit_offset && stb_vorbis_get_file_offset(f) < limit_offset)
+      if (end >= limit_offset && clowncd_stb_vorbis_get_file_offset(f) < limit_offset)
          return 1;
       set_file_offset(f, end);
    }
@@ -4865,7 +4865,7 @@ static int go_to_page_before(stb_vorbis *f, unsigned int limit_offset)
 /* the function succeeds, current_loc_valid will be true and current_loc will */
 /* be less than or equal to the provided sample number (the closer the */
 /* better). */
-static int seek_to_sample_coarse(stb_vorbis *f, uint32 sample_number)
+static int seek_to_sample_coarse(clowncd_stb_vorbis *f, uint32 sample_number)
 {
    ProbedPage left, right, mid;
    int i, start_seg_with_known_loc, end_pos, page_start;
@@ -4874,7 +4874,7 @@ static int seek_to_sample_coarse(stb_vorbis *f, uint32 sample_number)
    int probe = 0;
 
    /* find the last page and validate the target sample */
-   stream_length = stb_vorbis_stream_length_in_samples(f);
+   stream_length = clowncd_stb_vorbis_stream_length_in_samples(f);
    if (stream_length == 0)            return error(f, VORBIS_seek_without_length);
    if (sample_number > stream_length) return error(f, VORBIS_seek_invalid);
 
@@ -4899,7 +4899,7 @@ static int seek_to_sample_coarse(stb_vorbis *f, uint32 sample_number)
 
    /* starting from the start is handled differently */
    if (last_sample_limit <= left.last_decoded_sample) {
-      if (stb_vorbis_seek_start(f)) {
+      if (clowncd_stb_vorbis_seek_start(f)) {
          if (f->current_loc > sample_number)
             return error(f, VORBIS_seek_failed);
          return 1;
@@ -4989,7 +4989,7 @@ static int seek_to_sample_coarse(stb_vorbis *f, uint32 sample_number)
       if (!go_to_page_before(f, page_start))
          goto error;
 
-      page_start = stb_vorbis_get_file_offset(f);
+      page_start = clowncd_stb_vorbis_get_file_offset(f);
       if (!start_page(f)) goto error;
       end_pos = f->segment_count - 1;
    }
@@ -5015,7 +5015,7 @@ static int seek_to_sample_coarse(stb_vorbis *f, uint32 sample_number)
 
 error:
    /* try to restore the file to a valid state */
-   stb_vorbis_seek_start(f);
+   clowncd_stb_vorbis_seek_start(f);
    return error(f, VORBIS_seek_failed);
 }
 
@@ -5045,7 +5045,7 @@ static int peek_decode_initial(vorb *f, int *p_left_start, int *p_left_end, int 
    return 1;
 }
 
-int stb_vorbis_seek_frame(stb_vorbis *f, unsigned int sample_number)
+int clowncd_stb_vorbis_seek_frame(clowncd_stb_vorbis *f, unsigned int sample_number)
 {
    uint32 max_frame_samples;
 
@@ -5085,9 +5085,9 @@ int stb_vorbis_seek_frame(stb_vorbis *f, unsigned int sample_number)
    return 1;
 }
 
-int stb_vorbis_seek(stb_vorbis *f, unsigned int sample_number)
+int clowncd_stb_vorbis_seek(clowncd_stb_vorbis *f, unsigned int sample_number)
 {
-   if (!stb_vorbis_seek_frame(f, sample_number)) {
+   if (!clowncd_stb_vorbis_seek_frame(f, sample_number)) {
       f->current_playback_loc_valid = FALSE;
       return 0;
    }
@@ -5095,7 +5095,7 @@ int stb_vorbis_seek(stb_vorbis *f, unsigned int sample_number)
    if (sample_number != f->current_loc) {
       int n;
       uint32 frame_start = f->current_loc;
-      stb_vorbis_get_frame_float(f, &n, NULL);
+      clowncd_stb_vorbis_get_frame_float(f, &n, NULL);
       assert(sample_number > frame_start);
       assert(f->channel_buffer_start + (int) (sample_number-frame_start) <= f->channel_buffer_end);
       f->channel_buffer_start += (sample_number - frame_start);
@@ -5107,7 +5107,7 @@ int stb_vorbis_seek(stb_vorbis *f, unsigned int sample_number)
    return 1;
 }
 
-int stb_vorbis_seek_start(stb_vorbis *f)
+int clowncd_stb_vorbis_seek_start(clowncd_stb_vorbis *f)
 {
    if (IS_PUSH_MODE(f)) { return error(f, VORBIS_invalid_api_mixing); }
    set_file_offset(f, f->first_audio_page_offset);
@@ -5117,7 +5117,7 @@ int stb_vorbis_seek_start(stb_vorbis *f)
    return vorbis_pump_first_frame(f);
 }
 
-unsigned int stb_vorbis_stream_length_in_samples(stb_vorbis *f)
+unsigned int clowncd_stb_vorbis_stream_length_in_samples(clowncd_stb_vorbis *f)
 {
    unsigned int restore_offset, previous_safe;
    unsigned int last_page_loc;
@@ -5129,7 +5129,7 @@ unsigned int stb_vorbis_stream_length_in_samples(stb_vorbis *f)
       char header[6];
 
       /* first, store the current decode position so we can restore it */
-      restore_offset = stb_vorbis_get_file_offset(f);
+      restore_offset = clowncd_stb_vorbis_get_file_offset(f);
 
       /* now we want to seek back 64K from the end (the last page must */
       /* be at most a little less than 64K, but let's allow a little slop) */
@@ -5150,7 +5150,7 @@ unsigned int stb_vorbis_stream_length_in_samples(stb_vorbis *f)
       }
 
       /* check if there are more pages */
-      last_page_loc = stb_vorbis_get_file_offset(f);
+      last_page_loc = clowncd_stb_vorbis_get_file_offset(f);
 
       /* stop when the last_page flag is set, not when we reach eof; */
       /* this allows us to stop short of a 'file_section' end without */
@@ -5163,7 +5163,7 @@ unsigned int stb_vorbis_stream_length_in_samples(stb_vorbis *f)
             break;
          }
          /* previous_safe = last_page_loc+1; // NOTE: not used after this point, but note for debugging */
-         last_page_loc = stb_vorbis_get_file_offset(f);
+         last_page_loc = clowncd_stb_vorbis_get_file_offset(f);
       }
 
       set_file_offset(f, last_page_loc);
@@ -5192,14 +5192,14 @@ unsigned int stb_vorbis_stream_length_in_samples(stb_vorbis *f)
    return f->total_samples == SAMPLE_unknown ? 0 : f->total_samples;
 }
 
-float stb_vorbis_stream_length_in_seconds(stb_vorbis *f)
+float clowncd_stb_vorbis_stream_length_in_seconds(clowncd_stb_vorbis *f)
 {
-   return stb_vorbis_stream_length_in_samples(f) / (float) f->sample_rate;
+   return clowncd_stb_vorbis_stream_length_in_samples(f) / (float) f->sample_rate;
 }
 
 
 
-int stb_vorbis_get_frame_float(stb_vorbis *f, int *channels, float ***output)
+int clowncd_stb_vorbis_get_frame_float(clowncd_stb_vorbis *f, int *channels, float ***output)
 {
    int len, right,left,i;
    if (IS_PUSH_MODE(f)) return error(f, VORBIS_invalid_api_mixing);
@@ -5223,9 +5223,9 @@ int stb_vorbis_get_frame_float(stb_vorbis *f, int *channels, float ***output)
 
 #ifndef STB_VORBIS_NO_STDIO
 
-stb_vorbis * stb_vorbis_open_file_section(FILE *file, int close_on_free, int *error, const stb_vorbis_alloc *alloc, unsigned int length)
+clowncd_stb_vorbis * clowncd_stb_vorbis_open_file_section(FILE *file, int close_on_free, int *error, const clowncd_stb_vorbis_alloc *alloc, unsigned int length)
 {
-   stb_vorbis *f, p;
+   clowncd_stb_vorbis *f, p;
    vorbis_init(&p, alloc);
    p.f = file;
    p.f_start = (uint32) ftell(file);
@@ -5244,17 +5244,17 @@ stb_vorbis * stb_vorbis_open_file_section(FILE *file, int close_on_free, int *er
    return NULL;
 }
 
-stb_vorbis * stb_vorbis_open_file(FILE *file, int close_on_free, int *error, const stb_vorbis_alloc *alloc)
+clowncd_stb_vorbis * clowncd_stb_vorbis_open_file(FILE *file, int close_on_free, int *error, const clowncd_stb_vorbis_alloc *alloc)
 {
    unsigned int len, start;
    start = (unsigned int) ftell(file);
    fseek(file, 0, SEEK_END);
    len = (unsigned int) (ftell(file) - start);
    fseek(file, start, SEEK_SET);
-   return stb_vorbis_open_file_section(file, close_on_free, error, alloc, len);
+   return clowncd_stb_vorbis_open_file_section(file, close_on_free, error, alloc, len);
 }
 
-stb_vorbis * stb_vorbis_open_filename(const char *filename, int *error, const stb_vorbis_alloc *alloc)
+clowncd_stb_vorbis * clowncd_stb_vorbis_open_filename(const char *filename, int *error, const clowncd_stb_vorbis_alloc *alloc)
 {
    FILE *f;
 #if defined(_WIN32) && defined(__STDC_WANT_SECURE_LIB__)
@@ -5264,16 +5264,16 @@ stb_vorbis * stb_vorbis_open_filename(const char *filename, int *error, const st
    f = fopen(filename, "rb");
 #endif
    if (f)
-      return stb_vorbis_open_file(f, TRUE, error, alloc);
+      return clowncd_stb_vorbis_open_file(f, TRUE, error, alloc);
    if (error) *error = VORBIS_file_open_failure;
    return NULL;
 }
 #endif /* STB_VORBIS_NO_STDIO */
 
 #ifdef STB_VORBIS_SDL
-stb_vorbis * stb_vorbis_open_rwops_section(SDL_IOStream *rwops, int close_on_free, int *error, const stb_vorbis_alloc *alloc, unsigned int length)
+clowncd_stb_vorbis * clowncd_stb_vorbis_open_rwops_section(SDL_IOStream *rwops, int close_on_free, int *error, const clowncd_stb_vorbis_alloc *alloc, unsigned int length)
 {
-   stb_vorbis *f, p;
+   clowncd_stb_vorbis *f, p;
    vorbis_init(&p, alloc);
    p.rwops = rwops;
    p.rwops_start = (uint32) SDL_TellIO(rwops);
@@ -5282,7 +5282,7 @@ stb_vorbis * stb_vorbis_open_rwops_section(SDL_IOStream *rwops, int close_on_fre
    if (start_decoder(&p)) {
       f = vorbis_alloc(&p);
       if (f) {
-         memcpy(f, &p, sizeof (stb_vorbis));
+         memcpy(f, &p, sizeof (clowncd_stb_vorbis));
          vorbis_pump_first_frame(f);
          return f;
       }
@@ -5292,17 +5292,17 @@ stb_vorbis * stb_vorbis_open_rwops_section(SDL_IOStream *rwops, int close_on_fre
    return NULL;
 }
 
-stb_vorbis * stb_vorbis_open_rwops(SDL_IOStream *rwops, int close_on_free, int *error, const stb_vorbis_alloc *alloc)
+clowncd_stb_vorbis * clowncd_stb_vorbis_open_rwops(SDL_IOStream *rwops, int close_on_free, int *error, const clowncd_stb_vorbis_alloc *alloc)
 {
    const unsigned int start = (unsigned int) SDL_TellIO(rwops);
    const unsigned int len = (unsigned int) (SDL_GetIOSize(rwops) - start);
-   return stb_vorbis_open_rwops_section(rwops, close_on_free, error, alloc, len);
+   return clowncd_stb_vorbis_open_rwops_section(rwops, close_on_free, error, alloc, len);
 }
 #endif
 
-stb_vorbis * stb_vorbis_open_memory(const unsigned char *data, int len, int *error, const stb_vorbis_alloc *alloc)
+clowncd_stb_vorbis * clowncd_stb_vorbis_open_memory(const unsigned char *data, int len, int *error, const clowncd_stb_vorbis_alloc *alloc)
 {
-   stb_vorbis *f, p;
+   clowncd_stb_vorbis *f, p;
    if (!data) {
       if (error) *error = VORBIS_unexpected_eof;
       return NULL;
@@ -5316,7 +5316,7 @@ stb_vorbis * stb_vorbis_open_memory(const unsigned char *data, int len, int *err
    if (start_decoder(&p)) {
       f = vorbis_alloc(&p);
       if (f) {
-         memcpy(f, &p, sizeof (stb_vorbis));
+         memcpy(f, &p, sizeof (clowncd_stb_vorbis));
          vorbis_pump_first_frame(f);
          if (error) *error = VORBIS__no_error;
          return f;
@@ -5355,7 +5355,7 @@ static int8 channel_position[7][6] =
       /* upstream: https://github.com/nothings/stb/issues/1168. */
       unsigned int i;
    } float_conv;
-   typedef char stb_vorbis_float_size_test[sizeof(float)==4 && sizeof(int) == 4];
+   typedef char clowncd_stb_vorbis_float_size_test[sizeof(float)==4 && sizeof(int) == 4];
    #define FASTDEF(x) float_conv x
    /* add (1<<23) to convert to int, then divide by 2^SHIFT, then add 0.5/2^SHIFT to round */
    #define MAGIC(SHIFT) (1.5f * (1 << (23-SHIFT)) + 0.5f/(1 << SHIFT))
@@ -5463,10 +5463,10 @@ static void convert_samples_short(int buf_c, short **buffer, int b_offset, int d
    }
 }
 
-int stb_vorbis_get_frame_short(stb_vorbis *f, int num_c, short **buffer, int num_samples)
+int clowncd_stb_vorbis_get_frame_short(clowncd_stb_vorbis *f, int num_c, short **buffer, int num_samples)
 {
    float **output = NULL;
-   int len = stb_vorbis_get_frame_float(f, NULL, &output);
+   int len = clowncd_stb_vorbis_get_frame_float(f, NULL, &output);
    if (len > num_samples) len = num_samples;
    if (len)
       convert_samples_short(num_c, buffer, 0, f->channels, output, 0, len);
@@ -5499,12 +5499,12 @@ static void convert_channels_short_interleaved(int buf_c, short *buffer, int dat
    }
 }
 
-int stb_vorbis_get_frame_short_interleaved(stb_vorbis *f, int num_c, short *buffer, int num_shorts)
+int clowncd_stb_vorbis_get_frame_short_interleaved(clowncd_stb_vorbis *f, int num_c, short *buffer, int num_shorts)
 {
    float **output;
    int len;
-   if (num_c == 1) return stb_vorbis_get_frame_short(f,num_c,&buffer, num_shorts);
-   len = stb_vorbis_get_frame_float(f, NULL, &output);
+   if (num_c == 1) return clowncd_stb_vorbis_get_frame_short(f,num_c,&buffer, num_shorts);
+   len = clowncd_stb_vorbis_get_frame_float(f, NULL, &output);
    if (len) {
       if (len*num_c > num_shorts) len = num_shorts / num_c;
       convert_channels_short_interleaved(num_c, buffer, f->channels, output, 0, len);
@@ -5512,12 +5512,12 @@ int stb_vorbis_get_frame_short_interleaved(stb_vorbis *f, int num_c, short *buff
    return len;
 }
 
-static int fixup_current_playback_loc(stb_vorbis *f, int n)
+static int fixup_current_playback_loc(clowncd_stb_vorbis *f, int n)
 {
    unsigned int lgs;
 
    f->current_playback_loc += n;
-   lgs = stb_vorbis_stream_length_in_samples(f);
+   lgs = clowncd_stb_vorbis_stream_length_in_samples(f);
    if (f->current_playback_loc > lgs && lgs > 0 && lgs != SAMPLE_unknown) {
        int r = n - (f->current_playback_loc - (int)lgs);
        f->current_playback_loc = lgs;
@@ -5527,7 +5527,7 @@ static int fixup_current_playback_loc(stb_vorbis *f, int n)
    return n;
 }
 
-int stb_vorbis_get_samples_short_interleaved(stb_vorbis *f, int channels, short *buffer, int num_shorts)
+int clowncd_stb_vorbis_get_samples_short_interleaved(clowncd_stb_vorbis *f, int channels, short *buffer, int num_shorts)
 {
    float **outputs;
    int len = num_shorts / channels;
@@ -5541,12 +5541,12 @@ int stb_vorbis_get_samples_short_interleaved(stb_vorbis *f, int channels, short 
       n += k;
       f->channel_buffer_start += k;
       if (n == len) break;
-      if (!stb_vorbis_get_frame_float(f, NULL, &outputs)) break;
+      if (!clowncd_stb_vorbis_get_frame_float(f, NULL, &outputs)) break;
    }
    return fixup_current_playback_loc(f, n);
 }
 
-int stb_vorbis_get_samples_short(stb_vorbis *f, int channels, short **buffer, int len)
+int clowncd_stb_vorbis_get_samples_short(clowncd_stb_vorbis *f, int channels, short **buffer, int len)
 {
    float **outputs;
    int n=0;
@@ -5558,17 +5558,17 @@ int stb_vorbis_get_samples_short(stb_vorbis *f, int channels, short **buffer, in
       n += k;
       f->channel_buffer_start += k;
       if (n == len) break;
-      if (!stb_vorbis_get_frame_float(f, NULL, &outputs)) break;
+      if (!clowncd_stb_vorbis_get_frame_float(f, NULL, &outputs)) break;
    }
    return fixup_current_playback_loc(f, n);
 }
 
 #ifndef STB_VORBIS_NO_STDIO
-int stb_vorbis_decode_filename(const char *filename, int *channels, int *sample_rate, short **output)
+int clowncd_stb_vorbis_decode_filename(const char *filename, int *channels, int *sample_rate, short **output)
 {
    int data_len, offset, total, limit, error;
    short *data;
-   stb_vorbis *v = stb_vorbis_open_filename(filename, &error, NULL);
+   clowncd_stb_vorbis *v = clowncd_stb_vorbis_open_filename(filename, &error, NULL);
    if (v == NULL) return -1;
    limit = v->channels * 4096;
    *channels = v->channels;
@@ -5578,11 +5578,11 @@ int stb_vorbis_decode_filename(const char *filename, int *channels, int *sample_
    total = limit;
    data = (short *) malloc(total * sizeof(*data));
    if (data == NULL) {
-      stb_vorbis_close(v);
+      clowncd_stb_vorbis_close(v);
       return -2;
    }
    for (;;) {
-      int n = stb_vorbis_get_frame_short_interleaved(v, v->channels, data+offset, total-offset);
+      int n = clowncd_stb_vorbis_get_frame_short_interleaved(v, v->channels, data+offset, total-offset);
       if (n == 0) break;
       data_len += n;
       offset += n * v->channels;
@@ -5592,23 +5592,23 @@ int stb_vorbis_decode_filename(const char *filename, int *channels, int *sample_
          data2 = (short *) realloc(data, total * sizeof(*data));
          if (data2 == NULL) {
             free(data);
-            stb_vorbis_close(v);
+            clowncd_stb_vorbis_close(v);
             return -2;
          }
          data = data2;
       }
    }
    *output = data;
-   stb_vorbis_close(v);
+   clowncd_stb_vorbis_close(v);
    return data_len;
 }
 #endif /* NO_STDIO */
 
-int stb_vorbis_decode_memory(const uint8 *mem, int len, int *channels, int *sample_rate, short **output)
+int clowncd_stb_vorbis_decode_memory(const uint8 *mem, int len, int *channels, int *sample_rate, short **output)
 {
    int data_len, offset, total, limit, error;
    short *data;
-   stb_vorbis *v = stb_vorbis_open_memory(mem, len, &error, NULL);
+   clowncd_stb_vorbis *v = clowncd_stb_vorbis_open_memory(mem, len, &error, NULL);
    if (v == NULL) return -1;
    limit = v->channels * 4096;
    *channels = v->channels;
@@ -5618,11 +5618,11 @@ int stb_vorbis_decode_memory(const uint8 *mem, int len, int *channels, int *samp
    total = limit;
    data = (short *) malloc(total * sizeof(*data));
    if (data == NULL) {
-      stb_vorbis_close(v);
+      clowncd_stb_vorbis_close(v);
       return -2;
    }
    for (;;) {
-      int n = stb_vorbis_get_frame_short_interleaved(v, v->channels, data+offset, total-offset);
+      int n = clowncd_stb_vorbis_get_frame_short_interleaved(v, v->channels, data+offset, total-offset);
       if (n == 0) break;
       data_len += n;
       offset += n * v->channels;
@@ -5632,19 +5632,19 @@ int stb_vorbis_decode_memory(const uint8 *mem, int len, int *channels, int *samp
          data2 = (short *) realloc(data, total * sizeof(*data));
          if (data2 == NULL) {
             free(data);
-            stb_vorbis_close(v);
+            clowncd_stb_vorbis_close(v);
             return -2;
          }
          data = data2;
       }
    }
    *output = data;
-   stb_vorbis_close(v);
+   clowncd_stb_vorbis_close(v);
    return data_len;
 }
 #endif /* STB_VORBIS_NO_INTEGER_CONVERSION */
 
-int stb_vorbis_get_samples_float_interleaved(stb_vorbis *f, int channels, float *buffer, int num_floats)
+int clowncd_stb_vorbis_get_samples_float_interleaved(clowncd_stb_vorbis *f, int channels, float *buffer, int num_floats)
 {
    float **outputs;
    int len = num_floats / channels;
@@ -5665,13 +5665,13 @@ int stb_vorbis_get_samples_float_interleaved(stb_vorbis *f, int channels, float 
       f->channel_buffer_start += k;
       if (n == len)
          break;
-      if (!stb_vorbis_get_frame_float(f, NULL, &outputs))
+      if (!clowncd_stb_vorbis_get_frame_float(f, NULL, &outputs))
          break;
    }
    return fixup_current_playback_loc(f, n);
 }
 
-int stb_vorbis_get_samples_float(stb_vorbis *f, int channels, float **buffer, int num_samples)
+int clowncd_stb_vorbis_get_samples_float(clowncd_stb_vorbis *f, int channels, float **buffer, int num_samples)
 {
    float **outputs;
    int n=0;
@@ -5691,7 +5691,7 @@ int stb_vorbis_get_samples_float(stb_vorbis *f, int channels, float **buffer, in
       f->channel_buffer_start += k;
       if (n == num_samples)
          break;
-      if (!stb_vorbis_get_frame_float(f, NULL, &outputs))
+      if (!clowncd_stb_vorbis_get_frame_float(f, NULL, &outputs))
          break;
    }
    return fixup_current_playback_loc(f, n);
@@ -5719,7 +5719,7 @@ int stb_vorbis_get_samples_float(stb_vorbis *f, int channels, float **buffer, in
     1.04    - 2014-08-27 - fix missing const-correct case in API
     1.03    - 2014-08-07 - Warning fixes
     1.02    - 2014-07-09 - Declare qsort compare function _cdecl on windows
-    1.01    - 2014-06-18 - fix stb_vorbis_get_samples_float
+    1.01    - 2014-06-18 - fix clowncd_stb_vorbis_get_samples_float
     1.0     - 2014-05-26 - fix memory leaks; fix warnings; fix bugs in multichannel
                            (API change) report sample rate for decode-full-file funcs
     0.99996 - bracket #include <malloc.h> for macintosh compilation by Laurent Gomila
@@ -5727,7 +5727,7 @@ int stb_vorbis_get_samples_float(stb_vorbis *f, int channels, float **buffer, in
     0.99994 - change fast-float-to-int to work in single-precision FPU mode, remove endian-dependence
     0.99993 - remove assert that fired on legal files with empty tables
     0.99992 - rewind-to-start
-    0.99991 - bugfix to stb_vorbis_get_samples_short by Bernhard Wodo
+    0.99991 - bugfix to clowncd_stb_vorbis_get_samples_short by Bernhard Wodo
     0.9999 - (should have been 0.99990) fix no-CRT support, compiling as C++
     0.9998 - add a full-decode function with a memory source
     0.9997 - fix a bug in the read-from-FILE case in 0.9996 addition

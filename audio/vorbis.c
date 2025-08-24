@@ -8,6 +8,10 @@
 #define STB_VORBIS_NO_PUSHDATA_API
 #define STB_VORBIS_MAX_CHANNELS 2
 #define STB_VORBIS_NO_COMMENTS
+
+/* This file is modified to replace all instances of 'stb_vorbis' with 'clowncd_stb_vorbis',
+   to prevent linker conflicts with software which also uses stb_vorbis, such as
+   PlayStation Vita builds of RetroArch. */
 #include "libraries/stb_vorbis.c"
 
 #include "../utilities.h"
@@ -49,11 +53,11 @@ cc_bool ClownCD_VorbisOpen(ClownCD_Vorbis* const vorbis, ClownCD_File* const fil
 
 	if (ClownCD_VorbisFileToMemory(file, &vorbis->file_buffer, &size))
 	{
-		vorbis->instance = stb_vorbis_open_memory((const unsigned char*)vorbis->file_buffer, size, NULL, NULL);
+		vorbis->instance = clowncd_stb_vorbis_open_memory((const unsigned char*)vorbis->file_buffer, size, NULL, NULL);
 
 		if (vorbis->instance != NULL)
 		{
-			const stb_vorbis_info vorbis_info = stb_vorbis_get_info(vorbis->instance);
+			const clowncd_stb_vorbis_info vorbis_info = clowncd_stb_vorbis_get_info(vorbis->instance);
 
 			metadata->sample_rate = vorbis_info.sample_rate;
 			metadata->total_channels = vorbis_info.channels;
@@ -69,16 +73,16 @@ cc_bool ClownCD_VorbisOpen(ClownCD_Vorbis* const vorbis, ClownCD_File* const fil
 
 void ClownCD_VorbisClose(ClownCD_Vorbis* const vorbis)
 {
-	stb_vorbis_close(vorbis->instance);
+	clowncd_stb_vorbis_close(vorbis->instance);
 	free(vorbis->file_buffer);
 }
 
 cc_bool ClownCD_VorbisSeek(ClownCD_Vorbis* const vorbis, const size_t frame)
 {
-	return stb_vorbis_seek_frame(vorbis->instance, frame) != 0;
+	return clowncd_stb_vorbis_seek_frame(vorbis->instance, frame) != 0;
 }
 
 size_t ClownCD_VorbisRead(ClownCD_Vorbis* const vorbis, short* const buffer, const size_t total_frames)
 {
-	return stb_vorbis_get_samples_short_interleaved(vorbis->instance, vorbis->instance->channels, buffer, total_frames * vorbis->instance->channels);
+	return clowncd_stb_vorbis_get_samples_short_interleaved(vorbis->instance, vorbis->instance->channels, buffer, total_frames * vorbis->instance->channels);
 }
