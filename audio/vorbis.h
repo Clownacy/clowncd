@@ -8,12 +8,12 @@
 #include "../audio-common.h"
 #include "../file-io.h"
 
-struct stb_vorbis;
+struct clowncd_stb_vorbis;
 
 typedef struct ClownCD_Vorbis
 {
 	void *file_buffer;
-	struct stb_vorbis *instance;
+	struct clowncd_stb_vorbis *instance;
 } ClownCD_Vorbis;
 
 cc_bool ClownCD_VorbisOpen(ClownCD_Vorbis *vorbis, ClownCD_File *file, ClownCD_AudioMetadata *metadata);
