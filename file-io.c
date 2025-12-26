@@ -76,6 +76,7 @@ ClownCD_File ClownCD_FileOpenBlank(void)
 	file.functions = NULL;
 	file.stream = NULL;
 	file.eof = cc_false;
+	file.already_open = cc_false;
 	return file;
 }
 
@@ -95,7 +96,10 @@ static const ClownCD_FileCallbacks* ClownCD_GetCallbacks(const ClownCD_FileCallb
 
 ClownCD_File ClownCD_FileOpen(const char* const filename, const ClownCD_FileMode mode, const ClownCD_FileCallbacks* const callbacks)
 {
-	return ClownCD_FileOpenAlreadyOpen(ClownCD_GetCallbacks(callbacks)->open(filename, mode), callbacks);
+	ClownCD_File file = ClownCD_FileOpenBlank();
+	file.functions = ClownCD_GetCallbacks(callbacks);
+	file.stream = ClownCD_GetCallbacks(callbacks)->open(filename, mode);
+	return file;
 }
 
 ClownCD_File ClownCD_FileOpenAlreadyOpen(void* const stream, const ClownCD_FileCallbacks* const callbacks)
@@ -103,21 +107,22 @@ ClownCD_File ClownCD_FileOpenAlreadyOpen(void* const stream, const ClownCD_FileC
 	ClownCD_File file = ClownCD_FileOpenBlank();
 	file.functions = ClownCD_GetCallbacks(callbacks);
 	file.stream = stream;
+	file.already_open = cc_true;
 	return file;
 }
 
 int ClownCD_FileClose(ClownCD_File* const file)
 {
-	if (!ClownCD_FileIsOpen(file))
-	{
-		return 0;
-	}
-	else
+	if (ClownCD_FileIsOpen(file))
 	{
 		void* const stream = file->stream;
 		file->stream = NULL;
-		return file->functions->close(stream);
+
+		if (!file->already_open)
+			return file->functions->close(stream);
 	}
+
+	return 0;
 }
 
 size_t ClownCD_FileRead(void* const buffer, const size_t size, const size_t count, ClownCD_File* const file)
