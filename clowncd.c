@@ -69,11 +69,6 @@ static ClownCD_DiscType ClownCD_GetDiscType(ClownCD_File* const file)
 		return CLOWNCD_DISC_RAW_2048;
 }
 
-ClownCD ClownCD_Open(const char* const file_path, const ClownCD_FileCallbacks* const callbacks)
-{
-	return ClownCD_OpenAlreadyOpen(NULL, file_path, callbacks);
-}
-
 ClownCD ClownCD_OpenAlreadyOpen(void *stream, const char *file_path, const ClownCD_FileCallbacks *callbacks)
 {
 	ClownCD disc;
@@ -313,11 +308,6 @@ static cc_bool ClownCD_SeekTrackIndexInternal(ClownCD* const disc, const unsigne
 	}
 
 	return cc_true;
-}
-
-ClownCD_CueTrackType ClownCD_SeekTrackIndex(ClownCD* const disc, const unsigned int track, const unsigned int index)
-{
-	return ClownCD_SetState(disc, track, index, 0);
 }
 
 cc_bool ClownCD_SeekAudioFrame(ClownCD* const disc, const size_t frame)
