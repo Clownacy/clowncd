@@ -33,8 +33,7 @@ typedef struct ClownCD
 	struct
 	{
 		ClownCD_File file;
-		cc_bool audio_decoder_needed;
-		unsigned short sector_size;
+		cc_bool audio_decoder_needed, has_full_sized_sectors;
 		size_t starting_frame, current_frame, total_frames;
 		unsigned int current_track, current_index;
 		ClownCD_Audio audio;
