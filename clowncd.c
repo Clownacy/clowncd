@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "cue.h"
+#include "disc.h"
 #include "utilities.h"
 
 #define CLOWNCD_CRC_POLYNOMIAL 0xD8018001
@@ -33,30 +34,10 @@ static cc_bool ClownCD_SeekFrameInternal(ClownCD* const state, const size_t fram
 	return cc_true;
 }
 
-static ClownCD_DiscType ClownCD_GetDiscType(ClownCD_File* const file)
-{
-	static const unsigned char header_2352[0x10] = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x02, 0x00, 0x01};
-	static const unsigned char header_clowncd_v0[0xA] = {0x63, 0x6C, 0x6F, 0x77, 0x6E, 0x63, 0x64, 0x00, 0x00, 0x00};
-
-	unsigned char buffer[0x10];
-
-	const cc_bool read_successful = ClownCD_FileRead(buffer, 0x10, 1, file) == 1;
-
-	if (read_successful && memcmp(buffer, header_2352, sizeof(header_2352)) == 0)
-		return CLOWNCD_DISC_RAW_2352;
-	else if (read_successful && memcmp(buffer, header_clowncd_v0, sizeof(header_clowncd_v0)) == 0)
-		return CLOWNCD_DISC_CLOWNCD;
-	else if (ClownCD_CueIsValid(file))
-		return CLOWNCD_DISC_CUE;
-	else
-		return CLOWNCD_DISC_RAW_2048;
-}
-
 void ClownCD_OpenAlreadyOpen(ClownCD *state, void *stream, const char *file_path, const ClownCD_FileCallbacks *callbacks)
 {
 	state->disc.filename = ClownCD_DuplicateString(file_path); /* It's okay for this to fail. */
 	state->disc.file = stream != NULL ? ClownCD_FileOpenAlreadyOpen(stream, callbacks) : ClownCD_FileOpen(file_path, CLOWNCD_RB, callbacks);
-	state->type = ClownCD_GetDiscType(&state->disc.file);
 
 	state->disc.track.header_size = 0;
 	state->disc.track.audio_decoder_needed = cc_false;
@@ -65,24 +46,7 @@ void ClownCD_OpenAlreadyOpen(ClownCD *state, void *stream, const char *file_path
 	state->disc.track.current_frame = 0;
 	state->disc.track.total_frames = 0;
 
-	switch (state->type)
-	{
-		default:
-			assert(cc_false);
-			/* Fallthrough */
-		case CLOWNCD_DISC_CUE:
-			ClownCD_Disc_CueOpen(&state->disc);
-			break;
-
-		case CLOWNCD_DISC_RAW_2048:
-		case CLOWNCD_DISC_RAW_2352:
-			ClownCD_Disc_RawOpen(&state->disc);
-			break;
-
-		case CLOWNCD_DISC_CLOWNCD:
-			ClownCD_Disc_ClownCDOpen(&state->disc);
-			break;
-	}
+	ClownCD_DiscOpen(&state->disc);
 }
 
 void ClownCD_Close(ClownCD* const state)
@@ -108,27 +72,8 @@ static cc_bool ClownCD_SeekTrackIndexInternal(ClownCD* const state, const unsign
 		state->disc.track.current_track = track;
 		state->disc.track.current_index = index;
 
-		switch (state->type)
-		{
-			case CLOWNCD_DISC_CUE:
-				if (!ClownCD_Disc_CueSeekTrackIndex(&state->disc, track, index))
-					return cc_false;
-
-				break;
-
-			case CLOWNCD_DISC_RAW_2048:
-			case CLOWNCD_DISC_RAW_2352:
-				if (!ClownCD_Disc_RawSeekTrackIndex(&state->disc, track, index, state->type == CLOWNCD_DISC_RAW_2352))
-					return cc_false;
-
-				break;
-
-			case CLOWNCD_DISC_CLOWNCD:
-				if (!ClownCD_Disc_ClownCDSeekTrackIndex(&state->disc, track, index))
-					return cc_false;
-
-				break;
-		}
+		if (!ClownCD_DiscSeekTrackIndex(&state->disc, track, index))
+			return cc_false;
 
 		/* Force the frame to update. */
 		state->disc.track.current_frame = -1;
