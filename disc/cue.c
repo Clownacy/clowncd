@@ -1,5 +1,7 @@
 #include "cue.h"
 
+#include <stdlib.h>
+
 #include "../common.h"
 #include "../cue.h"
 #include "../utilities.h"
