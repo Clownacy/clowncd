@@ -35,6 +35,11 @@ static void ClownCD_SeekTrackIndexCallback(
 	}
 }
 
+cc_bool ClownCD_Disc_CueDetect(ClownCD_File* const file)
+{
+	return ClownCD_CueIsValid(file);
+}
+
 void ClownCD_Disc_CueOpen(ClownCD_Disc* const disc)
 {
 	disc->track.file = ClownCD_FileOpenBlank();

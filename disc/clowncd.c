@@ -1,6 +1,7 @@
 #include "clowncd.h"
 
 #include <assert.h>
+#include <string.h>
 
 #include "../common.h"
 
@@ -16,6 +17,24 @@ static size_t ClownCD_GetHeaderSize(ClownCD_Disc* const disc)
 		return -1;
 
 	return ClownCD_ClownCDTrackMetadataOffset(ClownCD_ReadU16BE(&disc->track.file) + 1);
+}
+
+cc_bool ClownCD_Disc_ClownCDDetect(ClownCD_File* const file)
+{
+	static const unsigned char header_clowncd_v0[0xA] = {0x63, 0x6C, 0x6F, 0x77, 0x6E, 0x63, 0x64, 0x00, 0x00, 0x00};
+
+	unsigned char buffer[CC_COUNT_OF(header_clowncd_v0)];
+
+	if (ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_SET) != 0)
+		return cc_false;
+
+	if (ClownCD_FileRead(buffer, CC_COUNT_OF(buffer), 1, file) != 1)
+		return cc_false;
+
+	if (memcmp(buffer, header_clowncd_v0, sizeof(header_clowncd_v0)) != 0)
+		return cc_false;
+
+	return cc_true;
 }
 
 void ClownCD_Disc_ClownCDOpen(ClownCD_Disc* const disc)

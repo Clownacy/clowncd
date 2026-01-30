@@ -6,6 +6,24 @@
 #include "../common.h"
 #include "../utilities.h"
 
+cc_bool ClownCD_Disc_RawDetect(ClownCD_File* const file)
+{
+	static const unsigned char header_2352[0x10] = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x02, 0x00, 0x01};
+
+	unsigned char buffer[CC_COUNT_OF(header_2352)];
+
+	if (ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_SET) != 0)
+		return cc_false;
+
+	if (ClownCD_FileRead(buffer, CC_COUNT_OF(buffer), 1, file) != 1)
+		return cc_false;
+
+	if (memcmp(buffer, header_2352, sizeof(header_2352)) != 0)
+		return cc_false;
+
+	return cc_true;
+}
+
 void ClownCD_Disc_RawOpen(ClownCD_Disc* const disc)
 {
 	disc->track.file = disc->file;

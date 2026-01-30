@@ -1,29 +1,22 @@
 #include "disc.h"
 
 #include <assert.h>
-#include <string.h>
 
-#include "cue.h"
+#include "disc/clowncd.h"
+#include "disc/cue.h"
+#include "disc/raw.h"
 
 static ClownCD_DiscType ClownCD_GetDiscType(ClownCD_File* const file)
 {
-	static const unsigned char header_2352[0x10] = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x02, 0x00, 0x01};
-	static const unsigned char header_clowncd_v0[0xA] = {0x63, 0x6C, 0x6F, 0x77, 0x6E, 0x63, 0x64, 0x00, 0x00, 0x00};
-
-	unsigned char buffer[0x10];
-
-	const cc_bool read_successful = ClownCD_FileRead(buffer, 0x10, 1, file) == 1;
-
-	if (read_successful && memcmp(buffer, header_2352, sizeof(header_2352)) == 0)
+	if (ClownCD_Disc_RawDetect(file))
 		return CLOWNCD_DISC_RAW_2352;
-	else if (read_successful && memcmp(buffer, header_clowncd_v0, sizeof(header_clowncd_v0)) == 0)
+	else if (ClownCD_Disc_ClownCDDetect(file))
 		return CLOWNCD_DISC_CLOWNCD;
-	else if (ClownCD_CueIsValid(file))
+	else if (ClownCD_Disc_CueDetect(file))
 		return CLOWNCD_DISC_CUE;
 	else
 		return CLOWNCD_DISC_RAW_2048;
 }
-
 
 void ClownCD_CloseTrackFile(ClownCD_Disc* const disc)
 {

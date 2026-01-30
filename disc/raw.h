@@ -3,6 +3,7 @@
 
 #include "../disc.h"
 
+cc_bool ClownCD_Disc_RawDetect(ClownCD_File *file);
 void ClownCD_Disc_RawOpen(ClownCD_Disc *disc);
 cc_bool ClownCD_Disc_RawSeekTrackIndex(ClownCD_Disc *disc, unsigned int track, unsigned int index, cc_bool has_full_sized_sectors);
 
