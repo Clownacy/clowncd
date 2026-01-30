@@ -34,7 +34,7 @@ static cc_bool ClownCD_IsFrameValid(ClownCD* const disc)
 static cc_bool ClownCD_SeekFrameInternal(ClownCD* const disc, const size_t frame)
 {
 	const size_t header_size = ClownCD_GetHeaderSize(disc);
-	const size_t sector_size = disc->track.type == CLOWNCD_CUE_TRACK_MODE1_2048 ? CLOWNCD_SECTOR_DATA_SIZE : CLOWNCD_SECTOR_RAW_SIZE;
+	const size_t sector_size = disc->track.sector_size;
 
 	if (header_size == (size_t)-1)
 		return cc_false;
@@ -95,7 +95,7 @@ ClownCD ClownCD_OpenAlreadyOpen(void *stream, const char *file_path, const Clown
 	}
 
 	disc.track.file_type = CLOWNCD_CUE_FILE_INVALID;
-	disc.track.type = CLOWNCD_CUE_TRACK_INVALID;
+	disc.track.sector_size = CLOWNCD_SECTOR_RAW_SIZE;
 	disc.track.starting_frame = 0;
 	disc.track.current_frame = 0;
 	disc.track.total_frames = 0;
@@ -151,7 +151,7 @@ static void ClownCD_SeekTrackIndexCallback(
 		free(full_path);
 
 		disc->track.file_type = file_type;
-		disc->track.type = track_type;
+		disc->track.sector_size = track_type == CLOWNCD_CUE_TRACK_MODE1_2048 ? CLOWNCD_SECTOR_DATA_SIZE : CLOWNCD_SECTOR_RAW_SIZE;
 		disc->track.starting_frame = sector * CLOWNCD_AUDIO_FRAMES_PER_SECTOR;
 		disc->track.total_frames = ClownCD_CueGetTrackIndexEndingSector(&disc->file, filename, track, index, sector) * CLOWNCD_AUDIO_FRAMES_PER_SECTOR - disc->track.starting_frame;
 
@@ -161,18 +161,14 @@ static void ClownCD_SeekTrackIndexCallback(
 	}
 }
 
-static ClownCD_CueTrackType ClownCD_GetClownCDTrackType(const unsigned int value)
+static unsigned int ClownCD_GetClownCDTrackSectorSize(const unsigned int value)
 {
 	switch (value)
 	{
 		case 0:
-			return CLOWNCD_CUE_TRACK_MODE1_2352;
-
 		case 1:
-			return CLOWNCD_CUE_TRACK_AUDIO;
-
 		default:
-			return CLOWNCD_CUE_TRACK_INVALID;
+			return CLOWNCD_SECTOR_RAW_SIZE;
 	}
 }
 
@@ -183,7 +179,7 @@ static cc_bool ClownCD_SeekTrackIndexInternal(ClownCD* const disc, const unsigne
 		disc->track.current_track = track;
 		disc->track.current_index = index;
 
-		disc->track.type = CLOWNCD_CUE_TRACK_INVALID;
+		disc->track.file_type = CLOWNCD_CUE_FILE_INVALID;
 
 		switch (disc->type)
 		{
@@ -193,7 +189,7 @@ static cc_bool ClownCD_SeekTrackIndexInternal(ClownCD* const disc, const unsigne
 
 				if (!ClownCD_FileIsOpen(&disc->track.file))
 				{
-					disc->track.type = CLOWNCD_CUE_TRACK_INVALID;
+					disc->track.file_type = CLOWNCD_CUE_FILE_INVALID;
 					return cc_false;
 				}
 
@@ -214,7 +210,7 @@ static cc_bool ClownCD_SeekTrackIndexInternal(ClownCD* const disc, const unsigne
 					}
 
 					disc->track.file_type = CLOWNCD_CUE_FILE_BINARY;
-					disc->track.type = disc->type == CLOWNCD_DISC_RAW_2048 ? CLOWNCD_CUE_TRACK_MODE1_2048 : CLOWNCD_CUE_TRACK_MODE1_2352;
+					disc->track.sector_size = disc->type == CLOWNCD_DISC_RAW_2048 ? CLOWNCD_SECTOR_DATA_SIZE : CLOWNCD_SECTOR_RAW_SIZE;
 					disc->track.starting_frame = 0;
 					disc->track.total_frames = -1;
 				}
@@ -246,7 +242,7 @@ static cc_bool ClownCD_SeekTrackIndexInternal(ClownCD* const disc, const unsigne
 					ClownCD_CloseTrackFile(disc);
 
 					disc->track.file_type = CLOWNCD_CUE_FILE_WAVE;
-					disc->track.type = CLOWNCD_CUE_TRACK_AUDIO;
+					disc->track.sector_size = CLOWNCD_SECTOR_RAW_SIZE;
 					disc->track.starting_frame = 0;
 					disc->track.total_frames = -1;
 
@@ -297,7 +293,7 @@ static cc_bool ClownCD_SeekTrackIndexInternal(ClownCD* const disc, const unsigne
 					return cc_false;
 
 				disc->track.file_type = CLOWNCD_CUE_FILE_BINARY;
-				disc->track.type = ClownCD_GetClownCDTrackType(ClownCD_ReadU16BE(&disc->track.file));
+				disc->track.sector_size = ClownCD_GetClownCDTrackSectorSize(ClownCD_ReadU16BE(&disc->track.file));
 				disc->track.starting_frame = ClownCD_ReadU32BE(&disc->track.file) * CLOWNCD_AUDIO_FRAMES_PER_SECTOR;
 				disc->track.total_frames = ClownCD_ReadU32BE(&disc->track.file) * CLOWNCD_AUDIO_FRAMES_PER_SECTOR;
 				break;
@@ -312,7 +308,7 @@ static cc_bool ClownCD_SeekTrackIndexInternal(ClownCD* const disc, const unsigne
 
 cc_bool ClownCD_SeekAudioFrame(ClownCD* const disc, const size_t frame)
 {
-	if (disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2048 && disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2352 && disc->track.type != CLOWNCD_CUE_TRACK_AUDIO)
+	if (disc->track.file_type == CLOWNCD_CUE_FILE_INVALID)
 		return cc_false;
 
 	if (frame >= disc->track.total_frames)
@@ -344,20 +340,20 @@ cc_bool ClownCD_SeekAudioFrame(ClownCD* const disc, const size_t frame)
 	return cc_true;
 }
 
-ClownCD_CueTrackType ClownCD_SetState(ClownCD* const disc, const unsigned int track, const unsigned int index, const size_t frame)
+cc_bool ClownCD_SetState(ClownCD* const disc, const unsigned int track, const unsigned int index, const size_t frame)
 {
 	if (!ClownCD_SeekTrackIndexInternal(disc, track, index))
-		return CLOWNCD_CUE_TRACK_INVALID;
+		return cc_false;
 
 	if (!ClownCD_SeekAudioFrame(disc, frame))
-		return CLOWNCD_CUE_TRACK_INVALID;
+		return cc_false;
 
-	return disc->track.type;
+	return cc_true;
 }
 
 cc_bool ClownCD_BeginSectorStream(ClownCD* const disc)
 {
-	if (disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2048 && disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2352)
+	if (disc->track.file_type == CLOWNCD_CUE_FILE_INVALID)
 		return cc_false;
 
 	if (!ClownCD_IsFrameValid(disc))
@@ -365,7 +361,8 @@ cc_bool ClownCD_BeginSectorStream(ClownCD* const disc)
 
 	disc->track.current_frame += CLOWNCD_AUDIO_FRAMES_PER_SECTOR;
 
-	if (disc->track.type == CLOWNCD_CUE_TRACK_MODE1_2352)
+	/* Skip header. */
+	if (disc->track.sector_size == CLOWNCD_SECTOR_RAW_SIZE)
 		if (ClownCD_FileSeek(&disc->track.file, CLOWNCD_SECTOR_HEADER_SIZE, CLOWNCD_SEEK_CUR) != 0)
 			return cc_false;
 
@@ -379,7 +376,8 @@ size_t ClownCD_ReadSectorStream(ClownCD* const disc, unsigned char* const buffer
 
 cc_bool ClownCD_EndSectorStream(ClownCD* const disc)
 {
-	if (disc->track.type == CLOWNCD_CUE_TRACK_MODE1_2352)
+	/* Skip error-correction data. */
+	if (disc->track.sector_size == CLOWNCD_SECTOR_RAW_SIZE)
 		if (ClownCD_FileSeek(&disc->track.file, CLOWNCD_SECTOR_RAW_SIZE - (CLOWNCD_SECTOR_HEADER_SIZE + CLOWNCD_SECTOR_DATA_SIZE), CLOWNCD_SEEK_CUR) != 0)
 			return cc_false;
 
@@ -412,7 +410,7 @@ static size_t ClownCD_ReadFramesGetAudio(ClownCD* const disc, short* const buffe
 		{
 			short *buffer_pointer = buffer;
 
-			if (disc->track.type != CLOWNCD_CUE_TRACK_MODE1_2352 && disc->track.type != CLOWNCD_CUE_TRACK_AUDIO)
+			if (disc->track.sector_size != CLOWNCD_SECTOR_RAW_SIZE)
 				return 0;
 
 			for (frames_done = 0; frames_done < frames_to_do; ++frames_done)

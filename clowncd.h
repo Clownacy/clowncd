@@ -34,7 +34,7 @@ typedef struct ClownCD
 	{
 		ClownCD_File file;
 		ClownCD_CueFileType file_type;
-		ClownCD_CueTrackType type;
+		unsigned short sector_size;
 		size_t starting_frame, current_frame, total_frames;
 		unsigned int current_track, current_index;
 		ClownCD_Audio audio;
@@ -54,7 +54,7 @@ void ClownCD_Close(ClownCD *disc);
 #define ClownCD_SeekSector(disc, sector) ClownCD_SeekAudioFrame((disc), (sector) * CLOWNCD_AUDIO_FRAMES_PER_SECTOR)
 cc_bool ClownCD_SeekAudioFrame(ClownCD *disc, size_t frame);
 
-ClownCD_CueTrackType ClownCD_SetState(ClownCD *disc, unsigned int track, unsigned int index, size_t frame);
+cc_bool ClownCD_SetState(ClownCD *disc, unsigned int track, unsigned int index, size_t frame);
 
 cc_bool ClownCD_BeginSectorStream(ClownCD* disc);
 size_t ClownCD_ReadSectorStream(ClownCD* disc, unsigned char *buffer, size_t total_bytes);
