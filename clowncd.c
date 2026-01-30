@@ -190,9 +190,9 @@ static ClownCD_CueTrackType ClownCD_GetClownCDTrackType(const unsigned int value
 static size_t ClownCD_SectorToFrame(const unsigned long sector)
 {
 	/* TODO: This can be optimised. */
-	const size_t frames_per_second = 75;
+	const size_t sectors_per_second = 75;
 	const size_t sample_rate = 44100;
-	const size_t frame = sector / frames_per_second * sample_rate + sector % frames_per_second * sample_rate / frames_per_second;
+	const size_t frame = sector / sectors_per_second * sample_rate + sector % sectors_per_second * sample_rate / sectors_per_second;
 	return frame;
 }
 
