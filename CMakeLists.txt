@@ -5,6 +5,8 @@ project(clowncd LANGUAGES C)
 add_library(clowncd STATIC
 	"disc/clowncd.c"
 	"disc/clowncd.h"
+	"disc/chd.c"
+	"disc/chd.h"
 	"disc/cue.c"
 	"disc/cue.h"
 	"disc/raw.c"
@@ -26,6 +28,9 @@ add_library(clowncd STATIC
 	"utilities.c"
 	"utilities.h"
 )
+
+add_subdirectory("chd" EXCLUDE_FROM_ALL)
+target_link_libraries(clowncd PRIVATE clowncd-chd)
 
 add_subdirectory("audio/libraries/clownresampler" EXCLUDE_FROM_ALL)
 target_link_libraries(clowncd PRIVATE clownresampler)
