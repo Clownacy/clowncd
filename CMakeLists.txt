@@ -3,13 +3,22 @@ cmake_minimum_required(VERSION 3.0...3.12)
 project(clowncd LANGUAGES C)
 
 add_library(clowncd STATIC
+	"disc/clowncd.c"
+	"disc/clowncd.h"
+	"disc/cue.c"
+	"disc/cue.h"
+	"disc/raw.c"
+	"disc/raw.h"
 	"audio.c"
 	"audio.h"
 	"audio-common.h"
 	"clowncd.c"
 	"clowncd.h"
+	"common.h"
 	"cue.c"
 	"cue.h"
+	"disc.c"
+	"disc.h"
 	"error.c"
 	"error.h"
 	"file-io.c"
