@@ -30,13 +30,13 @@ typedef struct ClownCD
 extern "C" {
 #endif
 
-#define ClownCD_Open(file_path, callbacks) ClownCD_OpenAlreadyOpen(NULL, file_path, callbacks)
-ClownCD ClownCD_OpenAlreadyOpen(void *stream, const char *file_path, const ClownCD_FileCallbacks *callbacks);
+#define ClownCD_Open(state, file_path, callbacks) ClownCD_OpenAlreadyOpen(state, NULL, file_path, callbacks)
+void ClownCD_OpenAlreadyOpen(ClownCD *state, void *stream, const char *file_path, const ClownCD_FileCallbacks *callbacks);
 void ClownCD_Close(ClownCD *state);
 #define ClownCD_IsOpen(state) ClownCD_FileIsOpen(&(state)->file)
 
 #define ClownCD_SeekTrackIndex(state, track, index) ClownCD_SetState(state, track, index, 0)
-#define ClownCD_SeekSector(state, sector) ClownCD_SeekAudioFrame((state), (sector) * CLOWNCD_AUDIO_FRAMES_PER_SECTOR)
+#define ClownCD_SeekSector(state, sector) ClownCD_SeekAudioFrame((state), (size_t)(sector) * CLOWNCD_AUDIO_FRAMES_PER_SECTOR)
 cc_bool ClownCD_SeekAudioFrame(ClownCD *state, size_t frame);
 
 cc_bool ClownCD_SetState(ClownCD *state, unsigned int track, unsigned int index, size_t frame);

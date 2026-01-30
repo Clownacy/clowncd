@@ -52,42 +52,37 @@ static ClownCD_DiscType ClownCD_GetDiscType(ClownCD_File* const file)
 		return CLOWNCD_DISC_RAW_2048;
 }
 
-ClownCD ClownCD_OpenAlreadyOpen(void *stream, const char *file_path, const ClownCD_FileCallbacks *callbacks)
+void ClownCD_OpenAlreadyOpen(ClownCD *state, void *stream, const char *file_path, const ClownCD_FileCallbacks *callbacks)
 {
-	/* TODO: This uses too much stack!!! */
-	ClownCD state;
+	state->disc.filename = ClownCD_DuplicateString(file_path); /* It's okay for this to fail. */
+	state->disc.file = stream != NULL ? ClownCD_FileOpenAlreadyOpen(stream, callbacks) : ClownCD_FileOpen(file_path, CLOWNCD_RB, callbacks);
+	state->type = ClownCD_GetDiscType(&state->disc.file);
 
-	state.disc.filename = ClownCD_DuplicateString(file_path); /* It's okay for this to fail. */
-	state.disc.file = stream != NULL ? ClownCD_FileOpenAlreadyOpen(stream, callbacks) : ClownCD_FileOpen(file_path, CLOWNCD_RB, callbacks);
-	state.type = ClownCD_GetDiscType(&state.disc.file);
+	state->disc.track.header_size = 0;
+	state->disc.track.audio_decoder_needed = cc_false;
+	state->disc.track.has_full_sized_sectors = cc_false;
+	state->disc.track.starting_frame = 0;
+	state->disc.track.current_frame = 0;
+	state->disc.track.total_frames = 0;
 
-	state.disc.track.header_size = 0;
-	state.disc.track.audio_decoder_needed = cc_false;
-	state.disc.track.has_full_sized_sectors = cc_false;
-	state.disc.track.starting_frame = 0;
-	state.disc.track.current_frame = 0;
-	state.disc.track.total_frames = 0;
-
-	switch (state.type)
+	switch (state->type)
 	{
 		default:
 			assert(cc_false);
 			/* Fallthrough */
 		case CLOWNCD_DISC_CUE:
-			ClownCD_Disc_CueOpen(&state.disc);
+			ClownCD_Disc_CueOpen(&state->disc);
 			break;
 
 		case CLOWNCD_DISC_RAW_2048:
 		case CLOWNCD_DISC_RAW_2352:
-			ClownCD_Disc_RawOpen(&state.disc);
+			ClownCD_Disc_RawOpen(&state->disc);
 			break;
 
 		case CLOWNCD_DISC_CLOWNCD:
-			ClownCD_Disc_ClownCDOpen(&state.disc);
+			ClownCD_Disc_ClownCDOpen(&state->disc);
 			break;
 	}
-
-	return state;
 }
 
 void ClownCD_Close(ClownCD* const state)
