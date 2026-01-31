@@ -18,13 +18,20 @@
 #ifdef CLOWNCD_CHD_USE_SYSTEM_ZLIB
 #include <zlib.h>
 #else
-#include "libraries/miniz-3.1.0/zlib.h"
+#include "libraries/miniz-3.1.0/miniz.h"
 #endif
 
 #include "chd.h"
 #include "coretypes.h"
 
 #define MAX_ZLIB_ALLOCS				64
+
+/* Account for an API difference between zlib and miniz. */
+#ifdef CLOWNCD_CHD_USE_SYSTEM_ZLIB
+typedef uInt zlib_alloc_size;
+#else
+typedef size_t zlib_alloc_size;
+#endif
 
 /* codec-private data for the ZLIB codec */
 
@@ -65,7 +72,7 @@ void zlib_codec_free(void *codec);
 
 chd_error zlib_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
 
-voidpf zlib_fast_alloc(voidpf opaque, uInt items, uInt size);
+voidpf zlib_fast_alloc(voidpf opaque, zlib_alloc_size items, zlib_alloc_size size);
 
 void zlib_fast_free(voidpf opaque, voidpf address);
 

@@ -144,7 +144,7 @@ chd_error zlib_codec_decompress(void *codec, const uint8_t *src, uint32_t comple
 #define ZLIB_MIN_ALIGNMENT_BITS 512
 #define ZLIB_MIN_ALIGNMENT_BYTES (ZLIB_MIN_ALIGNMENT_BITS / 8)
 
-voidpf zlib_fast_alloc(voidpf opaque, uInt items, uInt size)
+voidpf zlib_fast_alloc(voidpf opaque, zlib_alloc_size items, zlib_alloc_size size)
 {
 	zlib_allocator *alloc = (zlib_allocator *)opaque;
 	uintptr_t paddr = 0;
