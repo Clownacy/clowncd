@@ -4,9 +4,6 @@
 [submodule "audio/libraries/clownresampler"]
 	path = audio/libraries/clownresampler
 	url = https://github.com/Clownacy/clownresampler
-[submodule "libretro-common"]
-	path = chd/libretro-common
-	url = https://github.com/libretro/libretro-common
 [submodule "7zip"]
 	path = chd/7zip
 	url = https://github.com/ip7z/7zip
