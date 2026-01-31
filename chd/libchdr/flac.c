@@ -15,8 +15,10 @@
 
 #include "minmax.h"
 #ifdef HAVE_DR_FLAC
+/* TODO: Share dr_flac implementation with ClownCD. */
 #include "../retro_inline.h"
 #define DR_FLAC_IMPLEMENTATION
+#define DR_FLAC_NO_STDIO
 #define DRFLAC_API static INLINE
 #include "libraries/dr_flac.h"
 #endif
