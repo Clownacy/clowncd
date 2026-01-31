@@ -39,7 +39,7 @@ chdstream_t *chdstream_open(const char *path, int32_t track);
 
 void chdstream_close(chdstream_t *stream);
 
-ssize_t chdstream_read(chdstream_t *stream, void *data, size_t bytes);
+size_t chdstream_read(chdstream_t *stream, void *data, size_t bytes);
 
 int chdstream_getc(chdstream_t *stream);
 
@@ -51,7 +51,7 @@ void chdstream_rewind(chdstream_t *stream);
 
 int64_t chdstream_seek(chdstream_t *stream, int64_t offset, int whence);
 
-ssize_t chdstream_get_size(chdstream_t *stream);
+size_t chdstream_get_size(chdstream_t *stream);
 
 uint32_t chdstream_get_track_start(chdstream_t* stream);
 

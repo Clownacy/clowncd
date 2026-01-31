@@ -329,7 +329,7 @@ chdstream_load_hunk(chdstream_t *stream, uint32_t hunknum)
    return true;
 }
 
-ssize_t chdstream_read(chdstream_t *stream, void *data, size_t bytes)
+size_t chdstream_read(chdstream_t *stream, void *data, size_t bytes)
 {
    size_t end;
    size_t data_offset   = 0;
@@ -435,7 +435,7 @@ int64_t chdstream_seek(chdstream_t *stream, int64_t offset, int whence)
    return 0;
 }
 
-ssize_t chdstream_get_size(chdstream_t *stream)
+size_t chdstream_get_size(chdstream_t *stream)
 {
    return stream->track_end - stream->track_start;
 }
