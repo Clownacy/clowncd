@@ -14,6 +14,11 @@
    PlayStation Vita builds of RetroArch. */
 #include "libraries/stb_vorbis.c"
 
+/* Undefine these REALLY STUPID macros, to avoid name conflicts in unity builds. */
+#undef L
+#undef C
+#undef R
+
 #include "../utilities.h"
 
 static cc_bool ClownCD_VorbisFileToMemory(ClownCD_File* const file, void** const out_buffer, size_t* const out_size)

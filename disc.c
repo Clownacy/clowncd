@@ -79,9 +79,11 @@ cc_bool ClownCD_DiscSeekTrackIndex(ClownCD_Disc* const disc, const unsigned int 
 
 		case CLOWNCD_DISC_CLOWNCD:
 			return ClownCD_Disc_ClownCDSeekTrackIndex(disc, track, index);
-#ifdef CLOWNCD_CHD
 		case CLOWNCD_DISC_CHD:
+#ifdef CLOWNCD_CHD
 			return ClownCD_Disc_CHDSeekTrackIndex(disc, track, index);
+#else
+			break;
 #endif
 	}
 
