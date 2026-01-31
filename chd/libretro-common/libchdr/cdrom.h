@@ -14,7 +14,8 @@
 #define __CDROM_H__
 
 #include <stdint.h>
-#include <libchdr/chdconfig.h>
+
+#include "chdconfig.h"
 
 /***************************************************************************
     CONSTANTS

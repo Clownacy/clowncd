@@ -16,9 +16,9 @@
 
 ***************************************************************************/
 
-#include <string.h>
+#include "cdrom.h"
 
-#include <libchdr/cdrom.h>
+#include <string.h>
 
 #ifdef WANT_RAW_DATA_SECTOR
 

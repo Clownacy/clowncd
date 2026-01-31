@@ -16,8 +16,9 @@
 #include <stdint.h>
 
 #include <zstd.h>
-#include "coretypes.h"
+
 #include "chd.h"
+#include "coretypes.h"
 
 typedef struct _zstd_codec_data zstd_codec_data;
 struct _zstd_codec_data

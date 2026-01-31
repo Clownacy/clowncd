@@ -11,8 +11,6 @@ add_library(clowncd-chd STATIC
 	"libretro-common/streams/chd_stream.h"
 )
 
-target_include_directories(clowncd-chd PUBLIC "libretro-common")
-
 # zlib
 target_compile_definitions(clowncd-chd PRIVATE HAVE_ZLIB)
 target_sources(clowncd-chd PRIVATE "libretro-common/libchdr/zlib.c")

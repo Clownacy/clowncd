@@ -3,7 +3,9 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <retro_inline.h>
+
+#include "../retro_inline.h"
+
 #ifdef USE_LIBRETRO_VFS
 #include <streams/file_stream_transforms.h>
 #endif

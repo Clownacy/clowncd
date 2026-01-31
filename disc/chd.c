@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "streams/chd_stream.h"
+#include "../chd/libretro-common/streams/chd_stream.h"
 
 #include "../common.h"
 

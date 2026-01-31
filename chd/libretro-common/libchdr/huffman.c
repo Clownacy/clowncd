@@ -96,12 +96,13 @@
 
 ***************************************************************************/
 
+#include "huffman.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <libchdr/huffman.h>
-#include <libchdr/minmax.h>
+#include "minmax.h"
 
 /***************************************************************************
  *  MACROS

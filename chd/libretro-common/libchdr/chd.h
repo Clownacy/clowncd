@@ -46,8 +46,8 @@
 extern "C" {
 #endif
 
-#include <libchdr/coretypes.h>
-#include <libchdr/chdconfig.h>
+#include "chdconfig.h"
+#include "coretypes.h"
 
 /***************************************************************************
 

@@ -37,31 +37,32 @@
 
 ***************************************************************************/
 
+#include "chd.h"
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#include <libchdr/chd.h>
-#include <libchdr/cdrom.h>
-#include <libchdr/huffman.h>
-#include <libchdr/minmax.h>
+#include "cdrom.h"
+#include "huffman.h"
+#include "minmax.h"
 
 #ifdef HAVE_FLAC
-#include <libchdr/flac.h>
+#include "flac.h"
 #endif
 
 #ifdef HAVE_ZLIB
-#include <libchdr/zlib.h>
+#include "zlib.h"
 #endif
 
 #ifdef HAVE_7ZIP
-#include <libchdr/lzma.h>
+#include "lzma.h"
 #endif
 
 #ifdef HAVE_ZSTD
-#include <libchdr/zstd.h>
+#include "zstd.h"
 #endif
 
 #if defined(__PS3__) || defined(__PSL1GHT__)

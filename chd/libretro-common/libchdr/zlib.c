@@ -37,19 +37,21 @@
 
 ***************************************************************************/
 
+#include "zlib.h"
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libchdr/chd.h>
-#include <libchdr/minmax.h>
-#include <libchdr/cdrom.h>
-#include <libchdr/huffman.h>
-#include <libchdr/zlib.h>
+
 #include <zlib.h>
 
-#include <retro_inline.h>
+#include "../retro_inline.h"
+#include "chd.h"
+#include "minmax.h"
+#include "cdrom.h"
+#include "huffman.h"
 
 /***************************************************************************
     ZLIB COMPRESSION CODEC

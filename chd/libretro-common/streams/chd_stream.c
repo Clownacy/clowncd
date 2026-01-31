@@ -20,15 +20,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "chd_stream.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <boolean.h>
-
-#include <streams/chd_stream.h>
-#include <retro_endianness.h>
-#include <libchdr/chd.h>
+#include "../libchdr/chd.h"
+#include "../boolean.h"
+#include "../retro_endianness.h"
 
 #define SECTOR_RAW_SIZE 2352
 #define SECTOR_SIZE 2048

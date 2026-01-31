@@ -23,9 +23,10 @@
 #ifndef __LIBRETRO_SDK_ENDIANNESS_H
 #define __LIBRETRO_SDK_ENDIANNESS_H
 
-#include <retro_inline.h>
 #include <stdint.h>
 #include <stdlib.h>
+
+#include "retro_inline.h"
 
 #if defined(_MSC_VER) && _MSC_VER > 1200
 #define SWAP16 _byteswap_ushort
