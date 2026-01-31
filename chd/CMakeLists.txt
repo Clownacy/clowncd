@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0...3.12)
+cmake_minimum_required(VERSION 3.11...3.12)
 
 project(clowncd-chd LANGUAGES C)
 
@@ -22,8 +22,14 @@ find_package(ZLIB)
 if(ZLIB_FOUND)
 	target_link_libraries(clowncd-chd PRIVATE ZLIB::ZLIB)
 else()
-	add_subdirectory(zlib EXCLUDE_FROM_ALL)
-	target_link_libraries(clowncd-chd PRIVATE ZLIB::ZLIBSTATIC)	
+	include(FetchContent)
+	FetchContent_Declare(
+		zlib
+		GIT_REPOSITORY https://github.com/madler/zlib.git
+		GIT_TAG        51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf # v1.3.1.2
+	)
+	FetchContent_MakeAvailable(zlib)
+	target_link_libraries(clowncd-chd PRIVATE zlibstatic)
 endif()
 
 # 7zip
