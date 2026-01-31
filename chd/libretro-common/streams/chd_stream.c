@@ -29,7 +29,6 @@
 #include <streams/chd_stream.h>
 #include <retro_endianness.h>
 #include <libchdr/chd.h>
-#include <string/stdstring.h>
 
 #define SECTOR_RAW_SIZE 2352
 #define SECTOR_SIZE 2048
@@ -253,18 +252,18 @@ chdstream_t *chdstream_open(const char *path, int32_t track)
 
    stream->hunkmem         = hunkmem;
 
-   if (string_is_equal(meta.type, "MODE1_RAW"))
+   if (strcmp(meta.type, "MODE1_RAW") == 0)
       stream->frame_size   = SECTOR_RAW_SIZE;
-   else if (string_is_equal(meta.type, "MODE2_RAW"))
+   else if (strcmp(meta.type, "MODE2_RAW") == 0)
       stream->frame_size   = SECTOR_RAW_SIZE;
-   else if (string_is_equal(meta.type, "MODE1"))
+   else if (strcmp(meta.type, "MODE1") == 0)
       stream->frame_size   = SECTOR_SIZE;
-   else if (string_is_equal(meta.type, "AUDIO"))
+   else if (strcmp(meta.type, "AUDIO") == 0)
    {
       stream->frame_size   = SECTOR_RAW_SIZE;
       stream->swab         = true;
    }
-   else if (string_is_equal(meta.type, "DVD"))
+   else if (strcmp(meta.type, "DVD") == 0)
    {
       stream->frame_size   = hd->unitbytes;
       meta.frames          = hd->totalhunks;
