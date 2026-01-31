@@ -47,7 +47,7 @@
 #include <libchdr/cdrom.h>
 #include <libchdr/flac.h>
 #include <libchdr/huffman.h>
-#include <libchdr/libchdr_zlib.h>
+#include <libchdr/zlib.h>
 #include <zlib.h>
 
 #include <retro_inline.h>

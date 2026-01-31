@@ -53,7 +53,7 @@
 #endif
 
 #ifdef HAVE_ZLIB
-#include <libchdr/libchdr_zlib.h>
+#include <libchdr/zlib.h>
 #endif
 
 #ifdef HAVE_7ZIP
@@ -61,7 +61,7 @@
 #endif
 
 #ifdef HAVE_ZSTD
-#include <libchdr/libchdr_zstd.h>
+#include <libchdr/zstd.h>
 #endif
 
 #if defined(__PS3__) || defined(__PSL1GHT__)

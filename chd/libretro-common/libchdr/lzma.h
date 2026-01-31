@@ -18,7 +18,7 @@
 #include <LzmaEnc.h>
 #include <LzmaDec.h>
 
-#include <libchdr/libchdr_zlib.h>
+#include <libchdr/zlib.h>
 
 /* codec-private data for the LZMA codec */
 #define MAX_LZMA_ALLOCS 64

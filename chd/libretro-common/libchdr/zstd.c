@@ -46,9 +46,9 @@
 #include <libchdr/minmax.h>
 #include <libchdr/cdrom.h>
 #include <libchdr/huffman.h>
-#include <libchdr/libchdr_zlib.h>
+#include <libchdr/zlib.h>
 #include <zlib.h>
-#include <libchdr/libchdr_zstd.h>
+#include <libchdr/zstd.h>
 #include <zstd.h>
 
 #include <retro_inline.h>

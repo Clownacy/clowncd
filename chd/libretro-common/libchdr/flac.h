@@ -15,7 +15,7 @@
 
 #include <stdint.h>
 
-#include <libchdr/libchdr_zlib.h>
+#include <libchdr/zlib.h>
 
 /***************************************************************************
  *  TYPE DEFINITIONS
