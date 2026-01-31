@@ -43,15 +43,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <zlib.h>
-#include <zstd.h>
-
 #include "../retro_inline.h"
 #include "chd.h"
 #include "minmax.h"
 #include "cdrom.h"
 #include "huffman.h"
-#include "zlib.h"
 #include "zstd.h"
 
 /***************************************************************************

@@ -33,6 +33,7 @@ target_sources(clowncd-chd PRIVATE
 
 find_package(ZLIB)
 if(ZLIB_FOUND)
+	target_compile_definitions(clowncd-chd PRIVATE CLOWNCD_CHD_USE_SYSTEM_ZLIB)
 	target_link_libraries(clowncd-chd PRIVATE ZLIB::ZLIB)
 else()
 	target_sources(clowncd-chd PRIVATE
@@ -75,6 +76,7 @@ target_sources(clowncd-chd PRIVATE
 
 find_package(zstd)
 if(zstd_FOUND)
+	target_compile_definitions(clowncd-chd PRIVATE CLOWNCD_CHD_USE_SYSTEM_ZSTD)
 	target_link_libraries(clowncd-chd PRIVATE zstd)
 else()
 	target_sources(clowncd-chd PRIVATE

@@ -42,15 +42,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "../retro_inline.h"
 #include "chd.h"
-#include "minmax.h"
 #include "cdrom.h"
 #include "flac.h"
 #include "huffman.h"
+#include "minmax.h"
 #include "zlib.h"
-#include <zlib.h>
-
-#include "../retro_inline.h"
 
 /***************************************************************************
  *  CD FLAC DECOMPRESSOR

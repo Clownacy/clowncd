@@ -45,8 +45,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <zlib.h>
-
 #include "../retro_inline.h"
 #include "chd.h"
 #include "minmax.h"
