@@ -24,13 +24,8 @@ find_package(ZLIB)
 if(ZLIB_FOUND)
 	target_link_libraries(clowncd-chd PRIVATE ZLIB::ZLIB)
 else()
-	FetchContent_Declare(
-		zlib
-		GIT_REPOSITORY https://github.com/madler/zlib.git
-		GIT_TAG        51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf # v1.3.1.2
-	)
-	FetchContent_MakeAvailable(zlib)
-	target_link_libraries(clowncd-chd PRIVATE zlibstatic)
+	target_include_directories(clowncd-chd PRIVATE "miniz-3.1.0")
+	target_sources(clowncd-chd PRIVATE "miniz-3.1.0/miniz.c")
 endif()
 
 # 7zip
