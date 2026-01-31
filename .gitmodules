@@ -10,6 +10,3 @@
 [submodule "7zip"]
 	path = chd/7zip
 	url = https://github.com/ip7z/7zip
-[submodule "chd/zstd"]
-	path = chd/zstd
-	url = https://github.com/facebook/zstd

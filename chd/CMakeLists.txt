@@ -14,6 +14,8 @@ add_library(clowncd-chd STATIC
 
 target_include_directories(clowncd-chd PUBLIC "libretro-common/include")
 
+include(FetchContent)
+
 # zlib
 target_compile_definitions(clowncd-chd PRIVATE HAVE_ZLIB)
 target_sources(clowncd-chd PRIVATE "libretro-common/formats/libchdr/libchdr_zlib.c")
@@ -22,7 +24,6 @@ find_package(ZLIB)
 if(ZLIB_FOUND)
 	target_link_libraries(clowncd-chd PRIVATE ZLIB::ZLIB)
 else()
-	include(FetchContent)
 	FetchContent_Declare(
 		zlib
 		GIT_REPOSITORY https://github.com/madler/zlib.git
@@ -62,6 +63,12 @@ find_package(ZSTD)
 if(ZSTD_FOUND)
 	target_link_libraries(clowncd-chd PRIVATE ZSTD)
 else()
-	add_subdirectory("zstd/build/cmake" EXCLUDE_FROM_ALL)
+	FetchContent_Declare(
+		zstd
+		GIT_REPOSITORY https://github.com/facebook/zstd.git
+		GIT_TAG        f8745da6ff1ad1e7bab384bd1f9d742439278e99 # v1.5.7
+		SOURCE_SUBDIR  build/cmake
+	)
+	FetchContent_MakeAvailable(zstd)
 	target_link_libraries(clowncd-chd PRIVATE libzstd_static)
 endif()
