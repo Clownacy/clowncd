@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11...3.12)
+cmake_minimum_required(VERSION 3.0...3.12)
 
 project(clowncd-chd LANGUAGES C)
 
@@ -14,8 +14,6 @@ add_library(clowncd-chd STATIC
 
 target_include_directories(clowncd-chd PUBLIC "libretro-common/include")
 
-include(FetchContent)
-
 # zlib
 target_compile_definitions(clowncd-chd PRIVATE HAVE_ZLIB)
 target_sources(clowncd-chd PRIVATE "libretro-common/formats/libchdr/libchdr_zlib.c")
@@ -25,7 +23,11 @@ if(ZLIB_FOUND)
 	target_link_libraries(clowncd-chd PRIVATE ZLIB::ZLIB)
 else()
 	target_include_directories(clowncd-chd PRIVATE "miniz-3.1.0")
-	target_sources(clowncd-chd PRIVATE "miniz-3.1.0/miniz.c")
+	target_sources(clowncd-chd PRIVATE
+		"miniz-3.1.0/miniz.c"
+		"miniz-3.1.0/miniz.h"
+		"miniz-3.1.0/zlib.h"
+	)
 endif()
 
 # 7zip
@@ -59,5 +61,9 @@ if(zstd_FOUND)
 	target_link_libraries(clowncd-chd PRIVATE zstd)
 else()
 	target_include_directories(clowncd-chd PRIVATE "zstd-1.5.7")
-	target_sources(clowncd-chd PRIVATE "zstd-1.5.7/zstddeclib.c")
+	target_sources(clowncd-chd PRIVATE
+		"zstd-1.5.7/zstd.h"
+		"zstd-1.5.7/zstd_errors.h"
+		"zstd-1.5.7/zstddeclib.c"
+	)
 endif()
