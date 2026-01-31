@@ -51,7 +51,6 @@
 #include <zlib.h>
 
 #include <retro_inline.h>
-#include <streams/file_stream.h>
 
 /***************************************************************************
  *  CD FLAC DECOMPRESSOR

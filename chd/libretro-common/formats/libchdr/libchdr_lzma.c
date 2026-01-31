@@ -50,7 +50,6 @@
 #include <libchdr/lzma.h>
 
 #include <retro_inline.h>
-#include <streams/file_stream.h>
 
 /***************************************************************************
  *  LZMA ALLOCATOR HELPER
