@@ -20,7 +20,6 @@ add_library(clowncd-chd STATIC
 	"streams/chd_stream.h"
 	# libretro utilities
 	"boolean.h"
-	"retro_endianness.h"
 	"retro_inline.h"
 )
 

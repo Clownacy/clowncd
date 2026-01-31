@@ -28,7 +28,6 @@
 
 #include "../libchdr/chd.h"
 #include "../boolean.h"
-#include "../retro_endianness.h"
 
 #define SECTOR_RAW_SIZE 2352
 #define SECTOR_SIZE 2048
@@ -308,8 +307,6 @@ void chdstream_close(chdstream_t *stream)
 static bool
 chdstream_load_hunk(chdstream_t *stream, uint32_t hunknum)
 {
-   uint16_t *array;
-
    if ((int)hunknum == stream->hunknum)
       return true;
 
@@ -319,10 +316,14 @@ chdstream_load_hunk(chdstream_t *stream, uint32_t hunknum)
    if (stream->swab)
    {
       uint32_t i;
-      uint32_t count = chd_get_header(stream->chd)->hunkbytes / 2;
-      array          = (uint16_t*)stream->hunkmem;
-      for (i = 0; i < count; ++i)
-         array[i] = SWAP16(array[i]);
+      uint32_t count = chd_get_header(stream->chd)->hunkbytes;
+      uint8_t *array = stream->hunkmem;
+      for (i = 0; i < count; i += 2)
+      {
+         const uint8_t temp = array[i + 0];
+	 array[i + 0] = array[i + 1];
+	 array[i + 1] = temp;
+      }
    }
 
    stream->hunknum = hunknum;
