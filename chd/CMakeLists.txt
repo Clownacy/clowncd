@@ -38,7 +38,6 @@ else()
 	target_sources(clowncd-chd PRIVATE
 		"libchdr/libraries/miniz-3.1.0/miniz.c"
 		"libchdr/libraries/miniz-3.1.0/miniz.h"
-		"libchdr/libraries/miniz-3.1.0/zlib.h"
 	)
 endif()
 
