@@ -26,10 +26,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include <retro_common_api.h>
-
-RETRO_BEGIN_DECLS
-
 typedef struct chdstream chdstream_t;
 
 /* First data track */
@@ -62,7 +58,5 @@ uint32_t chdstream_get_track_start(chdstream_t* stream);
 uint32_t chdstream_get_frame_size(chdstream_t* stream);
 
 uint32_t chdstream_get_first_track_sector(chdstream_t* stream);
-
-RETRO_END_DECLS
 
 #endif
