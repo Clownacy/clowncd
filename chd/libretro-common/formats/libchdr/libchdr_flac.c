@@ -12,6 +12,7 @@
 #include <stdbool.h>
 
 #include <libchdr/flac.h>
+#include <libchdr/minmax.h>
 #ifdef HAVE_DR_FLAC
 #include <retro_inline.h>
 #define DR_FLAC_IMPLEMENTATION
