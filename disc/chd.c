@@ -83,6 +83,7 @@ cc_bool ClownCD_Disc_CHDSeekTrackIndex(ClownCD_Disc* const disc, const unsigned 
 			ClownCD_Disc_CHDFileSeek,
 		};
 
+		/* TODO: Pass custom callbacks to this function so that libretro's VFS works!!! */
 		chdstream_t* const chd_stream = chdstream_open(disc->filename, track);
 
 		disc->track.file = ClownCD_FileOpenAlreadyOpen(chd_stream, &callbacks);
