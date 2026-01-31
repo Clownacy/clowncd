@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.0...3.12)
 project(clowncd-chd LANGUAGES C)
 
 add_library(clowncd-chd STATIC
-	"libretro-common/compat/compat_strl.c"
 	"libretro-common/formats/libchdr/libchdr_bitstream.c"
 	"libretro-common/formats/libchdr/libchdr_cdrom.c"
 	"libretro-common/formats/libchdr/libchdr_chd.c"

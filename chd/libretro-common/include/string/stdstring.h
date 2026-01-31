@@ -31,7 +31,6 @@
 
 #include <retro_common_api.h>
 #include <retro_inline.h>
-#include <compat/strl.h>
 
 RETRO_BEGIN_DECLS
 
