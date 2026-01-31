@@ -38,4 +38,14 @@ struct _cdzs_codec_data
 	uint8_t*				buffer;
 };
 
+/* zstd compression codec */
+chd_error zstd_codec_init(void *codec, uint32_t hunkbytes);
+void zstd_codec_free(void *codec);
+chd_error zstd_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
+
+/* cdzs compression codec */
+chd_error cdzs_codec_init(void *codec, uint32_t hunkbytes);
+void cdzs_codec_free(void *codec);
+chd_error cdzs_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
+
 #endif /* LIBCHDR_ZSTD_H */

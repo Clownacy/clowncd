@@ -67,4 +67,14 @@ struct _cdfl_codec_data {
 	uint8_t*	buffer;
 };
 
+/* flac compression codec */
+chd_error flac_codec_init(void *codec, uint32_t hunkbytes);
+void flac_codec_free(void *codec);
+chd_error flac_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
+
+/* cdfl compression codec */
+chd_error cdfl_codec_init(void* codec, uint32_t hunkbytes);
+void cdfl_codec_free(void* codec);
+chd_error cdfl_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
+
 #endif /* LIBCHDR_FLAC_H */

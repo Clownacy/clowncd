@@ -58,27 +58,17 @@ struct _cdzl_codec_data {
 	uint8_t*			buffer;
 };
 
-extern chd_error zlib_codec_init(void *codec, uint32_t hunkbytes);
-extern void zlib_codec_free(void *codec);
-extern chd_error zlib_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
-extern void zlib_allocator_free(voidpf opaque);
-
 /* zlib compression codec */
 chd_error zlib_codec_init(void *codec, uint32_t hunkbytes);
-
 void zlib_codec_free(void *codec);
-
 chd_error zlib_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
-
 voidpf zlib_fast_alloc(voidpf opaque, zlib_alloc_size items, zlib_alloc_size size);
-
 void zlib_fast_free(voidpf opaque, voidpf address);
+void zlib_allocator_free(voidpf opaque);
 
 /* cdzl compression codec */
 chd_error cdzl_codec_init(void* codec, uint32_t hunkbytes);
-
 void cdzl_codec_free(void* codec);
-
 chd_error cdzl_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
 
 #endif /* LIBCHDR_ZLIB_H */

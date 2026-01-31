@@ -285,54 +285,6 @@ static chd_error map_read(chd_file *chd);
 /* metadata management */
 static chd_error metadata_find_entry(chd_file *chd, uint32_t metatag, uint32_t metaindex, metadata_entry *metaentry);
 
-/* zlib compression codec */
-chd_error zlib_codec_init(void *codec, uint32_t hunkbytes);
-void zlib_codec_free(void *codec);
-chd_error zlib_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
-voidpf zlib_fast_alloc(voidpf opaque, uInt items, uInt size);
-void zlib_fast_free(voidpf opaque, voidpf address);
-void zlib_allocator_free(voidpf opaque);
-
-/* lzma compression codec */
-chd_error lzma_codec_init(void *codec, uint32_t hunkbytes);
-void lzma_codec_free(void *codec);
-chd_error lzma_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
-
-/* huff compression codec */
-static chd_error huff_codec_init(void *codec, uint32_t hunkbytes);
-static void huff_codec_free(void *codec);
-static chd_error huff_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
-
-/* flac compression codec */
-chd_error flac_codec_init(void *codec, uint32_t hunkbytes);
-void flac_codec_free(void *codec);
-chd_error flac_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
-
-/* zstd compression codec */
-chd_error zstd_codec_init(void *codec, uint32_t hunkbytes);
-void zstd_codec_free(void *codec);
-chd_error zstd_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
-
-/* cdzl compression codec */
-chd_error cdzl_codec_init(void* codec, uint32_t hunkbytes);
-void cdzl_codec_free(void* codec);
-chd_error cdzl_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
-
-/* cdlz compression codec */
-chd_error cdlz_codec_init(void* codec, uint32_t hunkbytes);
-void cdlz_codec_free(void* codec);
-chd_error cdlz_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
-
-/* cdfl compression codec */
-chd_error cdfl_codec_init(void* codec, uint32_t hunkbytes);
-void cdfl_codec_free(void* codec);
-chd_error cdfl_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
-
-/* cdzs compression codec */
-chd_error cdzs_codec_init(void *codec, uint32_t hunkbytes);
-void cdzs_codec_free(void *codec);
-chd_error cdzs_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
-
 
 /***************************************************************************
  *  HUFFMAN DECOMPRESSOR
