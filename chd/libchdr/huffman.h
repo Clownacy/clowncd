@@ -8,10 +8,8 @@
 
 ***************************************************************************/
 
-#pragma once
-
-#ifndef __HUFFMAN_H__
-#define __HUFFMAN_H__
+#ifndef LIBCHDR_HUFFMAN_H
+#define LIBCHDR_HUFFMAN_H
 
 #include "bitstream.h"
 
@@ -81,4 +79,4 @@ enum huffman_error huffman_compute_tree_from_histo(struct huffman_decoder* decod
 
 void huffman_build_lookup_table(struct huffman_decoder* decoder);
 
-#endif
+#endif /* LIBCHDR_HUFFMAN_H */

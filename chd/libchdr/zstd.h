@@ -8,10 +8,8 @@
 
 ***************************************************************************/
 
-#pragma once
-
-#ifndef __LIBCHDR_ZSTD_H__
-#define __LIBCHDR_ZSTD_H__
+#ifndef LIBCHDR_ZSTD_H
+#define LIBCHDR_ZSTD_H
 
 #include <stdint.h>
 
@@ -40,4 +38,4 @@ struct _cdzs_codec_data
 	uint8_t*				buffer;
 };
 
-#endif /* __LIBCHDR_ZSTD_H__ */
+#endif /* LIBCHDR_ZSTD_H */

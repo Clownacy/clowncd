@@ -8,10 +8,8 @@
 
 ***************************************************************************/
 
-#pragma once
-
-#ifndef __FLAC_H__
-#define __FLAC_H__
+#ifndef LIBCHDR_FLAC_H
+#define LIBCHDR_FLAC_H
 
 #include <stdint.h>
 
@@ -69,4 +67,4 @@ struct _cdfl_codec_data {
 	uint8_t*	buffer;
 };
 
-#endif /* __FLAC_H__ */
+#endif /* LIBCHDR_FLAC_H */

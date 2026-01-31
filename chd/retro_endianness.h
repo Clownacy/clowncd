@@ -20,8 +20,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __LIBRETRO_SDK_ENDIANNESS_H
-#define __LIBRETRO_SDK_ENDIANNESS_H
+#ifndef LIBRETRO_SDK_ENDIANNESS_H
+#define LIBRETRO_SDK_ENDIANNESS_H
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -593,4 +593,4 @@ static INLINE void retro_set_unaligned_64be(void *addr, uint64_t v)
 }
 
 
-#endif
+#endif /* LIBRETRO_SDK_ENDIANNESS_H */

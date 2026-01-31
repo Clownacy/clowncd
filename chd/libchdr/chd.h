@@ -37,10 +37,8 @@
 
 ***************************************************************************/
 
-#pragma once
-
-#ifndef __CHD_H__
-#define __CHD_H__
+#ifndef LIBCHDR_CHD_H
+#define LIBCHDR_CHD_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -433,4 +431,4 @@ CHD_EXPORT const char *chd_get_codec_name(uint32_t codec);
 }
 #endif
 
-#endif /* __CHD_H__ */
+#endif /* LIBCHDR_CHD_H */

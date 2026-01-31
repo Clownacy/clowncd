@@ -20,8 +20,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _LIBRETRO_SDK_FILE_CHD_STREAM_H
-#define _LIBRETRO_SDK_FILE_CHD_STREAM_H
+#ifndef LIBRETRO_SDK_FILE_CHD_STREAM_H
+#define LIBRETRO_SDK_FILE_CHD_STREAM_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -59,4 +59,4 @@ uint32_t chdstream_get_frame_size(chdstream_t* stream);
 
 uint32_t chdstream_get_first_track_sector(chdstream_t* stream);
 
-#endif
+#endif /* LIBRETRO_SDK_FILE_CHD_STREAM_H */

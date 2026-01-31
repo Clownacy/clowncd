@@ -6,10 +6,8 @@
 
 ***************************************************************************/
 
-#pragma once
-
-#ifndef __MINMAX_H__
-#define __MINMAX_H__
+#ifndef LIBCHDR_MINMAX_H
+#define LIBCHDR_MINMAX_H
 
 #if defined(RARCH_INTERNAL) || defined(__LIBRETRO__)
 #include "../retro_miscellaneous.h"
@@ -18,4 +16,4 @@
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #endif
 
-#endif
+#endif /* LIBCHDR_MINMAX_H */

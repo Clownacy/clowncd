@@ -8,10 +8,8 @@
 
 ***************************************************************************/
 
-#pragma once
-
-#ifndef __LIBCHDR_ZLIB_H__
-#define __LIBCHDR_ZLIB_H__
+#ifndef LIBCHDR_ZLIB_H
+#define LIBCHDR_ZLIB_H
 
 #include <stdint.h>
 
@@ -83,4 +81,4 @@ void cdzl_codec_free(void* codec);
 
 chd_error cdzl_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
 
-#endif /* __LIBCHDR_ZLIB_H__ */
+#endif /* LIBCHDR_ZLIB_H */

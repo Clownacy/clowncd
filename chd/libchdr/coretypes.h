@@ -1,5 +1,5 @@
-#ifndef __CORETYPES_H__
-#define __CORETYPES_H__
+#ifndef LIBCHDR_CORETYPES_H
+#define LIBCHDR_CORETYPES_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -74,4 +74,4 @@ static INLINE uint64_t core_fsize(core_file *fp)
 	return fp->fsize(fp);
 }
 
-#endif
+#endif /* LIBCHDR_CORETYPES_H */

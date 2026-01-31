@@ -8,10 +8,8 @@
 
 ***************************************************************************/
 
-#pragma once
-
-#ifndef __CDROM_H__
-#define __CDROM_H__
+#ifndef LIBCHDR_CDROM_H
+#define LIBCHDR_CDROM_H
 
 #include <stdint.h>
 
@@ -108,4 +106,4 @@ static INLINE uint32_t lba_to_msf_alt(int lba)
 	return ret;
 }
 
-#endif  /* __CDROM_H__ */
+#endif /* LIBCHDR_CDROM_H */

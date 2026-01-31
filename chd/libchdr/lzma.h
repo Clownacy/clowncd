@@ -8,10 +8,8 @@
 
 ***************************************************************************/
 
-#pragma once
-
-#ifndef __LIBCHDR_LZMA_H__
-#define __LIBCHDR_LZMA_H__
+#ifndef LIBCHDR_LZMA_H
+#define LIBCHDR_LZMA_H
 
 #include <stdint.h>
 
@@ -70,4 +68,4 @@ void cdlz_codec_free(void* codec);
 
 chd_error cdlz_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
 
-#endif /* __LIBCHDR_LZMA_H__ */
+#endif /* LIBCHDR_LZMA_H */

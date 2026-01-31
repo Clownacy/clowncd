@@ -1,5 +1,5 @@
-#ifndef __CHDCONFIG_H__
-#define __CHDCONFIG_H__
+#ifndef LIBCHDR_CHDCONFIG_H
+#define LIBCHDR_CHDCONFIG_H
 
 #include "../retro_inline.h"
 
@@ -9,4 +9,4 @@
 /*#define NEED_CACHE_HUNK         1*/
 /*#define VERIFY_BLOCK_CRC        1*/
 
-#endif
+#endif /* LIBCHDR_CHDCONFIG_H */

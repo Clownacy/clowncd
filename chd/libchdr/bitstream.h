@@ -8,10 +8,8 @@
 
 ***************************************************************************/
 
-#pragma once
-
-#ifndef __BITSTREAM_H__
-#define __BITSTREAM_H__
+#ifndef LIBCHDR_BITSTREAM_H
+#define LIBCHDR_BITSTREAM_H
 
 #include <stdint.h>
 
@@ -39,4 +37,4 @@ uint32_t 			bitstream_peek(struct bitstream* bitstream, int numbits);
 void 				bitstream_remove(struct bitstream* bitstream, int numbits);
 uint32_t 			bitstream_flush(struct bitstream* bitstream);
 
-#endif
+#endif /* LIBCHDR_BITSTREAM_H */
