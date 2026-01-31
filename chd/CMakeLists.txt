@@ -59,9 +59,9 @@ target_include_directories(clowncd-chd PRIVATE "include")
 target_compile_definitions(clowncd-chd PRIVATE HAVE_ZSTD)
 target_sources(clowncd-chd PRIVATE "libretro-common/formats/libchdr/libchdr_zstd.c")
 
-find_package(ZSTD)
-if(ZSTD_FOUND)
-	target_link_libraries(clowncd-chd PRIVATE ZSTD)
+find_package(zstd)
+if(zstd_FOUND)
+	target_link_libraries(clowncd-chd PRIVATE zstd)
 else()
 	FetchContent_Declare(
 		zstd
