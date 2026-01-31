@@ -47,3 +47,15 @@ target_sources(clowncd-chd PRIVATE
 	"libretro-common/formats/libchdr/libchdr_flac_codec.c"
 )
 target_include_directories(clowncd-chd PRIVATE "include")
+
+# zstd
+target_compile_definitions(clowncd-chd PRIVATE HAVE_ZSTD)
+target_sources(clowncd-chd PRIVATE "libretro-common/formats/libchdr/libchdr_zstd.c")
+
+find_package(ZSTD)
+if(ZSTD_FOUND)
+	target_link_libraries(clowncd-chd PRIVATE ZSTD)
+else()
+	add_subdirectory("zstd/build/cmake" EXCLUDE_FROM_ALL)
+	target_link_libraries(clowncd-chd PRIVATE libzstd_static)
+endif()

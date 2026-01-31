@@ -13,3 +13,6 @@
 [submodule "zlib"]
 	path = chd/zlib
 	url = https://github.com/madler/zlib
+[submodule "chd/zstd"]
+	path = chd/zstd
+	url = https://github.com/facebook/zstd
