@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../chd/streams/chd_stream.h"
+#include "chd/streams/chd_stream.h"
 
 #include "../common.h"
 

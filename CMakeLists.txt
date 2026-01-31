@@ -29,7 +29,7 @@ add_library(clowncd STATIC
 	"utilities.h"
 )
 
-add_subdirectory("chd" EXCLUDE_FROM_ALL)
+add_subdirectory("disc/chd" EXCLUDE_FROM_ALL)
 target_link_libraries(clowncd PRIVATE clowncd-chd)
 target_compile_definitions(clowncd PRIVATE CLOWNCD_CHD)
 

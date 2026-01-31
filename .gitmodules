@@ -5,5 +5,5 @@
 	path = audio/libraries/clownresampler
 	url = https://github.com/Clownacy/clownresampler
 [submodule "7zip"]
-	path = chd/libchdr/libraries/7zip
+	path = disc/chd/libchdr/libraries/7zip
 	url = https://github.com/ip7z/7zip
