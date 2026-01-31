@@ -63,12 +63,6 @@ find_package(zstd)
 if(zstd_FOUND)
 	target_link_libraries(clowncd-chd PRIVATE zstd)
 else()
-	FetchContent_Declare(
-		zstd
-		GIT_REPOSITORY https://github.com/facebook/zstd.git
-		GIT_TAG        f8745da6ff1ad1e7bab384bd1f9d742439278e99 # v1.5.7
-		SOURCE_SUBDIR  build/cmake
-	)
-	FetchContent_MakeAvailable(zstd)
-	target_link_libraries(clowncd-chd PRIVATE libzstd_static)
+	target_include_directories(clowncd-chd PRIVATE "zstd-1.5.7")
+	target_sources(clowncd-chd PRIVATE "zstd-1.5.7/zstddeclib.c")
 endif()
