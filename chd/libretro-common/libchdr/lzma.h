@@ -15,8 +15,8 @@
 
 #include <stdint.h>
 
-#include <LzmaEnc.h>
-#include <LzmaDec.h>
+#include "libraries/7zip/C/LzmaEnc.h"
+#include "libraries/7zip/C/LzmaDec.h"
 
 #include "zlib.h"
 

@@ -35,24 +35,22 @@ find_package(ZLIB)
 if(ZLIB_FOUND)
 	target_link_libraries(clowncd-chd PRIVATE ZLIB::ZLIB)
 else()
-	target_include_directories(clowncd-chd PRIVATE "miniz-3.1.0")
 	target_sources(clowncd-chd PRIVATE
-		"miniz-3.1.0/miniz.c"
-		"miniz-3.1.0/miniz.h"
-		"miniz-3.1.0/zlib.h"
+		"libretro-common/libchdr/libraries/miniz-3.1.0/miniz.c"
+		"libretro-common/libchdr/libraries/miniz-3.1.0/miniz.h"
+		"libretro-common/libchdr/libraries/miniz-3.1.0/zlib.h"
 	)
 endif()
 
 # 7zip
-target_include_directories(clowncd-chd PRIVATE "7zip/C")
 target_sources(clowncd-chd PRIVATE
-	"7zip/C/CpuArch.c"
-	"7zip/C/LzFind.c"
-	"7zip/C/LzFindMt.c"
-	"7zip/C/LzFindOpt.c"
-	"7zip/C/LzmaEnc.c"
-	"7zip/C/LzmaDec.c"
-	"7zip/C/Threads.c"
+	"libretro-common/libchdr/libraries/7zip/C/CpuArch.c"
+	"libretro-common/libchdr/libraries/7zip/C/LzFind.c"
+	"libretro-common/libchdr/libraries/7zip/C/LzFindMt.c"
+	"libretro-common/libchdr/libraries/7zip/C/LzFindOpt.c"
+	"libretro-common/libchdr/libraries/7zip/C/LzmaEnc.c"
+	"libretro-common/libchdr/libraries/7zip/C/LzmaDec.c"
+	"libretro-common/libchdr/libraries/7zip/C/Threads.c"
 )
 target_compile_definitions(clowncd-chd PRIVATE HAVE_7ZIP)
 target_sources(clowncd-chd PRIVATE
@@ -67,7 +65,6 @@ target_sources(clowncd-chd PRIVATE
 	"libretro-common/libchdr/flac.h"
 	"libretro-common/libchdr/flac_codec.c"
 )
-target_include_directories(clowncd-chd PRIVATE "include")
 
 # zstd
 target_compile_definitions(clowncd-chd PRIVATE HAVE_ZSTD)
@@ -80,10 +77,9 @@ find_package(zstd)
 if(zstd_FOUND)
 	target_link_libraries(clowncd-chd PRIVATE zstd)
 else()
-	target_include_directories(clowncd-chd PRIVATE "zstd-1.5.7")
 	target_sources(clowncd-chd PRIVATE
-		"zstd-1.5.7/zstd.h"
-		"zstd-1.5.7/zstd_errors.h"
-		"zstd-1.5.7/zstddeclib.c"
+		"libretro-common/libchdr/libraries/zstd-1.5.7/zstd.h"
+		"libretro-common/libchdr/libraries/zstd-1.5.7/zstd_errors.h"
+		"libretro-common/libchdr/libraries/zstd-1.5.7/zstddeclib.c"
 	)
 endif()

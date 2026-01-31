@@ -18,7 +18,7 @@
 #include "../retro_inline.h"
 #define DR_FLAC_IMPLEMENTATION
 #define DRFLAC_API static INLINE
-#include <dr/dr_flac.h>
+#include "libraries/dr_flac.h"
 #endif
 
 /***************************************************************************
