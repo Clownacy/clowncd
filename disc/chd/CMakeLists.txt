@@ -42,19 +42,18 @@ else()
 endif()
 
 # 7zip
-target_sources(clowncd-chd PRIVATE
-	"libchdr/libraries/7zip/C/CpuArch.c"
-	"libchdr/libraries/7zip/C/LzFind.c"
-	"libchdr/libraries/7zip/C/LzFindMt.c"
-	"libchdr/libraries/7zip/C/LzFindOpt.c"
-	"libchdr/libraries/7zip/C/LzmaEnc.c"
-	"libchdr/libraries/7zip/C/LzmaDec.c"
-	"libchdr/libraries/7zip/C/Threads.c"
-)
 target_compile_definitions(clowncd-chd PRIVATE HAVE_7ZIP)
 target_sources(clowncd-chd PRIVATE
 	"libchdr/lzma.c"
 	"libchdr/lzma.h"
+)
+
+target_compile_definitions(clowncd-chd PRIVATE Z7_ST) # Disable unportable multi-threading junk.
+target_sources(clowncd-chd PRIVATE
+	"libchdr/libraries/7zip/C/CpuArch.c"
+	"libchdr/libraries/7zip/C/LzFind.c"
+	"libchdr/libraries/7zip/C/LzmaEnc.c"
+	"libchdr/libraries/7zip/C/LzmaDec.c"
 )
 
 # flac
