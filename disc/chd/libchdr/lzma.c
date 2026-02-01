@@ -189,6 +189,53 @@ void lzma_fast_free(void *p, void *address)
  ***************************************************************************
  */
 
+/* Based on LzmaEncProps_Normalize, LzmaEnc_SetProps, LzmaEnc_WriteProperties. */
+static uint32_t lzma_compute_aligned_dictionary_size(uint32_t hunkbytes)
+{
+	const unsigned int level = 9;
+	const uint32_t reduceSize = hunkbytes;
+
+	uint32_t dictSize, alignedDictSize;
+
+	dictSize = level <= 4 ?
+		(uint32_t)1 << (level * 2 + 16) :
+		level <= sizeof(size_t) / 2 + 4 ?
+			(uint32_t)1 << (level + 20) :
+			(uint32_t)1 << (sizeof(size_t) / 2 + 24);
+
+	if (dictSize > reduceSize)
+	{
+		const uint32_t kReduceMin = (uint32_t)1 << 12;
+		const uint32_t max = MIN(kReduceMin, reduceSize);
+
+		dictSize = MAX(max, dictSize);
+	}
+
+	dictSize = MIN((uint32_t)15 << 28, dictSize); /* kLzmaMaxHistorySize */
+
+	/* we write aligned dictionary value to properties for lzma decoder */
+	if (dictSize >= ((uint32_t)1 << 21))
+	{
+		const uint32_t kDictMask = ((uint32_t)1 << 20) - 1;
+
+		alignedDictSize = (dictSize + kDictMask) & ~kDictMask;
+		alignedDictSize = MIN(dictSize, alignedDictSize);
+	}
+	else
+	{
+		unsigned int i = 11 * 2;
+
+		do
+		{
+			alignedDictSize = (uint32_t)(2 + (i & 1)) << (i >> 1);
+			i++;
+		}
+		while (alignedDictSize < dictSize);
+	}
+
+	return alignedDictSize;
+}
+
 /*-------------------------------------------------
  *  lzma_codec_init - constructor
  *-------------------------------------------------
@@ -196,45 +243,21 @@ void lzma_fast_free(void *p, void *address)
 
 chd_error lzma_codec_init(void* codec, uint32_t hunkbytes)
 {
-	CLzmaEncHandle enc;
-	CLzmaEncProps encoder_props;
-	Byte decoder_props[LZMA_PROPS_SIZE];
-	SizeT props_size;
-	lzma_allocator* alloc;
 	lzma_codec_data* lzma_codec = (lzma_codec_data*) codec;
+	lzma_allocator* alloc = &lzma_codec->allocator;
+	const uint32_t alignedDictSize = lzma_compute_aligned_dictionary_size(hunkbytes);
+
+	unsigned int i;
+	Byte decoder_props[LZMA_PROPS_SIZE];
+
+	decoder_props[0] = 93;
+	for (i = 0; i < LZMA_PROPS_SIZE - 1; ++i)
+		decoder_props[1 + i] = (alignedDictSize >> (8 * i)) & 0xFF;
+
+	lzma_allocator_init(alloc);
 
 	/* construct the decoder */
 	LzmaDec_Construct(&lzma_codec->decoder);
-
-	/* FIXME: this code is written in a way that makes it impossible to safely upgrade the LZMA SDK
-	 * This code assumes that the current version of the encoder imposes the same requirements on the
-	 * decoder as the encoder used to produce the file.  This is not necessarily true.  The format
-	 * needs to be changed so the encoder properties are written to the file.
-
-	 * configure the properties like the compressor did */
-	LzmaEncProps_Init(&encoder_props);
-	encoder_props.level = 9;
-	encoder_props.reduceSize = hunkbytes;
-	LzmaEncProps_Normalize(&encoder_props);
-
-	/* convert to decoder properties */
-	alloc = &lzma_codec->allocator;
-	lzma_allocator_init(alloc);
-	enc = LzmaEnc_Create((ISzAlloc*)alloc);
-	if (!enc)
-		return CHDERR_DECOMPRESSION_ERROR;
-	if (LzmaEnc_SetProps(enc, &encoder_props) != SZ_OK)
-	{
-		LzmaEnc_Destroy(enc, (ISzAlloc*)&alloc, (ISzAlloc*)&alloc);
-		return CHDERR_DECOMPRESSION_ERROR;
-	}
-	props_size = sizeof(decoder_props);
-	if (LzmaEnc_WriteProperties(enc, decoder_props, &props_size) != SZ_OK)
-	{
-		LzmaEnc_Destroy(enc, (ISzAlloc*)alloc, (ISzAlloc*)alloc);
-		return CHDERR_DECOMPRESSION_ERROR;
-	}
-	LzmaEnc_Destroy(enc, (ISzAlloc*)alloc, (ISzAlloc*)alloc);
 
 	/* do memory allocations */
 	if (LzmaDec_Allocate(&lzma_codec->decoder, decoder_props, LZMA_PROPS_SIZE, (ISzAlloc*)alloc) != SZ_OK)

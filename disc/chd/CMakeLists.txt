@@ -48,11 +48,7 @@ target_sources(clowncd-chd PRIVATE
 	"libchdr/lzma.h"
 )
 
-target_compile_definitions(clowncd-chd PRIVATE Z7_ST) # Disable unportable multi-threading junk.
 target_sources(clowncd-chd PRIVATE
-	"libchdr/libraries/7zip/C/CpuArch.c"
-	"libchdr/libraries/7zip/C/LzFind.c"
-	"libchdr/libraries/7zip/C/LzmaEnc.c"
 	"libchdr/libraries/7zip/C/LzmaDec.c"
 )
 

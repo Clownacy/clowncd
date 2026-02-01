@@ -24,16 +24,9 @@
 
 #ifdef CLOWNCD_CHD
 #include "disc/chd.c"
-
-#define Z7_ST /* Disable unportable multi-threading junk. */
-#include "disc/chd/libchdr/libraries/7zip/C/CpuArch.c"
-#include "disc/chd/libchdr/libraries/7zip/C/LzFind.c"
-#include "disc/chd/libchdr/libraries/7zip/C/LzmaEnc.c"
 #include "disc/chd/libchdr/libraries/7zip/C/LzmaDec.c"
-
 #include "disc/chd/libchdr/libraries/miniz-3.1.0/miniz.c"
 #include "disc/chd/libchdr/libraries/zstd-1.5.7/zstddeclib.c"
-
 #include "disc/chd/libchdr/bitstream.c"
 #include "disc/chd/libchdr/cdrom.c"
 #include "disc/chd/libchdr/chd.c"
