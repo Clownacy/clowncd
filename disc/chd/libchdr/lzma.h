@@ -13,8 +13,7 @@
 
 #include <stdint.h>
 
-#include "libraries/7zip/C/LzmaEnc.h"
-#include "libraries/7zip/C/LzmaDec.h"
+#include "libraries/lzma-25.01/LzmaDec.h"
 
 #include "zlib.h"
 

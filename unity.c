@@ -24,7 +24,7 @@
 
 #ifdef CLOWNCD_CHD
 #include "disc/chd.c"
-#include "disc/chd/libchdr/libraries/7zip/C/LzmaDec.c"
+#include "disc/chd/libchdr/libraries/lzma-25.01/LzmaDec.c"
 #include "disc/chd/libchdr/libraries/miniz-3.1.0/miniz.c"
 #include "disc/chd/libchdr/libraries/zstd-1.5.7/zstddeclib.c"
 #include "disc/chd/libchdr/bitstream.c"
