@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <sndfile.h>
 
@@ -37,9 +38,48 @@ static Timecode SectorToTimecode(const unsigned long sector)
 	return timecode;
 }
 
+static ClownCD_CueTrackType GetTrackType(ClownCD* const cd, const unsigned int track_number, const unsigned int index_number)
+{
+	ClownCD_CueTrackType track_type = CLOWNCD_CUE_TRACK_INVALID;
+
+	if (ClownCD_SeekTrackIndex(cd, track_number, index_number))
+	{
+		if (!cd->track.has_full_sized_sectors)
+		{
+			track_type = CLOWNCD_CUE_TRACK_MODE1_2048;
+		}
+		else
+		{
+			static const short header_2352[8] = {-0x0100, -0x0001, -0x0001, -0x0001, -0x0001, +0x00FF, +0x0200, +0x0100};
+
+			short buffer[CC_COUNT_OF(header_2352)];
+
+			track_type = CLOWNCD_CUE_TRACK_AUDIO;
+
+			if (ClownCD_ReadFrames(cd, buffer, CC_COUNT_OF(buffer)) == CC_COUNT_OF(buffer))
+				if (memcmp(buffer, header_2352, sizeof(header_2352)) == 0)
+					track_type = CLOWNCD_CUE_TRACK_MODE1_2352;
+
+			ClownCD_SeekSector(cd, 0);
+		}
+	}
+
+	return track_type;
+}
+
+static ClownCD_CueTrackType GetFirstTrackType(ClownCD* const cd, const unsigned int track_number)
+{
+	ClownCD_CueTrackType track_type = GetTrackType(cd, track_number, 0);
+
+	if (track_type == CLOWNCD_CUE_TRACK_INVALID)
+		track_type = GetTrackType(cd, track_number, 1);
+
+	return track_type;
+}
+
 static cc_bool DoTrackIndex(State* const state, const unsigned int track_number, const unsigned int index_number)
 {
-	const ClownCD_CueTrackType track_type = ClownCD_SeekTrackIndex(state->cd, track_number, index_number);
+	const ClownCD_CueTrackType track_type = GetTrackType(state->cd, track_number, index_number);
 	const Timecode timecode = SectorToTimecode(state->current_sector);
 
 	if (track_type == CLOWNCD_CUE_TRACK_INVALID)
@@ -104,19 +144,9 @@ static cc_bool DoTrackIndex(State* const state, const unsigned int track_number,
 	return cc_true;
 }
 
-static ClownCD_CueTrackType GetTrackType(ClownCD* const cd, const unsigned int track_number)
-{
-	const ClownCD_CueTrackType track_type = ClownCD_SeekTrackIndex(cd, track_number, 0);
-
-	if (track_type != CLOWNCD_CUE_TRACK_INVALID)
-		return track_type;
-
-	return ClownCD_SeekTrackIndex(cd, track_number, 1);
-}
-
 static cc_bool DoTrack(ClownCD* const cd, FILE* const output_cue_file, const unsigned int track_number)
 {
-	const ClownCD_CueTrackType track_type = GetTrackType(cd, track_number);
+	const ClownCD_CueTrackType track_type = GetFirstTrackType(cd, track_number);
 
 	char filename[] = "Track 01.iso";
 	const char *file_type_string, *track_type_string;
