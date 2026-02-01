@@ -23,6 +23,14 @@
 #include "disc/raw.c"
 
 #ifdef CLOWNCD_CHD
+
+/* Disable unused features of miniz. */
+#define MINIZ_NO_ARCHIVE_APIS
+#define MINIZ_NO_ARCHIVE_WRITING_APIS
+#define MINIZ_NO_DEFLATE_APIS
+#define MINIZ_NO_STDIO
+#define MINIZ_NO_TIME
+
 #include "disc/chd.c"
 #include "disc/chd/libchdr/libraries/lzma-25.01/LzmaDec.c"
 #include "disc/chd/libchdr/libraries/miniz-3.1.0/miniz.c"
