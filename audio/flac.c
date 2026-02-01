@@ -20,11 +20,11 @@ static drflac_bool32 ClownCD_FLACSeekCallback(void* const user_data, const int o
 
 	switch (origin)
 	{
-		case drflac_seek_origin_start:
+		case DRFLAC_SEEK_SET:
 			ccd_origin = CLOWNCD_SEEK_SET;
 			break;
 
-		case drflac_seek_origin_current:
+		case DRFLAC_SEEK_CUR:
 			ccd_origin = CLOWNCD_SEEK_CUR;
 			break;
 
@@ -36,12 +36,20 @@ static drflac_bool32 ClownCD_FLACSeekCallback(void* const user_data, const int o
 	return ClownCD_FileSeek(file, offset, ccd_origin) == 0;
 }
 
+static drflac_bool32 ClownCD_FLACTellCallback(void* const user_data, drflac_int64* const cursor)
+{
+	ClownCD_File* const file = (ClownCD_File*)user_data;
+
+	*cursor = ClownCD_FileTell(file);
+	return DRFLAC_TRUE;
+}
+
 cc_bool ClownCD_FLACOpen(ClownCD_FLAC* const flac, ClownCD_File* const file, ClownCD_AudioMetadata* const metadata)
 {
 	if (ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_SET) != 0)
 		return cc_false;
 
-	flac->dr_flac = drflac_open(ClownCD_FLACReadCallback, ClownCD_FLACSeekCallback, file, NULL);
+	flac->dr_flac = drflac_open(ClownCD_FLACReadCallback, ClownCD_FLACSeekCallback, ClownCD_FLACTellCallback, file, NULL);
 	if (flac->dr_flac != NULL)
 	{
 		metadata->sample_rate = flac->dr_flac->sampleRate;

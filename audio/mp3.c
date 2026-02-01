@@ -20,11 +20,11 @@ static drmp3_bool32 ClownCD_MP3SeekCallback(void* const user_data, const int off
 
 	switch (origin)
 	{
-		case drmp3_seek_origin_start:
+		case DRMP3_SEEK_SET:
 			ccd_origin = CLOWNCD_SEEK_SET;
 			break;
 
-		case drmp3_seek_origin_current:
+		case DRMP3_SEEK_CUR:
 			ccd_origin = CLOWNCD_SEEK_CUR;
 			break;
 
@@ -36,12 +36,20 @@ static drmp3_bool32 ClownCD_MP3SeekCallback(void* const user_data, const int off
 	return ClownCD_FileSeek(file, offset, ccd_origin) == 0;
 }
 
+static drmp3_bool32 ClownCD_MP3TellCallback(void* const user_data, drmp3_int64* const cursor)
+{
+	ClownCD_File* const file = (ClownCD_File*)user_data;
+
+	*cursor = ClownCD_FileTell(file);
+	return DRMP3_TRUE;
+}
+
 cc_bool ClownCD_MP3Open(ClownCD_MP3* const mp3, ClownCD_File* const file, ClownCD_AudioMetadata* const metadata)
 {
 	if (ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_SET) != 0)
 		return cc_false;
 
-	if (drmp3_init(&mp3->dr_mp3, ClownCD_MP3ReadCallback, ClownCD_MP3SeekCallback, file, NULL))
+	if (drmp3_init(&mp3->dr_mp3, ClownCD_MP3ReadCallback, ClownCD_MP3SeekCallback, ClownCD_MP3TellCallback, NULL, file, NULL))
 	{
 		drmp3_uint32 seek_point_count = CC_COUNT_OF(mp3->seek_points);
 

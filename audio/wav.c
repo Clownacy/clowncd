@@ -20,11 +20,11 @@ static drwav_bool32 ClownCD_WAVSeekCallback(void* const user_data, const int off
 
 	switch (origin)
 	{
-		case drwav_seek_origin_start:
+		case DRWAV_SEEK_SET:
 			ccd_origin = CLOWNCD_SEEK_SET;
 			break;
 
-		case drwav_seek_origin_current:
+		case DRWAV_SEEK_CUR:
 			ccd_origin = CLOWNCD_SEEK_CUR;
 			break;
 
@@ -36,12 +36,20 @@ static drwav_bool32 ClownCD_WAVSeekCallback(void* const user_data, const int off
 	return ClownCD_FileSeek(file, offset, ccd_origin) == 0;
 }
 
+static drwav_bool32 ClownCD_WAVTellCallback(void* const user_data, drwav_int64* const cursor)
+{
+	ClownCD_File* const file = (ClownCD_File*)user_data;
+
+	*cursor = ClownCD_FileTell(file);
+	return DRWAV_TRUE;
+}
+
 cc_bool ClownCD_WAVOpen(ClownCD_WAV* const wav, ClownCD_File* const file, ClownCD_AudioMetadata* const metadata)
 {
 	if (ClownCD_FileSeek(file, 0, CLOWNCD_SEEK_SET) != 0)
 		return cc_false;
 
-	if (drwav_init(&wav->dr_wav, ClownCD_WAVReadCallback, ClownCD_WAVSeekCallback, file, NULL))
+	if (drwav_init(&wav->dr_wav, ClownCD_WAVReadCallback, ClownCD_WAVSeekCallback, ClownCD_WAVTellCallback, file, NULL))
 	{
 		metadata->sample_rate = wav->dr_wav.sampleRate;
 		metadata->total_channels = wav->dr_wav.channels;
