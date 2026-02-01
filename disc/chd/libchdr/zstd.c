@@ -64,6 +64,8 @@ chd_error zstd_codec_init(void* codec, uint32_t hunkbytes)
 {
 	zstd_codec_data* zstd_codec = (zstd_codec_data*) codec;
 
+	(void)hunkbytes;
+
 	zstd_codec->dstream = ZSTD_createDStream();
 	if (!zstd_codec->dstream) {
 		printf("NO DSTREAM CREATED!\n");

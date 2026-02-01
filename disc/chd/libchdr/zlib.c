@@ -65,6 +65,8 @@ chd_error zlib_codec_init(void *codec, uint32_t hunkbytes)
 	chd_error err;
 	zlib_codec_data *data = (zlib_codec_data*)codec;
 
+	(void)hunkbytes;
+
 	/* clear the buffers */
 	memset(data, 0, sizeof(zlib_codec_data));
 

@@ -294,6 +294,9 @@ static chd_error metadata_find_entry(chd_file *chd, uint32_t metatag, uint32_t m
 static chd_error huff_codec_init(void* codec, uint32_t hunkbytes)
 {
 	huff_codec_data* huff_codec = (huff_codec_data*) codec;
+
+	(void)hunkbytes;
+
 	huff_codec->decoder = create_huffman_decoder(256, 16);
 	return CHDERR_NONE;
 }
@@ -542,7 +545,7 @@ static INLINE uint32_t get_bigendian_uint32_t(const uint8_t *base)
     put_bigendian_uint32_t - write a uint32_t to
     the data stream in bigendian order
 -------------------------------------------------*/
-
+#if 0
 static INLINE void put_bigendian_uint32_t(uint8_t *base, uint32_t value)
 {
 	base[0] = value >> 24;
@@ -550,7 +553,7 @@ static INLINE void put_bigendian_uint32_t(uint8_t *base, uint32_t value)
 	base[2] = value >> 8;
 	base[3] = value;
 }
-
+#endif
 /*-------------------------------------------------
     put_bigendian_uint24 - write a UINT24 to
     the data stream in bigendian order
@@ -606,20 +609,6 @@ static INLINE void map_extract(const uint8_t *base, map_entry *entry)
 	entry->crc = get_bigendian_uint32_t(&base[8]);
 	entry->length = get_bigendian_uint16(&base[12]) | (base[14] << 16);
 	entry->flags = base[15];
-}
-
-/*-------------------------------------------------
-    map_assemble - write a single map
-    entry to the datastream
--------------------------------------------------*/
-
-static INLINE void map_assemble(uint8_t *base, map_entry *entry)
-{
-	put_bigendian_uint64_t(&base[0], entry->offset);
-	put_bigendian_uint32_t(&base[8], entry->crc);
-	put_bigendian_uint16(&base[12], entry->length);
-	base[14] = entry->length >> 16;
-	base[15] = entry->flags;
 }
 
 /*-------------------------------------------------
@@ -1137,7 +1126,7 @@ CHD_EXPORT chd_error chd_precache(chd_file *chd)
 		size = core_fsize(chd->file);
 		if ((int64_t)size <= 0)
 			return CHDERR_INVALID_DATA;
-		chd->file_cache = malloc(size);
+		chd->file_cache = (uint8_t *)malloc(size);
 		if (chd->file_cache == NULL)
 			return CHDERR_OUT_OF_MEMORY;
 		core_fseek(chd->file, 0, SEEK_SET);
@@ -1509,30 +1498,6 @@ CHD_EXPORT chd_error chd_get_metadata(chd_file *chd, uint32_t searchtag, uint32_
 	if (resultflags != NULL)
 		*resultflags = metaentry.flags;
 	return CHDERR_NONE;
-}
-
-/***************************************************************************
-    CODEC INTERFACES
-***************************************************************************/
-
-/*-------------------------------------------------
-    chd_codec_config - set internal codec
-    parameters
--------------------------------------------------*/
-
-CHD_EXPORT chd_error chd_codec_config(chd_file *chd, int param, void *config)
-{
-	return CHDERR_INVALID_PARAMETER;
-}
-
-/*-------------------------------------------------
-    chd_get_codec_name - get the name of a
-    particular codec
--------------------------------------------------*/
-
-CHD_EXPORT const char *chd_get_codec_name(uint32_t codec)
-{
-	return "Unknown";
 }
 
 /***************************************************************************
@@ -2081,7 +2046,7 @@ static chd_error hunk_read_into_memory(chd_file *chd, uint32_t hunknum, uint8_t 
 				/* blockoffs is not aligned to units_in_hunk */
 				} else {
 					uint32_t unit_in_hunk = blockoffs % units_in_hunk;
-					uint8_t *buf = malloc(chd->header.hunkbytes);
+					uint8_t *buf = (uint8_t *)malloc(chd->header.hunkbytes);
 					/* Read first half of hunk which contains blockoffs */
 					err = hunk_read_into_memory(chd->parent, blockoffs / units_in_hunk, buf);
 					if (err != CHDERR_NONE) {
@@ -2245,7 +2210,7 @@ static chd_error metadata_find_entry(chd_file *chd, uint32_t metatag, uint32_t m
 	core_stdio_fopen - core_file wrapper over fopen
 -------------------------------------------------*/
 static core_file *core_stdio_fopen(char const *path) {
-	core_file *file = malloc(sizeof(core_file));
+	core_file *file = (core_file *)malloc(sizeof(core_file));
 	if (!file)
 		return NULL;
 	if (!(file->argp = fopen(path, "rb"))) {
