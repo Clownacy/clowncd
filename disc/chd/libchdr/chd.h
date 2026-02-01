@@ -40,12 +40,12 @@
 #ifndef LIBCHDR_CHD_H
 #define LIBCHDR_CHD_H
 
+#include "chdconfig.h"
+#include "coretypes.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "chdconfig.h"
-#include "coretypes.h"
 
 /***************************************************************************
 
