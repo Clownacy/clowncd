@@ -65,6 +65,7 @@ target_sources(clowncd-chd PRIVATE
 	"libchdr/flac.c"
 	"libchdr/flac.h"
 	"libchdr/flac_codec.c"
+	"libchdr/libraries/dr_flac.h"
 )
 
 # zstd
