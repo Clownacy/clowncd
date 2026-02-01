@@ -18,7 +18,7 @@ static void Callback(void* const user_data, const char* const filename, const Cl
 	State* const state = (State*)user_data;
 	const unsigned long ending_sector = ClownCD_CueGetTrackIndexEndingSector(state->cue_file, filename, track, 0, sector);
 
-	unsigned int type;
+	unsigned int type = 0;
 
 	(void)index;
 
@@ -43,7 +43,8 @@ static void Callback(void* const user_data, const char* const filename, const Cl
 	{
 		case CLOWNCD_CUE_TRACK_MODE1_2048:
 			fputs("MODE1/2048 tracks are not supported: use MODE1/2352 instead.", stderr);
-			/* Fallthrough */
+			break;
+
 		case CLOWNCD_CUE_TRACK_MODE1_2352:
 			type = 0;
 			break;
