@@ -23,6 +23,8 @@ typedef struct Timecode
 	unsigned char frame;
 } Timecode;
 
+static ClownCD cd;
+
 static Timecode SectorToTimecode(const unsigned long sector)
 {
 	Timecode timecode;
@@ -247,7 +249,7 @@ int main(const int argc, const char** const argv)
 	}
 	else
 	{
-		ClownCD cd = ClownCD_Open(argv[1], NULL);
+		ClownCD_Open(&cd, argv[1], NULL);
 
 		if (!ClownCD_IsOpen(&cd))
 		{
