@@ -26,7 +26,6 @@
 
 /* Disable unused features of miniz. */
 #define MINIZ_NO_ARCHIVE_APIS
-#define MINIZ_NO_ARCHIVE_WRITING_APIS
 #define MINIZ_NO_DEFLATE_APIS
 #define MINIZ_NO_STDIO
 #define MINIZ_NO_TIME

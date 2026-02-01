@@ -38,7 +38,6 @@ else()
 	# Disable unused features of miniz.
 	target_compile_definitions(clowncd-chd PRIVATE
 		MINIZ_NO_ARCHIVE_APIS
-		MINIZ_NO_ARCHIVE_WRITING_APIS
 		MINIZ_NO_DEFLATE_APIS
 		MINIZ_NO_STDIO
 		MINIZ_NO_TIME
