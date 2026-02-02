@@ -212,18 +212,13 @@ chdstream_find_track(chd_file *fd, int32_t track, metadata_t *meta)
    return chdstream_find_track_number(fd, track, meta);
 }
 
-chdstream_t *chdstream_open(const char *path, int32_t track)
+static chdstream_t *chdstream_open_common(chd_file *chd, int32_t track)
 {
    metadata_t meta;
    uint32_t pregap         = 0;
    uint8_t *hunkmem        = NULL;
    const chd_header *hd    = NULL;
    chdstream_t *stream     = NULL;
-   chd_file *chd           = NULL;
-   chd_error err           = chd_open(path, CHD_OPEN_READ, NULL, &chd);
-
-   if (err != CHDERR_NONE)
-      return NULL;
 
    if (!chdstream_find_track(chd, track, &meta))
       goto error;
@@ -290,6 +285,28 @@ error:
       chd_close(chd);
 
    return NULL;
+}
+
+chdstream_t *chdstream_open(const char *path, int32_t track)
+{
+   chd_file *chd = NULL;
+   chd_error err = chd_open(path, CHD_OPEN_READ, NULL, &chd);
+
+   if (err != CHDERR_NONE)
+      return NULL;
+
+   return chdstream_open_common(chd, track);
+}
+
+chdstream_t *chdstream_open_core_file(core_file *file, int32_t track)
+{
+   chd_file *chd = NULL;
+   chd_error err = chd_open_core_file(file, CHD_OPEN_READ, NULL, &chd);
+
+   if (err != CHDERR_NONE)
+      return NULL;
+
+   return chdstream_open_common(chd, track);
 }
 
 void chdstream_close(chdstream_t *stream)

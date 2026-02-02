@@ -26,6 +26,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "../libchdr/chd.h"
+
 typedef struct chdstream chdstream_t;
 
 /* First data track */
@@ -36,6 +38,8 @@ typedef struct chdstream chdstream_t;
 #define CHDSTREAM_TRACK_PRIMARY (-3)
 
 chdstream_t *chdstream_open(const char *path, int32_t track);
+
+chdstream_t *chdstream_open_core_file(core_file *file, int32_t track);
 
 void chdstream_close(chdstream_t *stream);
 
