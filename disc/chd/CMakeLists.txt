@@ -53,7 +53,6 @@ target_compile_definitions(clowncd-chd PRIVATE HAVE_7ZIP)
 target_sources(clowncd-chd PRIVATE
 	"libchdr/lzma.c"
 	"libchdr/lzma.h"
-	"libchdr/libraries/lzma-25.01/7zTypes.h"
 	"libchdr/libraries/lzma-25.01/LzmaDec.c"
 	"libchdr/libraries/lzma-25.01/LzmaDec.h"
 )
