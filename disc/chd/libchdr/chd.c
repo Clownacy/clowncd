@@ -224,22 +224,22 @@ struct _chd_file
 	uint8_t *					compressed;		/* pointer to buffer for compressed data */
 	const codec_interface *	codecintf[4];	/* interface to the codec */
 
-	huff_codec_data			huff_codec_data;		/* huff codec data */
+	huff_codec_data			huff;		/* huff codec data */
 #ifdef HAVE_ZLIB
-	zlib_codec_data			zlib_codec_data;		/* zlib codec data */
-	cdzl_codec_data			cdzl_codec_data;		/* cdzl codec data */
+	zlib_codec_data			zlib;		/* zlib codec data */
+	cdzl_codec_data			cdzl;		/* cdzl codec data */
 #endif
 #ifdef HAVE_7ZIP
-	lzma_codec_data			lzma_codec_data;		/* lzma codec data */
-	cdlz_codec_data			cdlz_codec_data;		/* cdlz codec data */
+	lzma_codec_data			lzma;		/* lzma codec data */
+	cdlz_codec_data			cdlz;		/* cdlz codec data */
 #endif
 #ifdef HAVE_FLAC
-	flac_codec_data			flac_codec_data;		/* flac codec data */
-	cdfl_codec_data			cdfl_codec_data;		/* cdfl codec data */
+	flac_codec_data			flac;		/* flac codec data */
+	cdfl_codec_data			cdfl;		/* cdfl codec data */
 #endif
 #ifdef HAVE_ZSTD
-	zstd_codec_data			zstd_codec_data;		/* zstd codec data */
-	cdzs_codec_data			cdzs_codec_data;		/* cdzs codec data */
+	zstd_codec_data			zstd;		/* zstd codec data */
+	cdzs_codec_data			cdzs;		/* cdzs codec data */
 #endif
 
 #ifdef NEED_CACHE_HUNK
@@ -1015,7 +1015,7 @@ CHD_EXPORT chd_error chd_open_core_file(const core_file_callbacks *callbacks, co
 		/* initialize the codec */
 		if (newchd->codecintf[0]->init != NULL)
 		{
-			err = (*newchd->codecintf[0]->init)(&newchd->zlib_codec_data, newchd->header.hunkbytes);
+			err = (*newchd->codecintf[0]->init)(&newchd->zlib, newchd->header.hunkbytes);
 			if (err != CHDERR_NONE)
 				EARLY_EXIT(err);
 		}
@@ -1048,53 +1048,53 @@ CHD_EXPORT chd_error chd_open_core_file(const core_file_callbacks *callbacks, co
 				{
 					case CHD_CODEC_ZLIB:
 #ifdef HAVE_ZLIB
-						codec = &newchd->zlib_codec_data;
+						codec = &newchd->zlib;
 #endif
 						break;
 
 					case CHD_CODEC_LZMA:
 #ifdef HAVE_7ZIP
-						codec = &newchd->lzma_codec_data;
+						codec = &newchd->lzma;
 #endif
 						break;
 
 					case CHD_CODEC_HUFFMAN:
-						codec = &newchd->huff_codec_data;
+						codec = &newchd->huff;
 						break;
 
 					case CHD_CODEC_FLAC:
 #ifdef HAVE_FLAC
-						codec = &newchd->flac_codec_data;
+						codec = &newchd->flac;
 #endif
 						break;
 
 					case CHD_CODEC_ZSTD:
 #ifdef HAVE_ZSTD
-						codec = &newchd->zstd_codec_data;
+						codec = &newchd->zstd;
 #endif
 						break;
 
 					case CHD_CODEC_CD_ZLIB:
 #ifdef HAVE_ZLIB
-						codec = &newchd->cdzl_codec_data;
+						codec = &newchd->cdzl;
 #endif
 						break;
 
 					case CHD_CODEC_CD_LZMA:
 #ifdef HAVE_7ZIP
-						codec = &newchd->cdlz_codec_data;
+						codec = &newchd->cdlz;
 #endif
 						break;
 
 					case CHD_CODEC_CD_FLAC:
 #ifdef HAVE_FLAC
-						codec = &newchd->cdfl_codec_data;
+						codec = &newchd->cdfl;
 #endif
 						break;
 
 					case CHD_CODEC_CD_ZSTD:
 #ifdef HAVE_ZSTD
-						codec = &newchd->cdzs_codec_data;
+						codec = &newchd->cdzs;
 #endif
 						break;
 				}
@@ -1209,7 +1209,7 @@ CHD_EXPORT void chd_close(chd_file *chd)
 	{
 #ifdef HAVE_ZLIB
 		if (chd->codecintf[0] != NULL && chd->codecintf[0]->free != NULL)
-			(*chd->codecintf[0]->free)(&chd->zlib_codec_data);
+			(*chd->codecintf[0]->free)(&chd->zlib);
 #endif
 	}
 	else
@@ -1227,53 +1227,53 @@ CHD_EXPORT void chd_close(chd_file *chd)
 			{
 				case CHD_CODEC_ZLIB:
 #ifdef HAVE_ZLIB
-					codec = &chd->zlib_codec_data;
+					codec = &chd->zlib;
 #endif
 					break;
 
 				case CHD_CODEC_LZMA:
 #ifdef HAVE_7ZIP
-					codec = &chd->lzma_codec_data;
+					codec = &chd->lzma;
 #endif
 					break;
 
 				case CHD_CODEC_HUFFMAN:
-					codec = &chd->huff_codec_data;
+					codec = &chd->huff;
 					break;
 
 				case CHD_CODEC_FLAC:
 #ifdef HAVE_FLAC
-					codec = &chd->flac_codec_data;
+					codec = &chd->flac;
 #endif
 					break;
 
 				case CHD_CODEC_ZSTD:
 #ifdef HAVE_ZSTD
-					codec = &chd->zstd_codec_data;
+					codec = &chd->zstd;
 #endif
 					break;
 
 				case CHD_CODEC_CD_ZLIB:
 #ifdef HAVE_ZLIB
-					codec = &chd->cdzl_codec_data;
+					codec = &chd->cdzl;
 #endif
 					break;
 
 				case CHD_CODEC_CD_LZMA:
 #ifdef HAVE_7ZIP
-					codec = &chd->cdlz_codec_data;
+					codec = &chd->cdlz;
 #endif
 					break;
 
 				case CHD_CODEC_CD_FLAC:
 #ifdef HAVE_FLAC
-					codec = &chd->cdfl_codec_data;
+					codec = &chd->cdfl;
 #endif
 					break;
 
 				case CHD_CODEC_CD_ZSTD:
 #ifdef HAVE_ZSTD
-					codec = &chd->cdzs_codec_data;
+					codec = &chd->cdzs;
 #endif
 					break;
 			}
@@ -1873,7 +1873,7 @@ static chd_error hunk_read_into_memory(chd_file *chd, uint32_t hunknum, uint8_t 
 #ifdef HAVE_ZLIB
 				/* now decompress using the codec */
 				err = CHDERR_NONE;
-				codec = &chd->zlib_codec_data;
+				codec = &chd->zlib;
 				if (chd->codecintf[0]->decompress != NULL)
 					err = (*chd->codecintf[0]->decompress)(codec, compressed_bytes, entry->length, dest, chd->header.hunkbytes);
 				if (err != CHDERR_NONE)
@@ -1967,53 +1967,53 @@ static chd_error hunk_read_into_memory(chd_file *chd, uint32_t hunknum, uint8_t 
 				{
 					case CHD_CODEC_ZLIB:
 #ifdef HAVE_ZLIB
-						codec = &chd->zlib_codec_data;
+						codec = &chd->zlib;
 #endif
 						break;
 
 					case CHD_CODEC_LZMA:
 #ifdef HAVE_7ZIP
-						codec = &chd->lzma_codec_data;
+						codec = &chd->lzma;
 #endif
 						break;
 
 					case CHD_CODEC_HUFFMAN:
-						codec = &chd->huff_codec_data;
+						codec = &chd->huff;
 						break;
 
 					case CHD_CODEC_FLAC:
 #ifdef HAVE_FLAC
-						codec = &chd->flac_codec_data;
+						codec = &chd->flac;
 #endif
 						break;
 
 					case CHD_CODEC_ZSTD:
 #ifdef HAVE_ZSTD
-						codec = &chd->zstd_codec_data;
+						codec = &chd->zstd;
 #endif
 						break;
 
 					case CHD_CODEC_CD_ZLIB:
 #ifdef HAVE_ZLIB
-						codec = &chd->cdzl_codec_data;
+						codec = &chd->cdzl;
 #endif
 						break;
 
 					case CHD_CODEC_CD_LZMA:
 #ifdef HAVE_7ZIP
-						codec = &chd->cdlz_codec_data;
+						codec = &chd->cdlz;
 #endif
 						break;
 
 					case CHD_CODEC_CD_FLAC:
 #ifdef HAVE_FLAC
-						codec = &chd->cdfl_codec_data;
+						codec = &chd->cdfl;
 #endif
 						break;
 
 					case CHD_CODEC_CD_ZSTD:
 #ifdef HAVE_ZSTD
-						codec = &chd->cdzs_codec_data;
+						codec = &chd->cdzs;
 #endif
 						break;
 				}
