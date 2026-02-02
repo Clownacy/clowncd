@@ -11,7 +11,6 @@
 #include "flac.h"
 
 #include <string.h>
-#include <stdbool.h>
 
 #include "minmax.h"
 #ifdef HAVE_DR_FLAC
