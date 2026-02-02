@@ -34,6 +34,7 @@ add_library(clowncd STATIC
 if(CLOWNCD_CHD)
 	add_subdirectory("disc/chd" EXCLUDE_FROM_ALL)
 	target_link_libraries(clowncd PRIVATE clowncd-chd)
+	target_compile_definitions(clowncd PRIVATE CLOWNCD_CHD)
 endif()
 
 add_subdirectory("audio/libraries/clownresampler" EXCLUDE_FROM_ALL)
