@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.0...3.12)
 
 project(clowncd LANGUAGES C)
 
+option(CLOWNCD_CHD "Support CHD files, leveraging various permissively-licensed libraries." ON)
+
 add_library(clowncd STATIC
 	"disc/clowncd.c"
 	"disc/clowncd.h"
@@ -29,9 +31,11 @@ add_library(clowncd STATIC
 	"utilities.h"
 )
 
-add_subdirectory("disc/chd" EXCLUDE_FROM_ALL)
-target_link_libraries(clowncd PRIVATE clowncd-chd)
-target_compile_definitions(clowncd PRIVATE CLOWNCD_CHD)
+if(CLOWNCD_CHD)
+	add_subdirectory("disc/chd" EXCLUDE_FROM_ALL)
+	target_link_libraries(clowncd PRIVATE clowncd-chd)
+	target_compile_definitions(clowncd PRIVATE CLOWNCD_CHD)
+endif()
 
 add_subdirectory("audio/libraries/clownresampler" EXCLUDE_FROM_ALL)
 target_link_libraries(clowncd PRIVATE clownresampler)

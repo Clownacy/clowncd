@@ -1,4 +1,6 @@
+#ifndef CLOWNCD_NO_CHD
 #define CLOWNCD_CHD
+#endif
 
 #define HAVE_ZLIB
 #define HAVE_7ZIP
