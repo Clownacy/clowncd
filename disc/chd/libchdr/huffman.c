@@ -453,7 +453,7 @@ int huffman_build_tree(struct huffman_decoder* decoder, uint32_t totaldata, uint
 				node->numbits = 1;
 
 			/* keep track of the max */
-			maxbits = MAX(maxbits, ((int)node->numbits));
+			maxbits = LIBCHDR_MAX(maxbits, ((int)node->numbits));
 		}
 	}
 	return maxbits;

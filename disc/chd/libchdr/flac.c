@@ -203,7 +203,7 @@ static size_t flac_decoder_read_callback(void *userdata, void *buffer, size_t by
 	uint32_t outputpos = 0;
 	if (outputpos < bytes && decoder->compressed_offset < decoder->compressed_length)
 	{
-		uint32_t bytes_to_copy = MIN(bytes - outputpos, decoder->compressed_length - decoder->compressed_offset);
+		uint32_t bytes_to_copy = LIBCHDR_MIN(bytes - outputpos, decoder->compressed_length - decoder->compressed_offset);
 		memcpy(&dst[outputpos], decoder->compressed_start + decoder->compressed_offset, bytes_to_copy);
 		outputpos += bytes_to_copy;
 		decoder->compressed_offset += bytes_to_copy;
@@ -212,7 +212,7 @@ static size_t flac_decoder_read_callback(void *userdata, void *buffer, size_t by
 	/* once we're out of that, copy from the secondary buffer */
 	if (outputpos < bytes && decoder->compressed_offset < decoder->compressed_length + decoder->compressed2_length)
 	{
-		uint32_t bytes_to_copy = MIN(bytes - outputpos, decoder->compressed2_length - (decoder->compressed_offset - decoder->compressed_length));
+		uint32_t bytes_to_copy = LIBCHDR_MIN(bytes - outputpos, decoder->compressed2_length - (decoder->compressed_offset - decoder->compressed_length));
 		memcpy(&dst[outputpos], decoder->compressed2_start + decoder->compressed_offset - decoder->compressed_length, bytes_to_copy);
 		outputpos += bytes_to_copy;
 		decoder->compressed_offset += bytes_to_copy;

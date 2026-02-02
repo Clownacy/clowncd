@@ -1471,7 +1471,7 @@ CHD_EXPORT chd_error chd_get_metadata(chd_file *chd, uint32_t searchtag, uint32_
 			faux_length = (uint32_t)strlen(faux_metadata) + 1;
 
 			/* copy the metadata itself */
-			memcpy(output, faux_metadata, MIN(outputlen, faux_length));
+			memcpy(output, faux_metadata, LIBCHDR_MIN(outputlen, faux_length));
 
 			/* return the length of the data and the tag */
 			if (resultlen != NULL)
@@ -1484,7 +1484,7 @@ CHD_EXPORT chd_error chd_get_metadata(chd_file *chd, uint32_t searchtag, uint32_
 	}
 
 	/* read the metadata */
-	outputlen = MIN(outputlen, metaentry.length);
+	outputlen = LIBCHDR_MIN(outputlen, metaentry.length);
 	core_fseek(chd->file, metaentry.offset + METADATA_HEADER_SIZE, SEEK_SET);
 	count = core_fread(chd->file, output, outputlen);
 	if (count != outputlen)
@@ -2130,7 +2130,7 @@ static chd_error map_read(chd_file *chd)
 		for (j = 0; j < entries; j++)
 			if ((chd->map[i + j].flags & MAP_ENTRY_FLAG_TYPE_MASK) == V34_MAP_ENTRY_TYPE_COMPRESSED ||
 				(chd->map[i + j].flags & MAP_ENTRY_FLAG_TYPE_MASK) == V34_MAP_ENTRY_TYPE_UNCOMPRESSED)
-				maxoffset = MAX(maxoffset, chd->map[i + j].offset + chd->map[i + j].length);
+				maxoffset = LIBCHDR_MAX(maxoffset, chd->map[i + j].offset + chd->map[i + j].length);
 	}
 
 	/* verify the cookie */

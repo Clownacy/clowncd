@@ -206,12 +206,12 @@ static uint32_t lzma_compute_aligned_dictionary_size(uint32_t hunkbytes)
 	if (dictSize > reduceSize)
 	{
 		const uint32_t kReduceMin = (uint32_t)1 << 12;
-		const uint32_t max = MIN(kReduceMin, reduceSize);
+		const uint32_t max = LIBCHDR_MIN(kReduceMin, reduceSize);
 
-		dictSize = MAX(max, dictSize);
+		dictSize = LIBCHDR_MAX(max, dictSize);
 	}
 
-	dictSize = MIN((uint32_t)15 << 28, dictSize); /* kLzmaMaxHistorySize */
+	dictSize = LIBCHDR_MIN((uint32_t)15 << 28, dictSize); /* kLzmaMaxHistorySize */
 
 	/* we write aligned dictionary value to properties for lzma decoder */
 	if (dictSize >= ((uint32_t)1 << 21))
@@ -219,7 +219,7 @@ static uint32_t lzma_compute_aligned_dictionary_size(uint32_t hunkbytes)
 		const uint32_t kDictMask = ((uint32_t)1 << 20) - 1;
 
 		alignedDictSize = (dictSize + kDictMask) & ~kDictMask;
-		alignedDictSize = MIN(dictSize, alignedDictSize);
+		alignedDictSize = LIBCHDR_MIN(dictSize, alignedDictSize);
 	}
 	else
 	{
