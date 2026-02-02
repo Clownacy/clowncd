@@ -6,10 +6,6 @@
 
 #include "../retro_inline.h"
 
-#ifdef USE_LIBRETRO_VFS
-#include <streams/file_stream_transforms.h>
-#endif
-
 typedef uint64_t UINT64;
 #ifndef OSD_CPU_H
 typedef uint32_t UINT32;

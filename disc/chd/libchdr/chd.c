@@ -2229,10 +2229,7 @@ static core_file *core_stdio_fopen(char const *path) {
 	getting file size with stdio
 -------------------------------------------------*/
 static uint64_t core_stdio_fsize(core_file *file) {
-#if defined USE_LIBRETRO_VFS
-	#define core_stdio_fseek_impl fseek
-	#define core_stdio_ftell_impl ftell
-#elif defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(__WIN64__)
+#if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(__WIN64__)
 	#define core_stdio_fseek_impl _fseeki64
 	#define core_stdio_ftell_impl _ftelli64
 #elif defined(_LARGEFILE_SOURCE) && defined(_FILE_OFFSET_BITS) && _FILE_OFFSET_BITS == 64 && defined(fseeko64) && defined(ftello64)
