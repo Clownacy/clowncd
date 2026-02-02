@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "../libchdr/chd.h"
+#include "../libchdr/coretypes.h"
 
 typedef struct chdstream chdstream_t;
 
@@ -39,7 +39,7 @@ typedef struct chdstream chdstream_t;
 
 chdstream_t *chdstream_open(const char *path, int32_t track);
 
-chdstream_t *chdstream_open_core_file(core_file *file, int32_t track);
+chdstream_t *chdstream_open_core_file(const core_file_callbacks *callbacks, const void *user_data, int32_t track);
 
 void chdstream_close(chdstream_t *stream);
 

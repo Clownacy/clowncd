@@ -49,29 +49,29 @@ static int ClownCD_Disc_CHDTrackStreamSeek(void* const stream, const long positi
 
 /* File IO functions for reading from CHD files. */
 
-uint64_t ClownCD_Disc_CHDFileSize(core_file* const core)
+uint64_t ClownCD_Disc_CHDFileSize(void* const user_data)
 {
-	ClownCD_File* const file = (ClownCD_File*)core->argp;
+	ClownCD_File* const file = (ClownCD_File*)user_data;
 
 	return ClownCD_FileSize(file);
 }
 
-size_t ClownCD_Disc_CHDFileRead(void* const buffer , const size_t size, const size_t count, core_file* const core)
+size_t ClownCD_Disc_CHDFileRead(void* const buffer , const size_t size, const size_t count, void* const user_data)
 {
-	ClownCD_File* const file = (ClownCD_File*)core->argp;
+	ClownCD_File* const file = (ClownCD_File*)user_data;
 
 	return ClownCD_FileRead(buffer, size, count, file);
 }
 
-int ClownCD_Disc_CHDFileClose(core_file* const core)
+int ClownCD_Disc_CHDFileClose(void* const user_data)
 {
-	free(core);
+	(void)user_data;
 	return 0;
 }
 
-int ClownCD_Disc_CHDFileSeek(core_file* const core, const int64_t offset, const int raw_origin)
+int ClownCD_Disc_CHDFileSeek(void* const user_data, const int64_t offset, const int raw_origin)
 {
-	ClownCD_File* const file = (ClownCD_File*)core->argp;
+	ClownCD_File* const file = (ClownCD_File*)user_data;
 
 	ClownCD_FileOrigin origin;
 
@@ -133,41 +133,31 @@ cc_bool ClownCD_Disc_CHDSeekTrackIndex(ClownCD_Disc* const disc, const unsigned 
 	}
 	else
 	{
-		/* TODO: Modify libchdr to not require this dumb shit. */
-		core_file* const file_callbacks = (core_file*)malloc(sizeof(core_file));
+		static const core_file_callbacks file_callbacks = {
+			ClownCD_Disc_CHDFileSize,
+			ClownCD_Disc_CHDFileRead,
+			ClownCD_Disc_CHDFileClose,
+			ClownCD_Disc_CHDFileSeek,
+		};
 
-		if (file_callbacks == NULL)
-		{
-			return cc_false;
-		}
-		else
-		{
-			file_callbacks->argp = &disc->file;
-			file_callbacks->fsize = ClownCD_Disc_CHDFileSize;
-			file_callbacks->fread = ClownCD_Disc_CHDFileRead;
-			file_callbacks->fclose = ClownCD_Disc_CHDFileClose;
-			file_callbacks->fseek = ClownCD_Disc_CHDFileSeek;
+		static const ClownCD_FileCallbacks track_callbacks = {
+			NULL,
+			ClownCD_Disc_CHDTrackStreamClose,
+			ClownCD_Disc_CHDTrackStreamRead,
+			NULL,
+			ClownCD_Disc_CHDTrackStreamTell,
+			ClownCD_Disc_CHDTrackStreamSeek,
+		};
 
-			static const ClownCD_FileCallbacks track_callbacks = {
-				NULL,
-				ClownCD_Disc_CHDTrackStreamClose,
-				ClownCD_Disc_CHDTrackStreamRead,
-				NULL,
-				ClownCD_Disc_CHDTrackStreamTell,
-				ClownCD_Disc_CHDTrackStreamSeek,
-			};
+		chdstream_t* const chd_stream = chdstream_open_core_file(&file_callbacks, &disc->file, track);
 
-			/* TODO: Pass custom callbacks to this function so that libretro's VFS works!!! */
-			chdstream_t* const chd_stream = chdstream_open_core_file(file_callbacks, track);
+		disc->track.file = ClownCD_FileOpenAlreadyOpen(chd_stream, &track_callbacks);
 
-			disc->track.file = ClownCD_FileOpenAlreadyOpen(chd_stream, &track_callbacks);
+		disc->track.audio_decoder_needed = cc_false;
+		disc->track.has_full_sized_sectors = cc_true;
+		disc->track.starting_frame = 0;
+		disc->track.total_frames = -1;
 
-			disc->track.audio_decoder_needed = cc_false;
-			disc->track.has_full_sized_sectors = cc_true;
-			disc->track.starting_frame = 0;
-			disc->track.total_frames = -1;
-
-			return cc_true;
-		}
+		return cc_true;
 	}
 }

@@ -298,10 +298,10 @@ chdstream_t *chdstream_open(const char *path, int32_t track)
    return chdstream_open_common(chd, track);
 }
 
-chdstream_t *chdstream_open_core_file(core_file *file, int32_t track)
+chdstream_t *chdstream_open_core_file(const core_file_callbacks *callbacks, const void *user_data, int32_t track)
 {
    chd_file *chd = NULL;
-   chd_error err = chd_open_core_file(file, CHD_OPEN_READ, NULL, &chd);
+   chd_error err = chd_open_core_file(callbacks, user_data, CHD_OPEN_READ, NULL, &chd);
 
    if (err != CHDERR_NONE)
       return NULL;
