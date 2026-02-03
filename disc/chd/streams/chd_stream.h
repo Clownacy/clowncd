@@ -39,7 +39,9 @@ typedef struct chdstream chdstream_t;
 
 chdstream_t *chdstream_open(const char *path, int32_t track);
 
-chdstream_t *chdstream_open_core_file(const core_file_callbacks *callbacks, const void *user_data, int32_t track);
+chdstream_t *chdstream_open_core_file(core_file *core, int32_t track);
+
+chdstream_t *chdstream_open_core_file_callbacks(const core_file_callbacks *callbacks, const void *user_data, int32_t track);
 
 void chdstream_close(chdstream_t *stream);
 

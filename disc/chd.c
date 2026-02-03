@@ -149,7 +149,7 @@ cc_bool ClownCD_Disc_CHDSeekTrackIndex(ClownCD_Disc* const disc, const unsigned 
 			ClownCD_Disc_CHDTrackStreamSeek,
 		};
 
-		chdstream_t* const chd_stream = chdstream_open_core_file(&file_callbacks, &disc->file, track);
+		chdstream_t* const chd_stream = chdstream_open_core_file_callbacks(&file_callbacks, &disc->file, track);
 
 		disc->track.file = ClownCD_FileOpenAlreadyOpen(chd_stream, &track_callbacks);
 

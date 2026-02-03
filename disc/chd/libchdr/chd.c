@@ -206,7 +206,7 @@ struct _chd_file
 {
 	uint32_t					cookie;			/* cookie, should equal COOKIE_VALUE */
 
-	core_file				file;			/* handle to the open core file */
+	core_file_callbacks_and_argp			file;			/* handle to the open core file */
 	chd_header				header;			/* header, extracted from file */
 
 	chd_file *				parent;			/* pointer to parent file, or NULL */
@@ -261,13 +261,19 @@ static const uint8_t nullsha1[CHD_SHA1_BYTES] = { 0 };
     PROTOTYPES
 ***************************************************************************/
 
-/* core_file wrappers over stdio */
+/* core_file_callbacks wrappers over stdio */
 static void *core_stdio_fopen(char const *path);
 static uint64_t core_stdio_fsize(void *file);
 static size_t core_stdio_fread(void *ptr, size_t size, size_t nmemb, void *file);
 static int core_stdio_fclose(void *file);
 static int core_stdio_fclose_nonowner(void *file); /* alternate fclose used by chd_open_file */
 static int core_stdio_fseek(void* file, int64_t offset, int whence);
+
+/* Legacy core_file wrappers */
+static uint64_t core_legacy_fsize(void *file);
+static size_t core_legacy_fread(void *ptr, size_t size, size_t nmemb, void *file);
+static int core_legacy_fclose(void *file);
+static int core_legacy_fseek(void* file, int64_t offset, int whence);
 
 /* internal header operations */
 static chd_error header_validate(const chd_header *header);
@@ -885,20 +891,36 @@ static const core_file_callbacks core_stdio_nonowner = {
 	core_stdio_fseek
 };
 
+static const core_file_callbacks core_legacy = {
+	core_legacy_fsize,
+	core_legacy_fread,
+	core_legacy_fclose,
+	core_legacy_fseek
+};
+
 /*-------------------------------------------------
     chd_open_file - open a CHD file for access
 -------------------------------------------------*/
 
 CHD_EXPORT chd_error chd_open_file(FILE *file, int mode, chd_file *parent, chd_file **chd)
 {
-	return chd_open_core_file(&core_stdio_nonowner, file, mode, parent, chd);
+	return chd_open_core_file_callbacks(&core_stdio_nonowner, file, mode, parent, chd);
 }
 
 /*-------------------------------------------------
     chd_open_core_file - open a CHD file for access
 -------------------------------------------------*/
 
-CHD_EXPORT chd_error chd_open_core_file(const core_file_callbacks *callbacks, const void *user_data, int mode, chd_file *parent, chd_file **chd)
+CHD_EXPORT chd_error chd_open_core_file(core_file *file, int mode, chd_file *parent, chd_file **chd)
+{
+	return chd_open_core_file_callbacks(&core_legacy, file, mode, parent, chd);
+}
+
+/*-------------------------------------------------
+    chd_open_core_file_callbacks - open a CHD file for access
+-------------------------------------------------*/
+
+CHD_EXPORT chd_error chd_open_core_file_callbacks(const core_file_callbacks *callbacks, const void *user_data, int mode, chd_file *parent, chd_file **chd)
 {
 	chd_file *newchd = NULL;
 	chd_error err;
@@ -1186,7 +1208,7 @@ CHD_EXPORT chd_error chd_open(const char *filename, int mode, chd_file *parent, 
 	}
 
 	/* now open the CHD */
-	return chd_open_core_file(&core_stdio, file, mode, parent, chd);
+	return chd_open_core_file_callbacks(&core_stdio, file, mode, parent, chd);
 
 cleanup:
 	if ((err != CHDERR_NONE) && (file != NULL))
@@ -1329,7 +1351,10 @@ CHD_EXPORT void chd_close(chd_file *chd)
 
 CHD_EXPORT core_file *chd_core_file(chd_file *chd)
 {
-	return &chd->file;
+	if (chd->file.callbacks != &core_legacy)
+		return NULL;
+
+	return chd->file.argp;
 }
 
 /*-------------------------------------------------
@@ -2216,14 +2241,14 @@ static chd_error metadata_find_entry(chd_file *chd, uint32_t metatag, uint32_t m
 }
 
 /*-------------------------------------------------
-	core_stdio_fopen - core_file wrapper over fopen
+	core_stdio_fopen - core_file_callbacks wrapper over fopen
 -------------------------------------------------*/
 static void *core_stdio_fopen(char const *path) {
 	return fopen(path, "rb");
 }
 
 /*-------------------------------------------------
-	core_stdio_fsize - core_file function for
+	core_stdio_fsize - core_file_callbacks function for
 	getting file size with stdio
 -------------------------------------------------*/
 static uint64_t core_stdio_fsize(void *file) {
@@ -2252,14 +2277,14 @@ static uint64_t core_stdio_fsize(void *file) {
 }
 
 /*-------------------------------------------------
-	core_stdio_fread - core_file wrapper over fread
+	core_stdio_fread - core_file_callbacks wrapper over fread
 -------------------------------------------------*/
 static size_t core_stdio_fread(void *ptr, size_t size, size_t nmemb, void *file) {
 	return fread(ptr, size, nmemb, (FILE*)file);
 }
 
 /*-------------------------------------------------
-	core_stdio_fclose - core_file wrapper over fclose
+	core_stdio_fclose - core_file_callbacks wrapper over fclose
 -------------------------------------------------*/
 static int core_stdio_fclose(void *file) {
 	return fclose((FILE*)file);
@@ -2275,8 +2300,41 @@ static int core_stdio_fclose_nonowner(void *file) {
 }
 
 /*-------------------------------------------------
-	core_stdio_fseek - core_file wrapper over fclose
+	core_stdio_fseek - core_file_callbacks wrapper over fclose
 -------------------------------------------------*/
 static int core_stdio_fseek(void* file, int64_t offset, int whence) {
 	return core_stdio_fseek_impl((FILE*)file, offset, whence);
 }
+
+/*-------------------------------------------------
+	core_legacy_fsize - legacy core_file wrapper
+-------------------------------------------------*/
+static uint64_t core_legacy_fsize(void *file) {
+	core_file* const core = (core_file*)file;
+	return core->fsize(core);
+}
+
+/*-------------------------------------------------
+	core_legacy_fread - legacy core_file wrapper
+-------------------------------------------------*/
+static size_t core_legacy_fread(void *ptr, size_t size, size_t nmemb, void *file) {
+	core_file* const core = (core_file*)file;
+	return core->fread(ptr, size, nmemb, file);
+}
+
+/*-------------------------------------------------
+	core_legacy_fclose - legacy core_file wrapper
+-------------------------------------------------*/
+static int core_legacy_fclose(void *file) {
+	core_file* const core = (core_file*)file;
+	return core->fclose(core);
+}
+
+/*-------------------------------------------------
+	core_legacy_fseek - legacy core_file wrapper
+-------------------------------------------------*/
+static int core_legacy_fseek(void* file, int64_t offset, int whence) {
+	core_file* const core = (core_file*)file;
+	return core->fseek(core, offset, whence);
+}
+

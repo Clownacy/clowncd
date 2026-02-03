@@ -376,7 +376,8 @@ struct _chd_verify_result
 /* chd_error chd_create_file(core_file *file, uint64_t logicalbytes, uint32_t hunkbytes, uint32_t compression, chd_file *parent); */
 
 /* open an existing CHD file */
-CHD_EXPORT chd_error chd_open_core_file(const core_file_callbacks *callbacks, const void *user_data, int mode, chd_file *parent, chd_file **chd);
+CHD_EXPORT chd_error chd_open_core_file_callbacks(const core_file_callbacks *callbacks, const void *user_data, int mode, chd_file *parent, chd_file **chd);
+CHD_EXPORT chd_error chd_open_core_file(core_file *file, int mode, chd_file *parent, chd_file **chd); /* Legacy; use chd_open_core_file_callbacks instead! */
 CHD_EXPORT chd_error chd_open_file(FILE *file, int mode, chd_file *parent, chd_file **chd);
 CHD_EXPORT chd_error chd_open(const char *filename, int mode, chd_file *parent, chd_file **chd);
 
