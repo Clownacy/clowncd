@@ -1354,7 +1354,7 @@ CHD_EXPORT core_file *chd_core_file(chd_file *chd)
 	if (chd->file.callbacks != &core_legacy)
 		return NULL;
 
-	return chd->file.argp;
+	return (core_file*)chd->file.argp;
 }
 
 /*-------------------------------------------------
@@ -2319,7 +2319,7 @@ static uint64_t core_legacy_fsize(void *file) {
 -------------------------------------------------*/
 static size_t core_legacy_fread(void *ptr, size_t size, size_t nmemb, void *file) {
 	core_file* const core = (core_file*)file;
-	return core->fread(ptr, size, nmemb, file);
+	return core->fread(ptr, size, nmemb, core);
 }
 
 /*-------------------------------------------------
