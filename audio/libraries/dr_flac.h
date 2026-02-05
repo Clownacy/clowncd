@@ -1,2 +1,2 @@
 /* Use libchdr's copy of dr_flac. */
-#include "../../disc/chd/libchdr/libraries/dr_flac.h"
+#include "../../disc/chd/libchdr/include/dr_libs/dr_flac.h"
