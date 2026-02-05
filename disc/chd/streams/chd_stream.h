@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "C:/git/libchdr/include/libchdr/chd.h"
+#include "../libchdr/coretypes.h"
 
 typedef struct chdstream chdstream_t;
 

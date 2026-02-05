@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "C:/git/libchdr/include/libchdr/chd.h"
+#include "../libchdr/chd.h"
 #include "../boolean.h"
 
 #define SECTOR_RAW_SIZE 2352
