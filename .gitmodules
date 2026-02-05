@@ -4,3 +4,6 @@
 [submodule "audio/libraries/clownresampler"]
 	path = audio/libraries/clownresampler
 	url = https://github.com/Clownacy/clownresampler
+[submodule "disc/chd/libchdr"]
+	path = disc/chd/libchdr
+	url = https://github.com/Clownacy/libchdr

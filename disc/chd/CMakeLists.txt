@@ -10,3 +10,6 @@ add_library(clowncd-chd STATIC
 	"boolean.h"
 	"retro_inline.h"
 )
+
+add_subdirectory("libchdr" EXCLUDE_FROM_ALL)
+target_link_libraries(clowncd-chd PUBLIC chdr-static)
