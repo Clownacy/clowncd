@@ -285,12 +285,16 @@ chd_error cdzl_codec_decompress(void *codec, const uint8_t *src, uint32_t comple
 	zlib_codec_decompress(&cdzl->base_decompressor, &src[header_bytes], complen_base, &cdzl->buffer[0], frames * CD_MAX_SECTOR_DATA);
 #ifdef WANT_SUBCODE
 	zlib_codec_decompress(&cdzl->subcode_decompressor, &src[header_bytes + complen_base], complen - complen_base - header_bytes, &cdzl->buffer[frames * CD_MAX_SECTOR_DATA], frames * CD_MAX_SUBCODE_DATA);
+#else
+	(void)complen;
 #endif
 
 	/* reassemble the data */
 	for (framenum = 0; framenum < frames; framenum++)
 	{
+#ifdef WANT_RAW_DATA_SECTOR
 		uint8_t *sector;
+#endif
 
 		memcpy(&dest[framenum * CD_FRAME_SIZE], &cdzl->buffer[framenum * CD_MAX_SECTOR_DATA], CD_MAX_SECTOR_DATA);
 #ifdef WANT_SUBCODE
