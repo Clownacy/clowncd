@@ -8,7 +8,6 @@ add_library(clowncd-chd STATIC
 	"streams/chd_stream.h"
 	# libretro utilities
 	"boolean.h"
-	"retro_inline.h"
 )
 
 add_subdirectory("libchdr" EXCLUDE_FROM_ALL)
