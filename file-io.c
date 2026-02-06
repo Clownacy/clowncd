@@ -76,7 +76,6 @@ ClownCD_File ClownCD_FileOpenBlank(void)
 	file.functions = NULL;
 	file.stream = NULL;
 	file.eof = cc_false;
-	file.already_open = cc_false;
 	return file;
 }
 
@@ -107,7 +106,6 @@ ClownCD_File ClownCD_FileOpenAlreadyOpen(void* const stream, const ClownCD_FileC
 	ClownCD_File file = ClownCD_FileOpenBlank();
 	file.functions = ClownCD_GetCallbacks(callbacks);
 	file.stream = stream;
-	file.already_open = cc_true;
 	return file;
 }
 
@@ -117,9 +115,7 @@ int ClownCD_FileClose(ClownCD_File* const file)
 	{
 		void* const stream = file->stream;
 		file->stream = NULL;
-
-		if (!file->already_open)
-			return file->functions->close(stream);
+		return file->functions->close(stream);
 	}
 
 	return 0;

@@ -34,7 +34,7 @@ typedef struct ClownCD_File
 {
 	const ClownCD_FileCallbacks *functions;
 	void *stream;
-	cc_bool eof, already_open;
+	cc_bool eof;
 } ClownCD_File;
 
 ClownCD_File ClownCD_FileOpenBlank(void);
