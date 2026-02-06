@@ -131,6 +131,10 @@ cc_bool ClownCD_Disc_CHDSeekTrackIndex(ClownCD_Disc* const disc, const unsigned 
 	{
 		return cc_false;
 	}
+	else if (ClownCD_FileClose(&disc->track.file) != 0)
+	{
+		return cc_false;
+	}
 	else
 	{
 		static const core_file_callbacks file_callbacks = {
