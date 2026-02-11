@@ -350,8 +350,8 @@ chdstream_load_hunk(chdstream_t *stream, uint32_t hunknum)
       for (i = 0; i < count; i += 2)
       {
          const uint8_t temp = array[i + 0];
-	 array[i + 0] = array[i + 1];
-	 array[i + 1] = temp;
+         array[i + 0] = array[i + 1];
+         array[i + 1] = temp;
       }
    }
 
