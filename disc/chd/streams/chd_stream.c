@@ -22,6 +22,7 @@
 
 #include "chd_stream.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -95,7 +96,7 @@ chdstream_get_meta(chd_file *chd, int idx, metadata_t *md)
 
    if (err == CHDERR_NONE)
    {
-      sscanf(meta, CDROM_TRACK_METADATA2_FORMAT,
+      sscanf(meta, "TRACK:%" SCNu32 " TYPE:%s SUBTYPE:%s FRAMES:%" SCNu32 " PREGAP:%" SCNu32 " PGTYPE:%s PGSUB:%s POSTGAP:%" SCNu32,
             &md->track, md->type,
             md->subtype, &md->frames, &md->pregap,
             md->pgtype, md->pgsub,
@@ -109,7 +110,7 @@ chdstream_get_meta(chd_file *chd, int idx, metadata_t *md)
 
    if (err == CHDERR_NONE)
    {
-      sscanf(meta, CDROM_TRACK_METADATA_FORMAT, &md->track, md->type,
+      sscanf(meta, "TRACK:%" SCNu32 " TYPE:%s SUBTYPE:%s FRAMES:%" SCNu32, &md->track, md->type,
              md->subtype, &md->frames);
       md->extra = padding_frames(md->frames);
       return true;
@@ -120,7 +121,7 @@ chdstream_get_meta(chd_file *chd, int idx, metadata_t *md)
 
    if (err == CHDERR_NONE)
    {
-      sscanf(meta, GDROM_TRACK_METADATA_FORMAT, &md->track, md->type,
+      sscanf(meta, "TRACK:%" SCNu32 " TYPE:%s SUBTYPE:%s FRAMES:%" SCNu32 " PAD:%" SCNu32 " PREGAP:%" SCNu32 " PGTYPE:%s PGSUB:%s POSTGAP:%" SCNu32, &md->track, md->type,
              md->subtype, &md->frames, &md->pad, &md->pregap, md->pgtype,
              md->pgsub, &md->postgap);
       md->extra = padding_frames(md->frames);
