@@ -142,7 +142,7 @@ chdstream_get_meta(chd_file *chd, int idx, metadata_t *md)
 }
 
 static bool
-chdstream_find_track_number(chd_file *fd, int32_t track, metadata_t *meta)
+chdstream_find_track_number(chd_file *fd, uint32_t track, metadata_t *meta)
 {
    uint32_t i;
    uint32_t frame_offset = 0;
@@ -152,7 +152,7 @@ chdstream_find_track_number(chd_file *fd, int32_t track, metadata_t *meta)
       if (!chdstream_get_meta(fd, i, meta))
          return false;
 
-      if (track == (int)meta->track)
+      if (track == meta->track)
       {
          meta->frame_offset = frame_offset;
          return true;
@@ -165,9 +165,9 @@ chdstream_find_track_number(chd_file *fd, int32_t track, metadata_t *meta)
 static bool
 chdstream_find_special_track(chd_file *fd, int32_t track, metadata_t *meta)
 {
-   int32_t i;
+   uint32_t i;
    metadata_t iter;
-   int32_t largest_track = 0;
+   uint32_t largest_track = 0;
    uint32_t largest_size = 0;
 
    for (i = 1; true; ++i)
