@@ -55,7 +55,7 @@ uint64_t chdstream_tell(chdstream_t *stream);
 
 void chdstream_rewind(chdstream_t *stream);
 
-int64_t chdstream_seek(chdstream_t *stream, int64_t offset, int whence);
+int chdstream_seek(chdstream_t *stream, int64_t offset, int whence);
 
 size_t chdstream_get_size(chdstream_t *stream);
 

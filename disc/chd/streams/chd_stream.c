@@ -41,11 +41,11 @@ struct chdstream
    /* Loaded hunk */
    uint8_t *hunkmem;
    /* Byte offset where track data starts (after pregap) */
-   size_t track_start;
+   uint64_t track_start;
    /* Byte offset where track data ends */
-   size_t track_end;
+   uint64_t track_end;
    /* Byte offset of read cursor */
-   size_t offset;
+   uint64_t offset;
    /* Loaded hunk number */
    uint32_t hunknum;
    /* Size of frame taken from each hunk */
@@ -77,11 +77,11 @@ typedef struct metadata
 
 static uint32_t padding_frames(uint32_t frames)
 {
-   return ((frames + TRACK_PAD - 1) & ~(TRACK_PAD - 1)) - frames;
+   return ((frames + TRACK_PAD - 1) & ~((uint32_t)TRACK_PAD - 1)) - frames;
 }
 
 static bool
-chdstream_get_meta(chd_file *chd, int idx, metadata_t *md)
+chdstream_get_meta(chd_file *chd, uint32_t idx, metadata_t *md)
 {
    char meta[256];
    uint32_t meta_size = 0;
@@ -210,7 +210,7 @@ chdstream_find_track(chd_file *fd, int32_t track, metadata_t *meta)
 {
    if (track < 0)
       return chdstream_find_special_track(fd, track, meta);
-   return chdstream_find_track_number(fd, track, meta);
+   return chdstream_find_track_number(fd, (uint32_t)track, meta);
 }
 
 static chdstream_t *chdstream_open_common(chd_file *chd, int32_t track)
@@ -238,7 +238,7 @@ static chdstream_t *chdstream_open_common(chd_file *chd, int32_t track)
    stream->track_end       = 0;
    stream->offset          = 0;
    stream->hunkmem         = NULL;
-   stream->hunknum         = -1;
+   stream->hunknum         = (uint32_t)-1;
 
    hd                      = chd_get_header(chd);
    hunkmem                 = (uint8_t*)malloc(hd->hunkbytes);
@@ -273,9 +273,9 @@ static chdstream_t *chdstream_open_common(chd_file *chd, int32_t track)
    stream->chd             = chd;
    stream->frames_per_hunk = hd->hunkbytes / hd->unitbytes;
    stream->track_frame     = meta.frame_offset;
-   stream->track_start     = (size_t)pregap * stream->frame_size;
+   stream->track_start     = (uint64_t)pregap * stream->frame_size;
    stream->track_end       = stream->track_start +
-                             (size_t)meta.frames * stream->frame_size;
+                             (uint64_t)meta.frames * stream->frame_size;
 
    return stream;
 
@@ -361,19 +361,19 @@ chdstream_load_hunk(chdstream_t *stream, uint32_t hunknum)
 
 size_t chdstream_read(chdstream_t *stream, void *data, size_t bytes)
 {
-   size_t end;
+   uint64_t end;
    size_t data_offset   = 0;
    const chd_header *hd = chd_get_header(stream->chd);
    uint8_t         *out = (uint8_t*)data;
 
    if (stream->track_end - stream->offset < bytes)
-      bytes             = stream->track_end - stream->offset;
+      bytes             = (size_t)(stream->track_end - stream->offset);
 
    end                  = stream->offset + bytes;
 
    while (stream->offset < end)
    {
-      uint32_t frame_offset = stream->offset % stream->frame_size;
+      uint32_t frame_offset = (uint32_t)(stream->offset % stream->frame_size);
       uint32_t amount       = stream->frame_size - frame_offset;
 
       if (amount > end - stream->offset)
@@ -384,14 +384,17 @@ size_t chdstream_read(chdstream_t *stream, void *data, size_t bytes)
          memset(out + data_offset, 0, amount);
       else
       {
-         uint32_t chd_frame   = (uint32_t)(stream->track_frame +
-            (stream->offset - stream->track_start) / stream->frame_size);
-         uint32_t hunk        = chd_frame / stream->frames_per_hunk;
-         uint32_t hunk_offset = (chd_frame % stream->frames_per_hunk)
+         uint64_t chd_frame   = stream->track_frame +
+            (stream->offset - stream->track_start) / stream->frame_size;
+         uint64_t hunk        = chd_frame / stream->frames_per_hunk;
+         uint64_t hunk_offset = (chd_frame % stream->frames_per_hunk)
             * hd->unitbytes;
 
-         if (!chdstream_load_hunk(stream, hunk))
-            return -1;
+         if (hunk > UINT32_MAX)
+            return (size_t)-1;
+
+         if (!chdstream_load_hunk(stream, (uint32_t)hunk))
+            return (size_t)-1;
 
          memcpy(out + data_offset,
                 stream->hunkmem + frame_offset
@@ -420,7 +423,7 @@ char *chdstream_gets(chdstream_t *stream, char *s, size_t len)
    int c;
    size_t _len = 0;
    while (_len < len && (c = chdstream_getc(stream)) != EOF)
-      s[_len++] = c;
+      s[_len++] = (char)c;
    if (_len < len)
       s[_len]   = '\0';
    return s;
@@ -436,29 +439,36 @@ void chdstream_rewind(chdstream_t *stream)
    stream->offset = 0;
 }
 
-int64_t chdstream_seek(chdstream_t *stream, int64_t offset, int whence)
+int chdstream_seek(chdstream_t *stream, int64_t offset, int whence)
 {
-   int64_t new_offset;
+   uint64_t new_offset;
 
    switch (whence)
    {
       case SEEK_SET:
-         new_offset = offset;
+         if (offset < 0)
+            return -1;
+         new_offset = (uint64_t)offset;
          break;
       case SEEK_CUR:
-         new_offset = stream->offset + offset;
+         if (offset < 0 && (uint64_t)-offset > stream->offset)
+            return -1;
+         if (offset > 0 && (uint64_t)offset > UINT64_MAX - stream->offset)
+            return -1;
+         new_offset = stream->offset + (uint64_t)offset;
          break;
       case SEEK_END:
-         new_offset = stream->track_end + offset;
+         if (offset < 0 && (uint64_t)-offset > stream->track_end)
+            return -1;
+         if (offset > 0 && (uint64_t)offset > UINT64_MAX - stream->track_end)
+            return -1;
+         new_offset = stream->track_end + (uint64_t)offset;
          break;
       default:
          return -1;
    }
 
-   if (new_offset < 0)
-      return -1;
-
-   if ((size_t)new_offset > stream->track_end)
+   if (new_offset > stream->track_end)
       new_offset = stream->track_end;
 
    stream->offset = new_offset;
