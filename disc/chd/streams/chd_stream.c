@@ -47,7 +47,7 @@ struct chdstream
    /* Byte offset of read cursor */
    size_t offset;
    /* Loaded hunk number */
-   int32_t hunknum;
+   uint32_t hunknum;
    /* Size of frame taken from each hunk */
    uint32_t frame_size;
    /* Offset of data within frame */
@@ -336,7 +336,7 @@ void chdstream_close(chdstream_t *stream)
 static bool
 chdstream_load_hunk(chdstream_t *stream, uint32_t hunknum)
 {
-   if ((int)hunknum == stream->hunknum)
+   if (hunknum == stream->hunknum)
       return true;
 
    if (chd_read(stream->chd, hunknum, stream->hunkmem) != CHDERR_NONE)
