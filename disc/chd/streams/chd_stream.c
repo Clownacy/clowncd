@@ -452,14 +452,14 @@ int chdstream_seek(chdstream_t *stream, int64_t offset, int whence)
       case SEEK_CUR:
          if (offset < 0 && (uint64_t)-offset > stream->offset)
             return -1;
-         if (offset > 0 && (uint64_t)offset > UINT64_MAX - stream->offset)
+         if (offset > 0 && (uint64_t)offset > (uint64_t)-1 - stream->offset)
             return -1;
          new_offset = stream->offset + (uint64_t)offset;
          break;
       case SEEK_END:
          if (offset < 0 && (uint64_t)-offset > stream->track_end)
             return -1;
-         if (offset > 0 && (uint64_t)offset > UINT64_MAX - stream->track_end)
+         if (offset > 0 && (uint64_t)offset > (uint64_t)-1 - stream->track_end)
             return -1;
          new_offset = stream->track_end + (uint64_t)offset;
          break;
