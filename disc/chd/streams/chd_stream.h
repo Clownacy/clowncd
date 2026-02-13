@@ -37,11 +37,11 @@ typedef struct chdstream chdstream_t;
 /* Primary (largest) data track, used for CRC identification purposes */
 #define CHDSTREAM_TRACK_PRIMARY (-3)
 
-chdstream_t *chdstream_open(const char *path, int32_t track);
+chdstream_t *chdstream_open(const char *path, long track);
 
-chdstream_t *chdstream_open_core_file(core_file *core, int32_t track);
+chdstream_t *chdstream_open_core_file(core_file *core, long track);
 
-chdstream_t *chdstream_open_core_file_callbacks(const core_file_callbacks *callbacks, const void *user_data, int32_t track);
+chdstream_t *chdstream_open_core_file_callbacks(const core_file_callbacks *callbacks, const void *user_data, long track);
 
 void chdstream_close(chdstream_t *stream);
 
@@ -57,12 +57,12 @@ void chdstream_rewind(chdstream_t *stream);
 
 int chdstream_seek(chdstream_t *stream, int64_t offset, int whence);
 
-size_t chdstream_get_size(chdstream_t *stream);
+uint64_t chdstream_get_size(chdstream_t *stream);
 
-uint32_t chdstream_get_track_start(chdstream_t* stream);
+unsigned long chdstream_get_track_start(chdstream_t* stream);
 
-uint32_t chdstream_get_frame_size(chdstream_t* stream);
+unsigned long chdstream_get_frame_size(chdstream_t* stream);
 
-uint32_t chdstream_get_first_track_sector(chdstream_t* stream);
+unsigned long chdstream_get_first_track_sector(chdstream_t* stream);
 
 #endif /* LIBRETRO_SDK_FILE_CHD_STREAM_H */

@@ -49,39 +49,39 @@ struct chdstream
    /* Loaded hunk number */
    uint32_t hunknum;
    /* Size of frame taken from each hunk */
-   uint32_t frame_size;
+   unsigned long frame_size;
    /* Offset of data within frame */
-   uint32_t frame_offset;
+   unsigned long frame_offset;
    /* Number of frames per hunk */
-   uint32_t frames_per_hunk;
+   unsigned long frames_per_hunk;
    /* First frame of track in chd */
-   uint32_t track_frame;
+   unsigned long track_frame;
    /* Should we swap bytes? */
    bool swab;
 };
 
 typedef struct metadata
 {
-   uint32_t frame_offset;
-   uint32_t frames;
-   uint32_t pad;
-   uint32_t extra;
-   uint32_t pregap;
-   uint32_t postgap;
-   uint32_t track;
+   unsigned long frame_offset;
+   unsigned long frames;
+   unsigned long pad;
+   unsigned long extra;
+   unsigned long pregap;
+   unsigned long postgap;
+   unsigned long track;
    char type[64];
    char subtype[32];
    char pgtype[32];
    char pgsub[32];
 } metadata_t;
 
-static uint32_t padding_frames(uint32_t frames)
+static unsigned long padding_frames(unsigned long frames)
 {
-   return ((frames + TRACK_PAD - 1) & ~((uint32_t)TRACK_PAD - 1)) - frames;
+   return ((frames + TRACK_PAD - 1) & ~((unsigned long)TRACK_PAD - 1)) - frames;
 }
 
 static bool
-chdstream_get_meta(chd_file *chd, uint32_t idx, metadata_t *md)
+chdstream_get_meta(chd_file *chd, unsigned long idx, metadata_t *md)
 {
    char meta[256];
    uint32_t meta_size = 0;
@@ -96,7 +96,7 @@ chdstream_get_meta(chd_file *chd, uint32_t idx, metadata_t *md)
 
    if (err == CHDERR_NONE)
    {
-      sscanf(meta, "TRACK:%" SCNu32 " TYPE:%s SUBTYPE:%s FRAMES:%" SCNu32 " PREGAP:%" SCNu32 " PGTYPE:%s PGSUB:%s POSTGAP:%" SCNu32,
+      sscanf(meta, "TRACK:%lu TYPE:%s SUBTYPE:%s FRAMES:%lu PREGAP:%lu PGTYPE:%s PGSUB:%s POSTGAP:%lu",
             &md->track, md->type,
             md->subtype, &md->frames, &md->pregap,
             md->pgtype, md->pgsub,
@@ -110,7 +110,7 @@ chdstream_get_meta(chd_file *chd, uint32_t idx, metadata_t *md)
 
    if (err == CHDERR_NONE)
    {
-      sscanf(meta, "TRACK:%" SCNu32 " TYPE:%s SUBTYPE:%s FRAMES:%" SCNu32, &md->track, md->type,
+      sscanf(meta, "TRACK:%lu TYPE:%s SUBTYPE:%s FRAMES:%lu", &md->track, md->type,
              md->subtype, &md->frames);
       md->extra = padding_frames(md->frames);
       return true;
@@ -121,7 +121,7 @@ chdstream_get_meta(chd_file *chd, uint32_t idx, metadata_t *md)
 
    if (err == CHDERR_NONE)
    {
-      sscanf(meta, "TRACK:%" SCNu32 " TYPE:%s SUBTYPE:%s FRAMES:%" SCNu32 " PAD:%" SCNu32 " PREGAP:%" SCNu32 " PGTYPE:%s PGSUB:%s POSTGAP:%" SCNu32, &md->track, md->type,
+      sscanf(meta, "TRACK:%lu TYPE:%s SUBTYPE:%s FRAMES:%lu PAD:%lu PREGAP:%lu PGTYPE:%s PGSUB:%s POSTGAP:%lu", &md->track, md->type,
              md->subtype, &md->frames, &md->pad, &md->pregap, md->pgtype,
              md->pgsub, &md->postgap);
       md->extra = padding_frames(md->frames);
@@ -142,10 +142,10 @@ chdstream_get_meta(chd_file *chd, uint32_t idx, metadata_t *md)
 }
 
 static bool
-chdstream_find_track_number(chd_file *fd, uint32_t track, metadata_t *meta)
+chdstream_find_track_number(chd_file *fd, unsigned long track, metadata_t *meta)
 {
    uint32_t i;
-   uint32_t frame_offset = 0;
+   unsigned long frame_offset = 0;
 
    for (i = 0; true; ++i)
    {
@@ -163,12 +163,12 @@ chdstream_find_track_number(chd_file *fd, uint32_t track, metadata_t *meta)
 }
 
 static bool
-chdstream_find_special_track(chd_file *fd, int32_t track, metadata_t *meta)
+chdstream_find_special_track(chd_file *fd, long track, metadata_t *meta)
 {
    uint32_t i;
    metadata_t iter;
-   uint32_t largest_track = 0;
-   uint32_t largest_size = 0;
+   unsigned long largest_track = 0;
+   unsigned long largest_size = 0;
 
    for (i = 1; true; ++i)
    {
@@ -206,17 +206,17 @@ chdstream_find_special_track(chd_file *fd, int32_t track, metadata_t *meta)
 }
 
 static bool
-chdstream_find_track(chd_file *fd, int32_t track, metadata_t *meta)
+chdstream_find_track(chd_file *fd, long track, metadata_t *meta)
 {
    if (track < 0)
       return chdstream_find_special_track(fd, track, meta);
-   return chdstream_find_track_number(fd, (uint32_t)track, meta);
+   return chdstream_find_track_number(fd, (unsigned long)track, meta);
 }
 
-static chdstream_t *chdstream_open_common(chd_file *chd, int32_t track)
+static chdstream_t *chdstream_open_common(chd_file *chd, long track)
 {
    metadata_t meta;
-   uint32_t pregap         = 0;
+   unsigned long pregap         = 0;
    uint8_t *hunkmem        = NULL;
    const chd_header *hd    = NULL;
    chdstream_t *stream     = NULL;
@@ -288,7 +288,7 @@ error:
    return NULL;
 }
 
-chdstream_t *chdstream_open(const char *path, int32_t track)
+chdstream_t *chdstream_open(const char *path, long track)
 {
    chd_file *chd = NULL;
    chd_error err = chd_open(path, CHD_OPEN_READ, NULL, &chd);
@@ -299,7 +299,7 @@ chdstream_t *chdstream_open(const char *path, int32_t track)
    return chdstream_open_common(chd, track);
 }
 
-chdstream_t *chdstream_open_core_file(core_file *core, int32_t track)
+chdstream_t *chdstream_open_core_file(core_file *core, long track)
 {
    chd_file *chd = NULL;
    chd_error err = chd_open_core_file(core, CHD_OPEN_READ, NULL, &chd);
@@ -310,7 +310,7 @@ chdstream_t *chdstream_open_core_file(core_file *core, int32_t track)
    return chdstream_open_common(chd, track);
 }
 
-chdstream_t *chdstream_open_core_file_callbacks(const core_file_callbacks *callbacks, const void *user_data, int32_t track)
+chdstream_t *chdstream_open_core_file_callbacks(const core_file_callbacks *callbacks, const void *user_data, long track)
 {
    chd_file *chd = NULL;
    chd_error err = chd_open_core_file_callbacks(callbacks, user_data, CHD_OPEN_READ, NULL, &chd);
@@ -373,11 +373,11 @@ size_t chdstream_read(chdstream_t *stream, void *data, size_t bytes)
 
    while (stream->offset < end)
    {
-      uint32_t frame_offset = (uint32_t)(stream->offset % stream->frame_size);
-      uint32_t amount       = stream->frame_size - frame_offset;
+      unsigned long frame_offset = (unsigned long)(stream->offset % stream->frame_size);
+      unsigned long amount       = stream->frame_size - frame_offset;
 
       if (amount > end - stream->offset)
-         amount = (uint32_t)(end - stream->offset);
+         amount = (unsigned long)(end - stream->offset);
 
       /* In pregap */
       if (stream->offset < stream->track_start)
@@ -393,7 +393,7 @@ size_t chdstream_read(chdstream_t *stream, void *data, size_t bytes)
          if (hunk > UINT32_MAX)
             return (size_t)-1;
 
-         if (!chdstream_load_hunk(stream, (uint32_t)hunk))
+         if (!chdstream_load_hunk(stream, (unsigned long)hunk))
             return (size_t)-1;
 
          memcpy(out + data_offset,
@@ -475,16 +475,16 @@ int chdstream_seek(chdstream_t *stream, int64_t offset, int whence)
    return 0;
 }
 
-size_t chdstream_get_size(chdstream_t *stream)
+uint64_t chdstream_get_size(chdstream_t *stream)
 {
    return stream->track_end - stream->track_start;
 }
 
-uint32_t chdstream_get_track_start(chdstream_t *stream)
+unsigned long chdstream_get_track_start(chdstream_t *stream)
 {
    uint32_t i;
    metadata_t meta;
-   uint32_t frame_offset = 0;
+   unsigned long frame_offset = 0;
 
    for (i = 0; chdstream_get_meta(stream->chd, i, &meta); ++i)
    {
@@ -497,17 +497,17 @@ uint32_t chdstream_get_track_start(chdstream_t *stream)
    return 0;
 }
 
-uint32_t chdstream_get_frame_size(chdstream_t *stream)
+unsigned long chdstream_get_frame_size(chdstream_t *stream)
 {
    return stream->frame_size;
 }
 
-uint32_t chdstream_get_first_track_sector(chdstream_t* stream)
+unsigned long chdstream_get_first_track_sector(chdstream_t* stream)
 {
    uint32_t i;
    metadata_t meta;
-   uint32_t frame_offset = 0;
-   uint32_t sector_offset = 0;
+   unsigned long frame_offset = 0;
+   unsigned long sector_offset = 0;
 
    for (i = 0; chdstream_get_meta(stream->chd, i, &meta); ++i)
    {
