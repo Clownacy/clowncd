@@ -22,7 +22,6 @@
 
 #include "chd_stream.h"
 
-#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -390,7 +389,7 @@ size_t chdstream_read(chdstream_t *stream, void *data, size_t bytes)
          uint64_t hunk_offset = (chd_frame % stream->frames_per_hunk)
             * hd->unitbytes;
 
-         if (hunk > UINT32_MAX)
+         if (hunk > (uint32_t)-1)
             return (size_t)-1;
 
          if (!chdstream_load_hunk(stream, (uint32_t)hunk))
