@@ -4,7 +4,6 @@
 #include <stddef.h>
 
 #define DR_WAV_NO_STDIO
-#define DRWAV_API static
 #define DRWAV_PRIVATE static
 #include "libraries/dr_wav.h"
 

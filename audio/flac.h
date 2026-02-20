@@ -4,7 +4,6 @@
 #include <stddef.h>
 
 #define DR_FLAC_NO_STDIO
-#define DRFLAC_API static
 #define DRFLAC_PRIVATE static
 #include "libraries/dr_flac.h"
 
