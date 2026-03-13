@@ -11,9 +11,9 @@ add_library(clowncd-chd STATIC
 )
 
 # Disable libchdr features that we do not need.
-set(CHDR_WANT_RAW_DATA_SECTOR OFF)
-set(CHDR_WANT_SUBCODE OFF)
-set(CHDR_VERIFY_BLOCK_CRC OFF)
+set(CHDR_WANT_RAW_DATA_SECTOR OFF CACHE BOOL "" FORCE)
+set(CHDR_WANT_SUBCODE OFF CACHE BOOL "" FORCE)
+set(CHDR_VERIFY_BLOCK_CRC OFF CACHE BOOL "" FORCE)
 
 add_subdirectory("libchdr" EXCLUDE_FROM_ALL)
 target_link_libraries(clowncd-chd PUBLIC chdr-static)
