@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-#include "clowncommon/clowncommon.h"
+#include "../libraries/clowncommon/clowncommon.h"
 
 #define CLOWNCD_SIZE_INVALID ((size_t)-1)
 

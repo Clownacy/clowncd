@@ -5,9 +5,9 @@
 
 #define DR_FLAC_NO_STDIO
 #define DRFLAC_PRIVATE static
-#include "libraries/dr_flac.h"
+#include "../../libraries/dr_flac.h"
 
-#include "../clowncommon/clowncommon.h"
+#include "../../libraries/clowncommon/clowncommon.h"
 
 #include "../audio-common.h"
 #include "../file-io.h"

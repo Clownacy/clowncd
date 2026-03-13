@@ -5,39 +5,39 @@ project(clowncd LANGUAGES C)
 option(CLOWNCD_CHD "Support CHD files, leveraging various permissively-licensed libraries." ON)
 
 add_library(clowncd STATIC
-	"disc/clowncd.c"
-	"disc/clowncd.h"
-	"disc/chd.c"
-	"disc/chd.h"
-	"disc/cue.c"
-	"disc/cue.h"
-	"disc/raw.c"
-	"disc/raw.h"
-	"audio.c"
-	"audio.h"
-	"audio-common.h"
-	"clowncd.c"
-	"clowncd.h"
-	"common.h"
-	"cue.c"
-	"cue.h"
-	"disc.c"
-	"disc.h"
-	"error.c"
-	"error.h"
-	"file-io.c"
-	"file-io.h"
-	"utilities.c"
-	"utilities.h"
+	"source/disc/clowncd.c"
+	"source/disc/clowncd.h"
+	"source/disc/chd.c"
+	"source/disc/chd.h"
+	"source/disc/cue.c"
+	"source/disc/cue.h"
+	"source/disc/raw.c"
+	"source/disc/raw.h"
+	"source/audio.c"
+	"source/audio.h"
+	"source/audio-common.h"
+	"source/clowncd.c"
+	"source/clowncd.h"
+	"source/common.h"
+	"source/cue.c"
+	"source/cue.h"
+	"source/disc.c"
+	"source/disc.h"
+	"source/error.c"
+	"source/error.h"
+	"source/file-io.c"
+	"source/file-io.h"
+	"source/utilities.c"
+	"source/utilities.h"
 )
 
 if(CLOWNCD_CHD)
-	add_subdirectory("disc/chd" EXCLUDE_FROM_ALL)
+	add_subdirectory("libraries/chd" EXCLUDE_FROM_ALL)
 	target_link_libraries(clowncd PRIVATE clowncd-chd)
 	target_compile_definitions(clowncd PRIVATE CLOWNCD_CHD)
 endif()
 
-add_subdirectory("audio/libraries/clownresampler" EXCLUDE_FROM_ALL)
+add_subdirectory("libraries/clownresampler" EXCLUDE_FROM_ALL)
 target_link_libraries(clowncd PRIVATE clownresampler)
 
 find_package(SndFile)
@@ -46,27 +46,27 @@ if(TARGET SndFile::sndfile)
 	target_link_libraries(clowncd PRIVATE SndFile::sndfile)
 	target_compile_definitions(clowncd PUBLIC CLOWNCD_LIBSNDFILE)
 	target_sources(clowncd PRIVATE
-		"audio/libsndfile.c"
-		"audio/libsndfile.h"
+		"source/audio/libsndfile.c"
+		"source/audio/libsndfile.h"
 	)
 else()
 	target_sources(clowncd PRIVATE
-		"audio/flac.c"
-		"audio/flac.h"
-		"audio/mp3.c"
-		"audio/mp3.h"
-		"audio/vorbis.c"
-		"audio/vorbis.h"
-		"audio/wav.c"
-		"audio/wav.h"
+		"source/audio/flac.c"
+		"source/audio/flac.h"
+		"source/audio/mp3.c"
+		"source/audio/mp3.h"
+		"source/audio/vorbis.c"
+		"source/audio/vorbis.h"
+		"source/audio/wav.c"
+		"source/audio/wav.h"
 	)
 endif()
 
 if(TARGET SndFile::sndfile)
-	add_executable(clowncd-split "split.c")
+	add_executable(clowncd-split "source/split.c")
 	target_link_libraries(clowncd-split PRIVATE clowncd)
 	target_link_libraries(clowncd-split PRIVATE SndFile::sndfile)
 endif()
 
-add_executable(clowncd-cue-converter "cue-converter.c")
+add_executable(clowncd-cue-converter "source/cue-converter.c")
 target_link_libraries(clowncd-cue-converter PRIVATE clowncd)

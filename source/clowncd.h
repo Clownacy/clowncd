@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-#include "clowncommon/clowncommon.h"
+#include "../libraries/clowncommon/clowncommon.h"
 
 #include "audio.h"
 #include "common.h"

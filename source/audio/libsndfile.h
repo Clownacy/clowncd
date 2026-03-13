@@ -5,7 +5,7 @@
 
 #include <sndfile.h>
 
-#include "../clowncommon/clowncommon.h"
+#include "../../libraries/clowncommon/clowncommon.h"
 
 #include "../audio-common.h"
 #include "../file-io.h"

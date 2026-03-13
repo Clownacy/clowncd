@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "chd/streams/chd_stream.h"
+#include "../../libraries/chd/streams/chd_stream.h"
 
 #include "../common.h"
 

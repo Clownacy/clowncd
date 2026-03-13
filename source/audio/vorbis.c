@@ -12,7 +12,7 @@
 /* This file is modified to replace all instances of 'stb_vorbis' with 'clowncd_stb_vorbis',
    to prevent linker conflicts with software which also uses stb_vorbis, such as
    PlayStation Vita builds of RetroArch. */
-#include "libraries/stb_vorbis.c"
+#include "../../libraries/stb_vorbis.c"
 
 /* Undefine these REALLY STUPID macros, to avoid name conflicts in unity builds. */
 #undef L

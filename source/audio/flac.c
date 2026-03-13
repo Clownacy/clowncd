@@ -3,7 +3,7 @@
 #include <assert.h>
 
 #define DR_FLAC_IMPLEMENTATION
-#include "libraries/dr_flac.h"
+#include "../../libraries/dr_flac.h"
 
 static size_t ClownCD_FLACReadCallback(void* const user_data, void* const buffer, const size_t total_bytes)
 {

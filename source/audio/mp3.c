@@ -3,7 +3,7 @@
 #include <assert.h>
 
 #define DR_MP3_IMPLEMENTATION
-#include "libraries/dr_mp3.h"
+#include "../../libraries/dr_mp3.h"
 
 static size_t ClownCD_MP3ReadCallback(void* const user_data, void* const buffer, const size_t total_bytes)
 {

@@ -5,9 +5,9 @@
 
 #define DR_WAV_NO_STDIO
 #define DRWAV_PRIVATE static
-#include "libraries/dr_wav.h"
+#include "../../libraries/dr_wav.h"
 
-#include "../clowncommon/clowncommon.h"
+#include "../../libraries/clowncommon/clowncommon.h"
 
 #include "../audio-common.h"
 #include "../file-io.h"

@@ -5,9 +5,9 @@
 
 #define DR_MP3_NO_STDIO
 #define DRMP3_PRIVATE static
-#include "libraries/dr_mp3.h"
+#include "../../libraries/dr_mp3.h"
 
-#include "../clowncommon/clowncommon.h"
+#include "../../libraries/clowncommon/clowncommon.h"
 
 #include "../audio-common.h"
 #include "../file-io.h"

@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "clowncommon/clowncommon.h"
+#include "../libraries/clowncommon/clowncommon.h"
 
 static char* ClownCD_GetLastPathSeparator(const char* const file_path)
 {

@@ -3,9 +3,9 @@
 
 #include <stddef.h>
 
-#include "clowncommon/clowncommon.h"
+#include "../libraries/clowncommon/clowncommon.h"
 
-#include "audio/libraries/clownresampler/clownresampler.h"
+#include "../libraries/clownresampler/clownresampler.h"
 
 #ifdef CLOWNCD_LIBSNDFILE
  #include "audio/libsndfile.h"

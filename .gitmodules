@@ -1,9 +1,9 @@
 [submodule "clowncommon"]
-	path = clowncommon
+	path = libraries/clowncommon
 	url = https://github.com/Clownacy/clowncommon
 [submodule "audio/libraries/clownresampler"]
-	path = audio/libraries/clownresampler
+	path = libraries/clownresampler
 	url = https://github.com/Clownacy/clownresampler
 [submodule "disc/chd/libchdr"]
-	path = disc/chd/libchdr
+	path = libraries/chd/libchdr
 	url = https://github.com/Clownacy/libchdr
