@@ -6,11 +6,11 @@
 
 #include "../libraries/clowncommon/clowncommon.h"
 
-static char* ClownCD_GetLastPathSeparator(const char* const file_path)
+static const char* ClownCD_GetLastPathSeparator(const char* const file_path)
 {
-	char* const forward_slash = strrchr(file_path, '/');
+	const char* const forward_slash = strrchr(file_path, '/');
 #ifdef _WIN32
-	char* const back_slash = strrchr(file_path, '\\');
+	const char* const back_slash = strrchr(file_path, '\\');
 
 	if (forward_slash == NULL)
 		return back_slash;
