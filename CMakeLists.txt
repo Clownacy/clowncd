@@ -43,7 +43,7 @@ target_link_libraries(clowncd PRIVATE clownresampler)
 find_package(SndFile)
 
 if(TARGET SndFile::sndfile)
-	target_link_libraries(clowncd PRIVATE SndFile::sndfile)
+	target_link_libraries(clowncd PUBLIC SndFile::sndfile)
 	target_compile_definitions(clowncd PUBLIC CLOWNCD_LIBSNDFILE)
 	target_sources(clowncd PRIVATE
 		"source/audio/libsndfile.c"
