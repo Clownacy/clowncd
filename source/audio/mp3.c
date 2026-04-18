@@ -28,6 +28,10 @@ static drmp3_bool32 ClownCD_MP3SeekCallback(void* const user_data, const int off
 			ccd_origin = CLOWNCD_SEEK_CUR;
 			break;
 
+		case DRMP3_SEEK_END:
+			ccd_origin = CLOWNCD_SEEK_END;
+			break;
+
 		default:
 			assert(cc_false);
 			return cc_false;
