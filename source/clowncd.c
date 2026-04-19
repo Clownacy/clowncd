@@ -45,6 +45,8 @@ void ClownCD_OpenAlreadyOpen(ClownCD *disc, void *stream, const char *file_path,
 	disc->track.starting_frame = 0;
 	disc->track.current_frame = 0;
 	disc->track.total_frames = 0;
+	disc->track.current_track = -1;
+	disc->track.current_index = -1;
 
 	ClownCD_DiscOpen(disc);
 }
