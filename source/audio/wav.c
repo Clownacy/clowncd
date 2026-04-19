@@ -28,6 +28,10 @@ static drwav_bool32 ClownCD_WAVSeekCallback(void* const user_data, const int off
 			ccd_origin = CLOWNCD_SEEK_CUR;
 			break;
 
+		case DRWAV_SEEK_END:
+			ccd_origin = CLOWNCD_SEEK_END;
+			break;
+
 		default:
 			assert(cc_false);
 			return cc_false;

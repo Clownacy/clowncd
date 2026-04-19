@@ -28,6 +28,10 @@ static drflac_bool32 ClownCD_FLACSeekCallback(void* const user_data, const int o
 			ccd_origin = CLOWNCD_SEEK_CUR;
 			break;
 
+		case DRFLAC_SEEK_END:
+			ccd_origin = CLOWNCD_SEEK_END;
+			break;
+
 		default:
 			assert(cc_false);
 			return cc_false;
