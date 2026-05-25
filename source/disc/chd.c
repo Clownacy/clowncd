@@ -158,7 +158,7 @@ cc_bool ClownCD_Disc_CHDSeekTrackIndex(ClownCD_Disc* const disc, const unsigned 
 		disc->track.file = ClownCD_FileOpenAlreadyOpen(chd_stream, &track_callbacks);
 
 		disc->track.audio_decoder_needed = cc_false;
-		disc->track.has_full_sized_sectors = cc_true;
+		disc->track.has_full_sized_sectors = chdstream_get_frame_size(chd_stream) == CLOWNCD_SECTOR_RAW_SIZE;
 		disc->track.starting_frame = 0;
 		disc->track.total_frames = -1;
 
