@@ -165,7 +165,7 @@ size_t ClownCD_ReadSector(ClownCD* const disc, unsigned char* const buffer)
 
 static size_t ClownCD_ReadFramesGetAudio(ClownCD* const disc, short* const buffer, const size_t total_frames)
 {
-	const size_t frames_to_do = CC_MIN(disc->track.total_frames - disc->track.current_frame, total_frames);
+	const size_t frames_to_do = CC_MIN(disc->track.total_frames - (disc->track.current_frame - disc->track.starting_frame), total_frames);
 
 	size_t frames_done;
 
