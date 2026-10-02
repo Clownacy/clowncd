@@ -7,8 +7,6 @@ option(CLOWNCD_CHD "Support CHD files, leveraging various permissively-licensed 
 add_library(clowncd STATIC
 	"source/disc/clowncd.c"
 	"source/disc/clowncd.h"
-	"source/disc/chd.c"
-	"source/disc/chd.h"
 	"source/disc/cue.c"
 	"source/disc/cue.h"
 	"source/disc/raw.c"
@@ -35,6 +33,10 @@ if(CLOWNCD_CHD)
 	add_subdirectory("libraries/chd" EXCLUDE_FROM_ALL)
 	target_link_libraries(clowncd PRIVATE clowncd-chd)
 	target_compile_definitions(clowncd PRIVATE CLOWNCD_CHD)
+	target_sources(clowncd PRIVATE
+		"source/disc/chd.c"
+		"source/disc/chd.h"
+	)
 endif()
 
 add_subdirectory("libraries/clownresampler" EXCLUDE_FROM_ALL)
